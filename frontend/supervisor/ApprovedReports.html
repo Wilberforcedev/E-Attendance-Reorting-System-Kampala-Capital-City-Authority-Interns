@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approved Reports | EARS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --kcca-red: #E30613;
+            --kcca-green: #008540;
+            --kcca-yellow: #FFD100;
+            --kcca-black: #000000;
+            --kcca-white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Offcanvas sidebar */
+        .offcanvas-start {
+            width: 250px;
+        }
+
+        /* Sidebar navigation */
+        .sidebar-nav .nav-link {
+            color: #f8f9fa;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active {
+            background-color: #343a40;
+            color: var(--kcca-yellow);
+        }
+        .sidebar-nav i {
+            margin-right: 8px;
+        }
+
+        /* Main content */
+        .content {
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (min-width: 992px) {
+            .content.sidebar-open {
+                margin-left: 250px;
+            }
+        }
+
+        /* Table styling */
+        .table thead th {
+            background-color: #343a40;
+            color: white;
+        }
+
+        .badge-approved {
+            background-color: #28a745;
+            color: white;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Sidebar brand styling */
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .sidebar-title {
+            color: #008540; /* KCCA green */
+            letter-spacing: 1px;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar with hamburger -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <button class="btn btn-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <span class="navbar-brand mb-0 h1 ms-3">Approved Reports</span>
+        </div>
+    </nav>
+
+    <!-- Sidebar - Matching Supervisor Dashboard -->
+    <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <div class="d-flex align-items-center">
+                <!-- KCCA Logo -->
+                <img src="https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png" alt="KCCA Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                <!-- EARS Text -->
+                <h5 class="offcanvas-title fw-bold mb-0" style="color: #008540; letter-spacing: 1px;">
+                    EARS
+                </h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <nav class="nav flex-column sidebar-nav px-3">
+                <a class="nav-link d-flex align-items-center mb-2" href="Dashboard.html">
+                    <i class="bi bi-house-door-fill"></i> Dashboard
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="PendingApprovals.html">
+                    <i class="bi bi-hourglass-split"></i> Pending Approvals
+                </a>
+                <a class="nav-link active d-flex align-items-center mb-2" href="#">
+                    <i class="bi bi-check2-square"></i> Approved Reports
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="Profile.html">
+                    <i class="bi bi-person-circle"></i> Profile
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="content" id="mainContent">
+        <h3 class="mb-4">Approved Reports</h3>
+        
+        <!-- Filters -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Filter Reports</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="filterDepartment" class="form-label">Department</label>
+                        <select class="form-select" id="filterDepartment">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filterWeek" class="form-label">Week</label>
+                        <select class="form-select" id="filterWeek">
+                            <option value="">All Weeks</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filterIntern" class="form-label">Intern</label>
+                        <select class="form-select" id="filterIntern">
+                            <option value="">All Interns</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" id="filterBtn">Apply Filters</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Table -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Intern Name</th>
+                                <th>Department</th>
+                                <th>Week</th>
+                                <th>Submitted</th>
+                                <th>Approved</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <!-- Content will be loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Pagination -->
+                <nav aria-label="Reports pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1">Previous</a>
+                        </li>
+                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Report View Modal -->
+        <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Approved Report Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="reportModalContent">
+                        <div class="mb-4">
+                            <h6>Intern: <span class="text-primary" id="modalInternName">-</span></h6>
+                            <p class="text-muted"><span id="modalDepartment">-</span> | <span id="modalWeek">-</span> Report</p>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Submitted:</label>
+                                <span id="modalSubmittedDate">-</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Approved:</label>
+                                <span id="modalApprovedDate">-</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Activities Performed</h6>
+                            <div class="card bg-light p-3" id="modalActivities">
+                                <p>No activities reported</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Challenges Faced</h6>
+                            <div class="card bg-light p-3" id="modalChallenges">
+                                <p>No challenges reported</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Supervisor Comments</h6>
+                            <div class="card bg-light p-3" id="modalComments">
+                                <p>No comments provided</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="exportBtn">
+                            <i class="bi bi-download"></i> Export as PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // In ApprovedReports.html
+document.addEventListener('DOMContentLoaded', function() {
+  initializeStorage();
+  const currentUser = getCurrentUser();
+  const earsData = JSON.parse(localStorage.getItem('earsReports'));
+  
+  // Get pending reports for this supervisor
+  const pendingReports = earsData.reports.filter(
+    report => report.supervisorId === currentUser.id && 
+             report.status === REPORT_STATUS.SUBMITTED
+  );
+  
+  renderReportsTable(pendingReports);
+  
+  // Set up event listeners
+  document.getElementById('filterBtn').addEventListener('click', function() {
+    const departmentFilter = document.getElementById('filterDepartment').value;
+    const weekFilter = document.getElementById('filterWeek').value;
+    
+    const filtered = pendingReports.filter(report => {
+      return (!departmentFilter || report.department === departmentFilter) &&
+             (!weekFilter || report.weekNumber === weekFilter.replace('Week ', ''));
+    });
+    
+    renderReportsTable(filtered);
+  });
+  
+  // View report modal
+  const reportModal = new bootstrap.Modal('#reportModal');
+  
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('view-btn')) {
+      const reportId = parseInt(e.target.dataset.id);
+      const report = pendingReports.find(r => r.id === reportId);
+      
+      if (report) {
+        document.getElementById('modalInternName').textContent = report.internName;
+        document.getElementById('modalDepartment').textContent = report.department;
+        document.getElementById('modalWeek').textContent = `Week ${report.weekNumber}`;
+        
+        // Format activities for display
+        let activitiesHtml = '';
+        for (const day in report.activities) {
+          if (report.activities[day]) {
+            activitiesHtml += `<p><strong>${day.charAt(0).toUpperCase() + day.slice(1)}:</strong><br>`;
+            activitiesHtml += report.activities[day].split('\n').join('<br>') + '</p>';
+          }
+        }
+        document.getElementById('modalActivities').innerHTML = activitiesHtml || '<p>No activities reported</p>';
+        
+        reportModal.show();
+      }
+    }
+  });
+  
+  // Approve/reject buttons
+  document.getElementById('approveBtn').addEventListener('click', function() {
+    const reportId = parseInt(document.querySelector('.view-btn[data-id]').dataset.id);
+    const reportIndex = earsData.reports.findIndex(r => r.id === reportId);
+    
+    if (reportIndex !== -1) {
+      earsData.reports[reportIndex].status = REPORT_STATUS.APPROVED;
+      earsData.reports[reportIndex].approvedAt = new Date().toISOString();
+      localStorage.setItem('earsReports', JSON.stringify(earsData));
+      
+      alert('Report approved successfully!');
+      reportModal.hide();
+      window.location.reload();
+    }
+  });
+  
+  document.getElementById('rejectBtn').addEventListener('click', function() {
+    const reportId = parseInt(document.querySelector('.view-btn[data-id]').dataset.id);
+    const reportIndex = earsData.reports.findIndex(r => r.id === reportId);
+    const comments = document.getElementById('modalComments').value;
+    
+    if (reportIndex !== -1) {
+      earsData.reports[reportIndex].status = REPORT_STATUS.REJECTED;
+      earsData.reports[reportIndex].comments = comments;
+      earsData.reports[reportIndex].rejectedAt = new Date().toISOString();
+      localStorage.setItem('earsReports', JSON.stringify(earsData));
+      
+      alert('Report rejected with comments');
+      reportModal.hide();
+      window.location.reload();
+    }
+  });
+});
+
+function renderReportsTable(reports) {
+  const tbody = document.getElementById('reportsTableBody');
+  tbody.innerHTML = '';
+  
+  if (reports.length === 0) {
+    document.getElementById('emptyStateRow').style.display = '';
+    return;
+  }
+  if (currentUser.role !== 'supervisor') {
+  alert('Unauthorized access');
+  window.location.href = 'login.html';
+}
+
+  document.getElementById('emptyStateRow').style.display = 'none';
+  
+  reports.forEach(report => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${report.internName}</td>
+      <td>${report.department}</td>
+      <td>Week ${report.weekNumber}</td>
+      <td>${formatDate(report.submittedAt)}</td>
+      <td><span class="badge ${getStatusBadge(report.status)}">${report.status}</span></td>
+      <td><button class="btn btn-sm btn-primary view-btn" data-id="${report.id}">View</button></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+    </script>
+</body>
+</html>

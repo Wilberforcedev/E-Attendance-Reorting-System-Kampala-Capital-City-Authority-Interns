@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My Profile | EARS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+    }
+
+    /* Offcanvas sidebar custom width */
+    .offcanvas-start {
+      width: 250px;
+    }
+
+    /* Sidebar nav styles */
+    .sidebar-nav .nav-link {
+      color: #f8f9fa;
+      font-size: 0.95rem;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .sidebar-nav .nav-link:hover,
+    .sidebar-nav .nav-link.active {
+      background-color: #343a40;
+      color: #f8f9fa;
+    }
+    .sidebar-nav i {
+      margin-right: 8px;
+    }
+
+    /* Card base style override */
+    .card {
+      border: none;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+    }
+
+    /* Content padding */
+    .content {
+      padding: 2rem 1rem;
+      min-height: 100vh;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Large screen: add left margin when sidebar is shown */
+    @media (min-width: 992px) {
+      .content.sidebar-open {
+        margin-left: 250px;
+      }
+    }
+
+    /* Profile-specific styles */
+    .profile-section {
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .profile-section-title {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    
+    .document-card {
+      border-left: 4px solid #007bff;
+      transition: all 0.2s ease;
+    }
+    
+    .document-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .stats-card {
+      border-radius: 0.5rem;
+      padding: 1rem;
+      text-align: center;
+      height: 100%;
+      background-color: #f8f9fa;
+    }
+    
+    .stats-card .number {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+    
+    .stats-card .label {
+      color: #6c757d;
+      font-size: 0.875rem;
+    }
+    
+    .file-upload-container {
+      border: 2px dashed #dee2e6;
+      border-radius: 0.5rem;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .file-upload-container:hover {
+      border-color: #007bff;
+      background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .document-badge {
+      font-size: 0.75rem;
+    }
+    
+    .security-log-item {
+      border-left: 3px solid #28a745;
+      padding-left: 1rem;
+    }
+    
+    .security-log-item.warning {
+      border-left-color: #ffc107;
+    }
+    
+    .edit-field {
+      display: none;
+    }
+    
+    /* Profile picture specific styles */
+    .profile-img-container {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+    
+    .profile-img-edit {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .profile-img-edit:hover {
+      background: #f8f9fa;
+      transform: scale(1.1);
+    }
+    
+    .profile-picture {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .profile-picture:hover {
+      transform: scale(1.02);
+    }
+    
+    #uploadError {
+      height: 20px;
+      font-size: 0.8rem;
+    }
+    
+    #imagePreview {
+      display: none;
+      max-width: 100%;
+      max-height: 300px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar with hamburger -->
+<nav class="navbar navbar-dark bg-dark">
+  <div class="container-fluid">
+    <button
+      class="btn btn-dark"
+      type="button"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#sidebar"
+      aria-controls="sidebar"
+      aria-label="Toggle sidebar"
+      id="sidebarToggleBtn"
+    >
+      <i class="bi bi-list fs-3"></i>
+    </button>
+    <span class="navbar-brand mb-0 h1 ms-3">My Profile</span>
+  </div>
+</nav>
+
+<!-- Offcanvas sidebar -->
+<div
+  class="offcanvas offcanvas-start bg-dark text-white"
+  tabindex="-1"
+  id="sidebar"
+  aria-labelledby="sidebarLabel"
+>
+  <div class="offcanvas-header border-bottom border-secondary">
+    <h5 class="offcanvas-title fw-bold text-danger" id="sidebarLabel" style="letter-spacing: 1px;">
+      EARS
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    <nav class="nav flex-column sidebar-nav px-3">
+      <a class="nav-link d-flex align-items-center mb-2" href="Dashboard.html">
+        <i class="bi bi-house-door-fill"></i> Dashboard
+      </a>
+      <a class="nav-link d-flex align-items-center mb-2" href="SubmitReport.html">
+        <i class="bi bi-journal-plus"></i> Submit Weekly Report
+      </a>
+      <a class="nav-link d-flex align-items-center mb-2" href="MyReports.html">
+        <i class="bi bi-journal-text"></i> My Reports
+      </a>
+      <a class="nav-link d-flex align-items-center mb-2" href="Notifications.html">
+        <i class="bi bi-bell"></i> Notifications
+      </a>
+      <a class="nav-link active d-flex align-items-center mb-2" href="#">
+        <i class="bi bi-person-circle"></i> Profile
+      </a>
+    
+    </nav>
+  </div>
+</div>
+
+<!-- Main content -->
+<main class="content" id="mainContent">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>My Profile</h3>
+    <button class="btn btn-outline-primary" id="editProfileBtn">
+      <i class="bi bi-pencil"></i> Edit Profile
+    </button>
+  </div>
+
+  <div class="row">
+    <!-- Left Column -->
+    <div class="col-lg-4">
+      <!-- Personal Info Card -->
+      <div class="profile-section">
+        <div class="text-center mb-4">
+          <div class="profile-img-container">
+            <img src="default-profile.jpg" class="profile-picture" id="profilePicture" alt="Profile Picture">
+            <div class="profile-img-edit" id="changePictureBtn">
+              <i class="bi bi-camera"></i>
+            </div>
+            <input type="file" id="profileImageUpload" accept="image/*" class="d-none">
+          </div>
+          <button class="btn btn-sm btn-danger mt-2" id="removePictureBtn" style="display: none;">
+            <i class="bi bi-trash"></i> Remove Photo
+          </button>
+          <div id="uploadError" class="text-danger small mt-2"></div>
+          
+          <h4 class="mt-3" id="userName">John Doe</h4>
+          <p class="text-muted mb-2" id="userEmail">john.doe@example.com</p>
+          <p class="text-muted" id="userRole">Intern - ICT Department</p>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Phone</label>
+          <div class="view-mode">
+            <span id="phoneDisplay">+256 712 345 678</span>
+            <button class="btn btn-sm btn-outline-secondary ms-2" id="editPhoneBtn">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </div>
+          <div class="edit-field input-group">
+            <input type="tel" class="form-control" id="phoneInput" value="+256 712 345 678">
+            <button class="btn btn-success" id="savePhoneBtn">
+              <i class="bi bi-check"></i>
+            </button>
+            <button class="btn btn-danger" id="cancelPhoneBtn">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Emergency Contact</label>
+          <div class="view-mode">
+            <span id="emergencyDisplay">Sarah Doe (+256 772 345 678)</span>
+            <button class="btn btn-sm btn-outline-secondary ms-2" id="editEmergencyBtn">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </div>
+          <div class="edit-field">
+            <div class="mb-2">
+              <input type="text" class="form-control mb-2" id="emergencyNameInput" value="Sarah Doe" placeholder="Name">
+              <input type="tel" class="form-control" id="emergencyPhoneInput" value="+256 772 345 678" placeholder="Phone">
+            </div>
+            <div class="d-flex">
+              <button class="btn btn-success me-2" id="saveEmergencyBtn">
+                <i class="bi bi-check"></i> Save
+              </button>
+              <button class="btn btn-danger" id="cancelEmergencyBtn">
+                <i class="bi bi-x"></i> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">Physical Address</label>
+          <div class="view-mode">
+            <span id="addressDisplay">123 Makerere Road, Kampala</span>
+            <button class="btn btn-sm btn-outline-secondary ms-2" id="editAddressBtn">
+              <i class="bi bi-pencil"></i>
+            </button>
+          </div>
+          <div class="edit-field input-group">
+            <textarea class="form-control" id="addressInput" rows="2">123 Makerere Road, Kampala</textarea>
+            <div class="d-flex w-100 mt-2">
+              <button class="btn btn-success me-2" id="saveAddressBtn">
+                <i class="bi bi-check"></i> Save
+              </button>
+              <button class="btn btn-danger" id="cancelAddressBtn">
+                <i class="bi bi-x"></i> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Security Card -->
+      <div class="profile-section">
+        <h5 class="profile-section-title">
+          <i class="bi bi-shield-check"></i> Account Security
+        </h5>
+        
+        <div class="mb-3">
+          <button class="btn btn-outline-secondary w-100 text-start" id="changePasswordBtn">
+            <i class="bi bi-key"></i> Change Password
+          </button>
+        </div>
+        
+        <div class="mb-3">
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="twoFactorToggle" checked>
+            <label class="form-check-label" for="twoFactorToggle">Two-factor authentication</label>
+          </div>
+        </div>
+        
+        <div>
+          <h6 class="fw-bold mb-3">Recent Activity</h6>
+          <ul class="list-unstyled">
+            <li class="mb-3 security-log-item">
+              <div class="d-flex justify-content-between">
+                <span>Successful login</span>
+                <small class="text-muted">Today, 09:24 AM</small>
+              </div>
+              <small class="text-muted">From 192.168.1.1 (Chrome, Windows)</small>
+            </li>
+            <li class="mb-3 security-log-item">
+              <div class="d-flex justify-content-between">
+                <span>Successful login</span>
+                <small class="text-muted">Yesterday, 14:45 PM</small>
+              </div>
+              <small class="text-muted">From 192.168.1.2 (Firefox, Android)</small>
+            </li>
+            <li class="mb-3 security-log-item warning">
+              <div class="d-flex justify-content-between">
+                <span>Failed login attempt</span>
+                <small class="text-muted">2 days ago</small>
+              </div>
+              <small class="text-muted">From 196.43.1.25</small>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right Column -->
+    <div class="col-lg-8">
+      <!-- System Preferences Card -->
+      <div class="profile-section">
+        <h5 class="profile-section-title">
+          <i class="bi bi-gear"></i> System Preferences
+        </h5>
+        
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Notification Preferences</label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+              <label class="form-check-label" for="emailNotifications">Email Notifications</label>
+            </div>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="checkbox" id="pushNotifications" checked>
+              <label class="form-check-label" for="pushNotifications">In-App Notifications</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="smsNotifications">
+              <label class="form-check-label" for="smsNotifications">SMS Alerts</label>
+            </div>
+          </div>
+          
+          <div class="col-md-6 mb-3">
+            <label class="form-label fw-bold">Language & Region</label>
+            <select class="form-select mb-3" id="languageSelect">
+              <option selected>English</option>
+              <option>French</option>
+              <option>Swahili</option>
+            </select>
+            
+            <select class="form-select" id="timezoneSelect">
+              <option selected>East Africa Time (EAT) UTC+3</option>
+              <option>Central Africa Time (CAT) UTC+2</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Reporting Statistics Card -->
+      <div class="profile-section">
+        <h5 class="profile-section-title">
+          <i class="bi bi-bar-chart"></i> Reporting Statistics
+        </h5>
+        
+        <div class="row mb-4">
+          <div class="col-md-3 col-6 mb-3">
+            <div class="stats-card">
+              <div class="number">12</div>
+              <div class="label">Total Reports</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6 mb-3">
+            <div class="stats-card">
+              <div class="number">10</div>
+              <div class="label">Approved</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6 mb-3">
+            <div class="stats-card">
+              <div class="number">1</div>
+              <div class="label">Pending</div>
+            </div>
+          </div>
+          <div class="col-md-3 col-6 mb-3">
+            <div class="stats-card">
+              <div class="number">1</div>
+              <div class="label">Rejected</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chart-container" style="position: relative; height: 250px;">
+          <canvas id="reportsChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- Document Management Card -->
+      <div class="profile-section">
+        <h5 class="profile-section-title">
+          <i class="bi bi-files"></i> Document Management
+        </h5>
+        
+        <div class="alert alert-info mb-4">
+          <i class="bi bi-info-circle"></i> Please upload all required documents for your internship verification.
+        </div>
+        
+        <div class="file-upload-container mb-4" id="uploadContainer">
+          <i class="bi bi-cloud-arrow-up fs-1 text-muted mb-2"></i>
+          <h5>Drag & drop files here</h5>
+          <p class="text-muted">or click to browse (Max 5MB per file)</p>
+          <input type="file" id="fileUpload" class="d-none" multiple>
+          <img id="imagePreview" class="img-thumbnail">
+        </div>
+        
+        <h6 class="fw-bold mb-3">Uploaded Documents</h6>
+        <div class="row" id="documentsList">
+          <div class="col-md-6 mb-3">
+            <div class="card document-card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h6 class="mb-1">Internship Agreement</h6>
+                    <small class="text-muted">Signed: 2023-06-01</small>
+                  </div>
+                  <div>
+                    <span class="badge bg-success document-badge">Verified</span>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end mt-2">
+                  <button class="btn btn-sm btn-outline-primary me-2 view-doc-btn">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-secondary download-doc-btn">
+                    <i class="bi bi-download"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-6 mb-3">
+            <div class="card document-card">
+              <div class="card-body">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h6 class="mb-1">Academic Transcript</h6>
+                    <small class="text-muted">Uploaded: 2023-06-02</small>
+                  </div>
+                  <div>
+                    <span class="badge bg-warning text-dark document-badge">Pending</span>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-end mt-2">
+                  <button class="btn btn-sm btn-outline-primary me-2 view-doc-btn">
+                    <i class="bi bi-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger delete-doc-btn">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="alert alert-warning mt-3">
+          <i class="bi bi-exclamation-triangle"></i> 2 documents remaining for full verification
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title">Change Password</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="passwordForm">
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password</label>
+            <input type="password" class="form-control" id="currentPassword" required>
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password</label>
+            <input type="password" class="form-control" id="newPassword" required>
+            <div class="form-text">Must be at least 8 characters long</div>
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm New Password</label>
+            <input type="password" class="form-control" id="confirmPassword" required>
+          </div>
+          <div class="alert alert-danger d-none" id="passwordError"></div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="savePasswordBtn">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Document Preview Modal -->
+<div class="modal fade" id="documentPreviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="documentPreviewTitle">Document Preview</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <iframe id="documentPreviewFrame" style="width:100%; height:500px; border:none;"></iframe>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="downloadPreviewBtn">
+          <i class="bi bi-download"></i> Download
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Sidebar functionality
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+  
+
+    sidebar.addEventListener('show.bs.offcanvas', () => {
+      if (window.innerWidth >= 992) {
+        mainContent.classList.add('sidebar-open');
+      }
+    });
+
+    sidebar.addEventListener('hide.bs.offcanvas', () => {
+      mainContent.classList.remove('sidebar-open');
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth < 992) {
+        mainContent.classList.remove('sidebar-open');
+      }
+    });
+
+    // Initialize chart
+    const ctx = document.getElementById('reportsChart').getContext('2d');
+    const reportsChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+        datasets: [{
+          label: 'Reports Submitted',
+          data: [1, 1, 1, 1, 1, 1],
+          backgroundColor: '#2c3e50',
+          borderColor: '#2c3e50',
+          borderWidth: 1
+        }, {
+          label: 'Reports Approved',
+          data: [1, 1, 1, 1, 0, 0],
+          backgroundColor: '#28a745',
+          borderColor: '#28a745',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+
+    // Profile Picture Handling
+    const profileImageUpload = document.getElementById('profileImageUpload');
+    const profilePicture = document.getElementById('profilePicture');
+    const removePictureBtn = document.getElementById('removePictureBtn');
+    const uploadError = document.getElementById('uploadError');
+
+    // Check if user has existing profile picture (would come from server in real app)
+    const hasCustomPicture = false; // Change based on actual user data
+
+    // Initialize button visibility
+    if (hasCustomPicture) {
+      removePictureBtn.style.display = 'block';
+    }
+
+    // Upload new picture
+    document.getElementById('changePictureBtn').addEventListener('click', () => {
+      profileImageUpload.click();
+    });
+
+    profileImageUpload.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      uploadError.textContent = '';
+      
+      if (file) {
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+        if (!validTypes.includes(file.type)) {
+          uploadError.textContent = 'Only JPG, PNG or GIF files are allowed';
+          return;
+        }
+        
+        // Validate file size (5MB max)
+        if (file.size > 5 * 1024 * 1024) {
+          uploadError.textContent = 'File size exceeds 5MB limit';
+          return;
+        }
+        
+        // Preview image
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          profilePicture.src = event.target.result;
+          removePictureBtn.style.display = 'block';
+          
+          // Here you would upload to server in real implementation
+          console.log('Profile picture updated - would upload to server');
+          uploadToServer(file);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Remove picture
+    removePictureBtn.addEventListener('click', function() {
+      if (confirm('Are you sure you want to remove your profile picture?')) {
+        profilePicture.src = 'default-profile.jpg';
+        this.style.display = 'none';
+        profileImageUpload.value = '';
+        
+        // Here you would remove from server in real implementation
+        console.log('Profile picture removed - would update server');
+        removeFromServer();
+      }
+    });
+
+    // Example server functions (would use actual API calls)
+    function uploadToServer(file) {
+      const formData = new FormData();
+      formData.append('profileImage', file);
+      
+      /*
+      fetch('/api/upload-profile-picture', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Upload successful:', data);
+      })
+      .catch(error => {
+        console.error('Upload error:', error);
+        uploadError.textContent = 'Failed to upload image';
+      });
+      */
+    }
+
+    function removeFromServer() {
+      /*
+      fetch('/api/remove-profile-picture', {
+        method: 'DELETE'
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Removal successful:', data);
+      })
+      .catch(error => {
+        console.error('Removal error:', error);
+        alert('Failed to remove profile picture');
+      });
+      */
+    }
+
+    // Edit profile fields
+    function setupEditField(editBtnId, viewDisplayId, editFieldClass, saveBtnId, cancelBtnId, inputId, isTextarea = false) {
+      const editBtn = document.getElementById(editBtnId);
+      const viewDisplay = document.querySelector(`#${viewDisplayId}`).parentElement;
+      const editField = document.querySelector(`.${editFieldClass}`);
+      const saveBtn = document.getElementById(saveBtnId);
+      const cancelBtn = document.getElementById(cancelBtnId);
+      const input = document.getElementById(inputId);
+      
+      editBtn.addEventListener('click', () => {
+        viewDisplay.style.display = 'none';
+        editField.style.display = isTextarea ? 'block' : 'flex';
+      });
+      
+      cancelBtn.addEventListener('click', () => {
+        viewDisplay.style.display = 'flex';
+        editField.style.display = 'none';
+      });
+      
+      saveBtn.addEventListener('click', () => {
+        const newValue = input.value;
+        document.getElementById(viewDisplayId).textContent = newValue;
+        viewDisplay.style.display = 'flex';
+        editField.style.display = 'none';
+        
+        // In a real app, you would save this to the server here
+        console.log(`Saved new value for ${inputId}:`, newValue);
+      });
+    }
+    
+    setupEditField('editPhoneBtn', 'phoneDisplay', 'edit-field', 'savePhoneBtn', 'cancelPhoneBtn', 'phoneInput');
+    setupEditField('editEmergencyBtn', 'emergencyDisplay', 'edit-field', 'saveEmergencyBtn', 'cancelEmergencyBtn', 'emergencyNameInput');
+    setupEditField('editAddressBtn', 'addressDisplay', 'edit-field', 'saveAddressBtn', 'cancelAddressBtn', 'addressInput', true);
+    
+    // Update emergency display when name or phone changes
+    document.getElementById('emergencyNameInput').addEventListener('input', updateEmergencyDisplay);
+    document.getElementById('emergencyPhoneInput').addEventListener('input', updateEmergencyDisplay);
+    
+    function updateEmergencyDisplay() {
+      const name = document.getElementById('emergencyNameInput').value;
+      const phone = document.getElementById('emergencyPhoneInput').value;
+      document.getElementById('emergencyDisplay').textContent = `${name} (${phone})`;
+    }
+
+    // File upload interaction
+    const uploadContainer = document.getElementById('uploadContainer');
+    const fileUpload = document.getElementById('fileUpload');
+    
+    uploadContainer.addEventListener('click', () => {
+      fileUpload.click();
+    });
+    
+    uploadContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadContainer.style.borderColor = '#007bff';
+      uploadContainer.style.backgroundColor = 'rgba(0, 123, 255, 0.05)';
+    });
+    
+    uploadContainer.addEventListener('dragleave', () => {
+      uploadContainer.style.borderColor = '#dee2e6';
+      uploadContainer.style.backgroundColor = '';
+    });
+    
+    uploadContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadContainer.style.borderColor = '#dee2e6';
+      uploadContainer.style.backgroundColor = '';
+      
+      if (e.dataTransfer.files.length > 0) {
+        handleFileUpload(e.dataTransfer.files);
+      }
+    });
+    
+    fileUpload.addEventListener('change', () => {
+      if (fileUpload.files.length > 0) {
+        handleFileUpload(fileUpload.files);
+      }
+    });
+    
+    function handleFileUpload(files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`File ${file.name} exceeds 5MB limit`);
+          continue;
+        }
+        
+        // In a real app, you would upload to server here
+        console.log('Uploading file:', file.name);
+        
+        // Add to documents list
+        addDocumentToUI(file.name, new Date().toISOString().split('T')[0]);
+      }
+    }
+    
+    function addDocumentToUI(name, date) {
+      const docId = 'doc-' + Date.now();
+      const docHtml = `
+        <div class="col-md-6 mb-3" id="${docId}">
+          <div class="card document-card">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="mb-1">${name}</h6>
+                  <small class="text-muted">Uploaded: ${date}</small>
+                </div>
+                <div>
+                  <span class="badge bg-warning text-dark document-badge">Pending</span>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end mt-2">
+                <button class="btn btn-sm btn-outline-primary me-2 view-doc-btn">
+                  <i class="bi bi-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-doc-btn">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('documentsList').insertAdjacentHTML('beforeend', docHtml);
+      
+      // Add event listeners to new buttons
+      document.querySelector(`#${docId} .delete-doc-btn`).addEventListener('click', function() {
+        if (confirm('Are you sure you want to delete this document?')) {
+          document.getElementById(docId).remove();
+          console.log('Document deleted:', name);
+        }
+      });
+      
+      document.querySelector(`#${docId} .view-doc-btn`).addEventListener('click', function() {
+        const docName = this.closest('.card-body').querySelector('h6').textContent;
+        document.getElementById('documentPreviewTitle').textContent = docName;
+        // In a real app, you would set the iframe src to the actual document URL
+        document.getElementById('documentPreviewFrame').src = 'about:blank';
+        const previewModal = new bootstrap.Modal('#documentPreviewModal');
+        previewModal.show();
+      });
+    }
+
+    // Password modal
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const changePasswordModal = new bootstrap.Modal('#changePasswordModal');
+    const savePasswordBtn = document.getElementById('savePasswordBtn');
+    const passwordError = document.getElementById('passwordError');
+    
+    changePasswordBtn.addEventListener('click', () => {
+      document.getElementById('passwordForm').reset();
+      passwordError.classList.add('d-none');
+      changePasswordModal.show();
+    });
+    
+    savePasswordBtn.addEventListener('click', function() {
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      // Simple validation
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        showPasswordError('All fields are required');
+        return;
+      }
+      
+      if (newPassword.length < 8) {
+        showPasswordError('Password must be at least 8 characters');
+        return;
+      }
+      
+      if (newPassword !== confirmPassword) {
+        showPasswordError('New passwords do not match');
+        return;
+      }
+      
+      // In a real app, you would verify current password and update via API
+      console.log('Password changed successfully');
+      alert('Password changed successfully!');
+      changePasswordModal.hide();
+    });
+    
+    function showPasswordError(message) {
+      passwordError.textContent = message;
+      passwordError.classList.remove('d-none');
+    }
+
+    // Document preview modal
+    const documentPreviewModal = new bootstrap.Modal('#documentPreviewModal');
+    
+    document.querySelectorAll('.view-doc-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const docName = this.closest('.card-body').querySelector('h6').textContent;
+        document.getElementById('documentPreviewTitle').textContent = docName;
+        // In a real app, you would set the iframe src to the actual document URL
+        document.getElementById('documentPreviewFrame').src = 'about:blank';
+        documentPreviewModal.show();
+      });
+    });
+
+    // Download button in document preview modal
+    document.getElementById('downloadPreviewBtn').addEventListener('click', function() {
+      // In a real app, this would trigger the document download
+      alert('Document download would be implemented here');
+    });
+  });
+</script>
+</body>
+</html>

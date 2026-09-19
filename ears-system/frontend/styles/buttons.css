@@ -1,0 +1,26 @@
+.btn-kcca {
+  background-color: var(--btn-primary-bg);
+  color: var(--kcca-white);
+  border: none;
+  padding: 0.5rem 1.2rem;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: background 0.3s ease;
+}
+
+.btn-kcca:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+.btn-outline-kcca {
+  border: 2px solid var(--kcca-red);
+  color: var(--kcca-red);
+  background: transparent;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+}
+
+.btn-outline-kcca:hover {
+  background-color: var(--kcca-red);
+  color: var(--kcca-white);
+}

@@ -1,0 +1,1651 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EARS - Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --kcca-red: #E30613;
+            --kcca-green: #008540;
+            --kcca-yellow: #FFD100;
+            --kcca-black: #000000;
+            --kcca-white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .offcanvas-start {
+            width: 250px;
+        }
+
+        .sidebar-nav .nav-link {
+            color: #f8f9fa;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active {
+            background-color: #343a40;
+            color: var(--kcca-yellow);
+        }
+        .sidebar-nav i {
+            margin-right: 8px;
+        }
+
+        .content {
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            padding: 1.25rem;
+            border-radius: 8px;
+            color: white;
+        }
+        .stat-card.primary { background-color: var(--kcca-red); }
+        .stat-card.success { background-color: var(--kcca-green); }
+        .stat-card.warning { background-color: var(--kcca-yellow); color: var(--kcca-black); }
+        .stat-card.info { background-color: #0dcaf0; }
+
+        .user-table {
+            --table-border: #e9ecef;
+            --table-hover-bg: rgba(0, 133, 64, 0.05);
+        }
+        .user-table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border-bottom-width: 2px;
+        }
+        .user-table td {
+            vertical-align: middle;
+            padding: 0.75rem;
+        }
+        .user-table tr:hover {
+            background-color: var(--table-hover-bg);
+        }
+
+        .badge-status {
+            padding: 0.35em 0.65em;
+            font-size: 0.75em;
+            font-weight: 500;
+        }
+        .badge-active {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #664d03;
+        }
+        .badge-inactive {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--kcca-green);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        @media (min-width: 992px) {
+            .content.sidebar-open {
+                margin-left: 250px;
+            }
+        }
+
+        /* Dark Theme Support */
+        [data-bs-theme="dark"], [data-theme="dark"], .dark-mode {
+            background-color: #0f141c !important;
+            color: #f0f4f8 !important;
+        }
+        [data-bs-theme="dark"] body, [data-theme="dark"] body, .dark-mode body {
+            background-color: #0f141c !important;
+            color: #f0f4f8 !important;
+        }
+        [data-bs-theme="dark"] .card, [data-theme="dark"] .card, .dark-mode .card {
+            background-color: #161c24 !important;
+            border-color: #27313f !important;
+            color: #f0f4f8 !important;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+        }
+        [data-bs-theme="dark"] .card-header, [data-theme="dark"] .card-header, .dark-mode .card-header {
+            background-color: #1c232d !important;
+            border-color: #27313f !important;
+            color: #f0f4f8 !important;
+        }
+        [data-bs-theme="dark"] .table, [data-theme="dark"] .table, .dark-mode .table {
+            background-color: #161c24 !important;
+            color: #f0f4f8 !important;
+            border-color: #27313f !important;
+        }
+        [data-bs-theme="dark"] .table th, [data-theme="dark"] .table td, .dark-mode .table th, .dark-mode .table td {
+            border-color: #27313f !important;
+            color: #f0f4f8 !important;
+        }
+        [data-bs-theme="dark"] .table-striped tbody tr:nth-of-type(odd) td {
+            background-color: #1b222c !important;
+        }
+        [data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select, .dark-mode .form-control, .dark-mode .form-select {
+            background-color: #11161d !important;
+            border-color: #2e3846 !important;
+            color: #f0f4f8 !important;
+        }
+        [data-bs-theme="dark"] .text-muted, [data-theme="dark"] .text-muted, .dark-mode .text-muted {
+            color: #94a3b8 !important;
+        }
+        [data-bs-theme="dark"] .modal-content, [data-theme="dark"] .modal-content, .dark-mode .modal-content {
+            background-color: #161c24 !important;
+            border-color: #27313f !important;
+            color: #f0f4f8 !important;
+        }
+        [data-bs-theme="dark"] .modal-header, [data-bs-theme="dark"] .modal-footer, .dark-mode .modal-header, .dark-mode .modal-footer {
+            background-color: #1c232d !important;
+            border-color: #27313f !important;
+        }
+        
+        .theme-toggle-btn {
+            border-radius: 20px;
+            padding: 0.35rem 0.85rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .theme-toggle-btn:hover {
+            background: rgba(255, 209, 0, 0.2);
+            border-color: var(--kcca-yellow);
+            color: var(--kcca-yellow);
+        }
+    </style>
+    <script>
+        (function() {
+            try {
+                var stored = localStorage.getItem('ears_theme') || localStorage.getItem('theme');
+                var theme = stored;
+                if (!theme || theme === 'system') {
+                    theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.classList.add(theme === 'dark' ? 'dark-mode' : 'light-mode');
+            } catch (e) {}
+        })();
+    </script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar">
+                    <i class="bi bi-list fs-3"></i>
+                </button>
+                <span class="navbar-brand mb-0 h1 ms-3">Admin Dashboard</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button id="theme-toggle-btn" class="theme-toggle-btn" type="button" onclick="toggleGlobalTheme()" title="Toggle Light and Dark Mode">
+                    <i id="theme-toggle-icon" class="bi bi-moon-fill"></i>
+                    <span id="theme-toggle-text" class="d-none d-sm-inline">Dark Mode</span>
+                </button>
+                <span class="text-white me-2 d-none d-md-inline">Last updated: <span id="lastSync">Just now</span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebar">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <div class="d-flex align-items-center">
+                <img src="https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png" alt="KCCA Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                <h5 class="offcanvas-title fw-bold mb-0" style="color: #008540; letter-spacing: 1px;">EARS</h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <nav class="nav flex-column sidebar-nav px-3">
+                <a class="nav-link  d-flex align-items-center mb-2" href="#dashboard">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="user-Management.html">
+                    <i class="bi bi-people"></i> User Management
+                <a class="nav-link d-flex align-items-center mb-2" href="audit-logs.html">
+    <i class="bi bi-journal-text"></i> Audit Logs
+                </a>
+
+                <a class="nav-link text- d-flex align-items-center mt-auto" href="login.html" id="logoutLink">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="content" id="mainContent">
+        <div class="container-fluid">
+            <!-- Dashboard Section -->
+            <section id="dashboard">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="stat-card primary">
+                            <h6 class="text-white">Total Users</h6>
+                            <h3 id="totalUsers">0</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card success">
+                            <h6 class="text-white">Active Interns</h6>
+                            <h3 id="activeInterns">0</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card warning">
+                            <h6>Pending Approvals</h6>
+                            <h3 id="pendingApprovals">0</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card info">
+                            <h6 class="text-white">System Health</h6>
+                            <h3>100%</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Registration Trends Line Chart Section (Recharts) -->
+                <div class="card shadow-sm border mb-4">
+                    <div class="card-header bg-white py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="background-color: rgba(0, 133, 64, 0.12); width: 38px; height: 38px;">
+                                <i class="bi bi-graph-up text-success fs-5"></i>
+                            </div>
+                            <div>
+                                <h6 class="m-0 fw-bold text-primary">User Registration Trends (Last 7 Days)</h6>
+                                <small class="text-muted">Daily account registrations breakdown by role</small>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <div class="btn-group btn-group-sm" role="group" id="admin2ChartFilterGroup">
+                                <button type="button" class="btn btn-outline-primary active" id="admin2-btn-all" onclick="filterAdmin2Chart('all')">All Roles</button>
+                                <button type="button" class="btn btn-outline-primary" id="admin2-btn-intern" onclick="filterAdmin2Chart('intern')">Interns</button>
+                                <button type="button" class="btn btn-outline-primary" id="admin2-btn-supervisor" onclick="filterAdmin2Chart('supervisor')">Supervisors</button>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" type="button" onclick="refreshAdmin2Chart()" title="Refresh data">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Summary metrics -->
+                        <div class="row g-3 mb-3 text-center">
+                            <div class="col-sm-3 col-6">
+                                <div class="p-2 rounded border bg-light-subtle">
+                                    <small class="text-muted d-block fw-semibold text-uppercase" style="font-size: 0.72rem;">7-Day Registrations</small>
+                                    <span class="fs-4 fw-bold text-primary" id="admin2-trend-total">--</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-3 col-6">
+                                <div class="p-2 rounded border bg-light-subtle">
+                                    <small class="text-muted d-block fw-semibold text-uppercase" style="font-size: 0.72rem;">Daily Average</small>
+                                    <span class="fs-4 fw-bold text-success" id="admin2-trend-avg">--</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-3 col-6">
+                                <div class="p-2 rounded border bg-light-subtle">
+                                    <small class="text-muted d-block fw-semibold text-uppercase" style="font-size: 0.72rem;">Peak Day</small>
+                                    <span class="fs-4 fw-bold text-warning" id="admin2-trend-peak">--</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-3 col-6">
+                                <div class="p-2 rounded border bg-light-subtle">
+                                    <small class="text-muted d-block fw-semibold text-uppercase" style="font-size: 0.72rem;">Intern Share</small>
+                                    <span class="fs-4 fw-bold text-info" id="admin2-trend-share">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recharts container -->
+                        <div id="admin2-recharts-chart-root" style="width: 100%; height: 320px;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- User Management Section -->
+            <section class="dashboard-card" id="userManagement">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="bi bi-people me-2"></i>User Management</h5>
+                    <div>
+                        <button class="btn btn-sm btn-primary me-2" id="addUserBtn">
+                            <i class="bi bi-plus-circle"></i> Add User
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" id="refreshUsers">
+                            <i class="bi bi-arrow-repeat"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bulk Action Toolbar -->
+                <div id="adminBulkActionsBar" class="bulk-actions-container mb-3 p-2 rounded border d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="form-check m-0 d-flex align-items-center">
+                            <input class="form-check-input me-2" type="checkbox" id="adminSelectAllCheckbox" onchange="toggleSelectAllAdminUsers(this.checked)">
+                            <label class="form-check-label fw-semibold" for="adminSelectAllCheckbox" id="adminSelectLabel">
+                                Select All
+                            </label>
+                        </div>
+                        <span id="adminSelectedBadge" class="badge bg-secondary ms-1">0 selected</span>
+                    </div>
+                    
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <button id="adminBulkClearBtn" class="btn btn-sm btn-outline-secondary" type="button" onclick="clearAdminUserSelection()" disabled>
+                            <i class="bi bi-x-lg me-1"></i> Deselect
+                        </button>
+
+                        <div class="dropdown">
+                            <button id="adminBulkDropdownBtn" class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                <i class="bi bi-gear me-1"></i> Bulk Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow">
+                                <li><h6 class="dropdown-header">Status</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="bulkDeactivateAdminUsers(); return false;">
+                                    <i class="bi bi-person-x text-warning me-2"></i> Deactivate selected
+                                </a></li>
+                                <li><a class="dropdown-item" href="#" onclick="bulkActivateAdminUsers(); return false;">
+                                    <i class="bi bi-person-check text-success me-2"></i> Activate selected
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="bulkDeleteAdminUsers(); return false;">
+                                    <i class="bi bi-trash text-danger me-2"></i> Delete selected
+                                </a></li>
+                            </ul>
+                        </div>
+
+                        <button id="adminBulkDeactivateBtn" class="btn btn-sm btn-warning text-dark" type="button" onclick="bulkDeactivateAdminUsers()" disabled>
+                            <i class="bi bi-person-x me-1"></i> Deactivate selected
+                        </button>
+                        <button id="adminBulkDeleteBtn" class="btn btn-sm btn-danger" type="button" onclick="bulkDeleteAdminUsers()" disabled>
+                            <i class="bi bi-trash me-1"></i> Delete selected
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle user-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 44px;" class="text-center">
+                                    <input type="checkbox" class="form-check-input" id="adminTableSelectAll" onchange="toggleSelectAllAdminUsers(this.checked)" title="Select all users" aria-label="Select all users">
+                                </th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Department Management Section -->
+            <section class="dashboard-card" id="departmentManagement">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="bi bi-building me-2"></i>Department Management</h5>
+                    <div>
+                        <button class="btn btn-sm btn-primary me-2" id="addDepartmentBtn">
+                            <i class="bi bi-plus-circle"></i> Add Department
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Division</th>
+                                <th>Directorate</th>
+                                <th>Department</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="departmentsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Audit Logs Section -->
+            <section class="dashboard-card" id="auditLogs">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5><i class="bi bi-journal-text me-2"></i>Audit Logs</h5>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-filter"></i> Filter
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Last 7 Days</a></li>
+                            <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                            <li><a class="dropdown-item" href="#">All Time</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditLogsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="userName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="userEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" id="userRole" required>
+                                <option value="">Select Role</option>
+                                <option value="intern">Intern</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="hr">HR</option>
+                                <option value="admin">System Admin</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Department</label>
+                            <select class="form-select" id="userDepartment" required>
+                                <option value="">Select Department</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Supervisor</label>
+                            <select class="form-select" id="userSupervisor">
+                                <option value="">Select Supervisor (if intern)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Initial Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="userPassword" required>
+                                <button class="btn btn-outline-secondary" type="button" id="generatePassword">
+                                    <i class="bi bi-arrow-repeat"></i> Generate
+                                </button>
+                            </div>
+                            <small class="text-muted">User will change password on first login</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="userForm" class="btn btn-primary">Create User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="editUserName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editUserEmail" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" id="editUserRole" required>
+                                <option value="">Select Role</option>
+                                <option value="intern">Intern</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="hr">HR</option>
+                                <option value="admin">System Admin</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Department</label>
+                            <select class="form-select" id="editUserDepartment" required>
+                                <option value="">Select Department</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Supervisor</label>
+                            <select class="form-select" id="editUserSupervisor">
+                                <option value="">Select Supervisor (if intern)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="editUserStatus" required>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="pending">Pending</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="editUserForm" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-outline-danger" id="resetPasswordBtn">
+                        <i class="bi bi-key"></i> Reset Password
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Department Modal -->
+    <div class="modal fade" id="addDepartmentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Department</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="departmentForm">
+                        <div class="mb-3">
+                            <label class="form-label">Division</label>
+                            <input type="text" class="form-control" id="divisionName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Directorate</label>
+                            <input type="text" class="form-control" id="directorateName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Department</label>
+                            <input type="text" class="form-control" id="departmentName" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="departmentForm" class="btn btn-primary">Add Department</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+     
+document.addEventListener('DOMContentLoaded', function() {
+    // Get user data from session
+    const user = JSON.parse(sessionStorage.getItem('currentUser'));
+    if(!user || user.role !== 'admin') {
+        window.location.href = '../login.html';
+    }
+
+    // Load users
+    loadUsers();
+    
+    // Load audit logs
+    loadAuditLogs();
+    
+    // Set up event listeners for user management
+    document.getElementById('addUserForm').addEventListener('submit', addUser);
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        loadUsers();
+    });
+});
+
+function loadUsers() {
+    const searchTerm = document.getElementById('userSearch').value;
+    const roleFilter = document.getElementById('roleFilter').value;
+    
+    let url = 'http://localhost/ears-system/backend/api/users.php?';
+    if(searchTerm) url += `search=${encodeURIComponent(searchTerm)}&`;
+    if(roleFilter) url += `role=${roleFilter}&`;
+    
+    fetch(url, {
+        headers: {
+            'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const tableBody = document.getElementById('usersTable').querySelector('tbody');
+        tableBody.innerHTML = '';
+        
+        data.records.forEach(user => {
+                        const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="user-avatar">${user.full_name.charAt(0)}</div>
+                        <div>${user.full_name}</div>
+                    </div>
+                </td>
+                <td>${user.email}</td>
+                <td><span class="badge ${getRoleBadgeClass(user.role)}">${formatRole(user.role)}</span></td>
+                <td>${user.division || '-'}</td>
+                <td>${user.directorate || '-'}</td>
+                <td>${user.department || '-'}</td>
+                <td>${user.supervisor || '-'}</td>
+                <td><span class="badge ${user.is_active ? 'bg-success' : 'bg-secondary'}">${user.is_active ? 'Active' : 'Inactive'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser(${user.id})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function loadAuditLogs() {
+    fetch('http://localhost/ears-system/backend/api/admin/audit_logs.php', {
+        headers: {
+            'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const tableBody = document.getElementById('auditLogsTable').querySelector('tbody');
+        tableBody.innerHTML = '';
+        
+        data.records.forEach(log => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${log.action}</td>
+                <td>${log.user_name}</td>
+                <td>${log.entity_type}</td>
+                <td>${log.entity_id}</td>
+                <td>${new Date(log.created_at).toLocaleString()}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function addUser(e) {
+    e.preventDefault();
+    
+    const formData = {
+        full_name: document.getElementById('addFullName').value,
+        email: document.getElementById('addEmail').value,
+        password: document.getElementById('addPassword').value,
+        role: document.getElementById('addRole').value,
+        division_id: document.getElementById('addDivision').value,
+        directorate_id: document.getElementById('addDirectorate').value,
+        department_id: document.getElementById('addDepartment').value,
+        supervisor_id: document.getElementById('addSupervisor').value
+    };
+
+    fetch('http://localhost/ears-system/backend/api/users.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if(data.message === "User was created.") {
+            alert('User created successfully!');
+            $('#addUserModal').modal('hide');
+            document.getElementById('addUserForm').reset();
+            loadUsers();
+        } else {
+            alert('Failed to create user: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the user.');
+    });
+}
+
+function editUser(userId) {
+    fetch(`http://localhost/ears-system/backend/api/users.php?id=${userId}`, {
+        headers: {
+            'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+        }
+    })
+    .then(response => response.json())
+    .then(user => {
+        document.getElementById('editUserId').value = user.id;
+        document.getElementById('editFullName').value = user.full_name;
+        document.getElementById('editEmail').value = user.email;
+        document.getElementById('editRole').value = user.role;
+        document.getElementById('editDivision').value = user.division_id;
+        document.getElementById('editDirectorate').value = user.directorate_id;
+        document.getElementById('editDepartment').value = user.department_id;
+        document.getElementById('editSupervisor').value = user.supervisor_id;
+        document.getElementById('editActive').checked = user.is_active;
+        
+        $('#editUserModal').modal('show');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to load user details.');
+    });
+}
+
+function deleteUser(userId) {
+    if(confirm('Are you sure you want to delete this user?')) {
+        fetch(`http://localhost/ears-system/backend/api/users.php?id=${userId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.message === "User was deleted.") {
+                alert('User deleted successfully!');
+                loadUsers();
+            } else {
+                alert('Failed to delete user: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the user.');
+        });
+    }
+}
+
+function formatRole(role) {
+    const roles = {
+        'intern': 'Intern',
+        'supervisor': 'Supervisor',
+        'hr': 'HR',
+        'admin': 'Admin'
+    };
+    return roles[role] || role;
+}
+
+function getRoleBadgeClass(role) {
+    const classes = {
+        'intern': 'bg-info text-dark',
+        'supervisor': 'bg-primary',
+        'hr': 'bg-warning text-dark',
+        'admin': 'bg-danger'
+    };
+    return classes[role] || 'bg-secondary';
+}
+        // Global data
+        let users = [];
+        let departments = [];
+        let auditLogs = [];
+        let supervisors = [];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInitialData();
+            setupEventListeners();
+        });
+
+        function loadInitialData() {
+            // Simulate API calls
+            setTimeout(() => {
+                // Load departments
+                departments = [
+                    { id: 1, division: 'ICT', directorate: 'Digital Services', department: 'Software Development' },
+                    { id: 2, division: 'ICT', directorate: 'Digital Services', department: 'Hardware Maintenance' },
+                    { id: 3, division: 'Finance', directorate: 'Accounting', department: 'Payroll' },
+                    { id: 4, division: 'Health', directorate: 'Public Health', department: 'Medical Services' }
+                ];
+                
+                // Load users
+                users = [
+                    {
+                        id: 1,
+                        name: 'John Doe',
+                        email: 'john.doe@kcca.go.ug',
+                        role: 'intern',
+                        department: 'Software Development',
+                        supervisor: 3,
+                        status: 'active'
+                    },
+                    {
+                        id: 2,
+                        name: 'Sarah Smith',
+                        email: 'sarah.smith@kcca.go.ug',
+                        role: 'supervisor',
+                        department: 'Software Development',
+                        status: 'active'
+                    },
+                    {
+                        id: 3,
+                        name: 'Michael Brown',
+                        email: 'michael.brown@kcca.go.ug',
+                        role: 'supervisor',
+                        department: 'Hardware Maintenance',
+                        status: 'active'
+                    },
+                    {
+                        id: 4,
+                        name: 'HR Officer',
+                        email: 'hr.officer@kcca.go.ug',
+                        role: 'hr',
+                        department: 'Payroll',
+                        status: 'active'
+                    }
+                ];
+                
+                // Load audit logs
+                auditLogs = [
+                    {
+                        id: 1,
+                        timestamp: '2023-06-15 09:30',
+                        user: 'System Admin',
+                        action: 'User Created',
+                        details: 'Created user John Doe (Intern)'
+                    },
+                    {
+                        id: 2,
+                        timestamp: '2023-06-15 09:15',
+                        user: 'System Admin',
+                        action: 'Department Updated',
+                        details: 'Updated Software Development department'
+                    }
+                ];
+                
+                // Update supervisors list
+                supervisors = users.filter(user => user.role === 'supervisor');
+                
+                // Render all data
+                renderUsersTable();
+                renderDepartmentsTable();
+                renderAuditLogs();
+                updateDashboardStats();
+                
+                // Populate department dropdowns
+                populateDepartmentDropdowns();
+                populateSupervisorDropdowns();
+            }, 500);
+        }
+
+        function setupEventListeners() {
+            // Add User
+            document.getElementById('addUserBtn').addEventListener('click', function() {
+                document.getElementById('userForm').reset();
+                new bootstrap.Modal(document.getElementById('addUserModal')).show();
+            });
+            
+            // Add Department
+            document.getElementById('addDepartmentBtn').addEventListener('click', function() {
+                document.getElementById('departmentForm').reset();
+                new bootstrap.Modal(document.getElementById('addDepartmentModal')).show();
+            });
+            
+            // Generate Password
+            document.getElementById('generatePassword').addEventListener('click', function() {
+                document.getElementById('userPassword').value = generateRandomPassword();
+            });
+            
+            // Form Submissions
+            document.getElementById('userForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addNewUser();
+            });
+            
+            document.getElementById('editUserForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                updateUser();
+            });
+            
+            document.getElementById('departmentForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                addNewDepartment();
+            });
+            
+            // Reset Password
+            document.getElementById('resetPasswordBtn').addEventListener('click', resetUserPassword);
+            
+            // Refresh Users
+            document.getElementById('refreshUsers').addEventListener('click', function() {
+                renderUsersTable();
+            });
+            
+            // Logout
+            document.getElementById('logoutLink').addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('Are you sure you want to logout?')) {
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
+        let adminSelectedUserIds = new Set();
+
+        function updateAdminBulkActionsUI() {
+            const count = adminSelectedUserIds.size;
+            const total = users.length;
+            const allSelected = total > 0 && users.every(u => adminSelectedUserIds.has(u.id));
+            const someSelected = total > 0 && users.some(u => adminSelectedUserIds.has(u.id)) && !allSelected;
+
+            const tableCheck = document.getElementById('adminTableSelectAll');
+            const barCheck = document.getElementById('adminSelectAllCheckbox');
+            const badge = document.getElementById('adminSelectedBadge');
+            const label = document.getElementById('adminSelectLabel');
+
+            if (tableCheck) {
+                tableCheck.checked = allSelected;
+                tableCheck.indeterminate = someSelected;
+            }
+            if (barCheck) {
+                barCheck.checked = allSelected;
+                barCheck.indeterminate = someSelected;
+            }
+            if (badge) {
+                badge.textContent = `${count} selected`;
+                badge.className = count > 0 ? 'badge bg-warning text-dark ms-1' : 'badge bg-secondary ms-1';
+            }
+            if (label) {
+                label.textContent = allSelected && total > 0 ? `All ${total} selected` : (count > 0 ? `${count} selected` : 'Select All');
+            }
+
+            const hasSelection = count > 0;
+            const clearBtn = document.getElementById('adminBulkClearBtn');
+            const dropdownBtn = document.getElementById('adminBulkDropdownBtn');
+            const deactivateBtn = document.getElementById('adminBulkDeactivateBtn');
+            const deleteBtn = document.getElementById('adminBulkDeleteBtn');
+
+            if (clearBtn) clearBtn.disabled = !hasSelection;
+            if (dropdownBtn) dropdownBtn.disabled = !hasSelection;
+            if (deactivateBtn) deactivateBtn.disabled = !hasSelection;
+            if (deleteBtn) deleteBtn.disabled = !hasSelection;
+        }
+
+        function onAdminUserCheckboxChange(userId, isChecked) {
+            if (isChecked) {
+                adminSelectedUserIds.add(userId);
+            } else {
+                adminSelectedUserIds.delete(userId);
+            }
+            const row = document.getElementById(`admin-user-row-${userId}`);
+            if (row) {
+                if (isChecked) row.classList.add('table-warning');
+                else row.classList.remove('table-warning');
+            }
+            updateAdminBulkActionsUI();
+        }
+
+        function toggleSelectAllAdminUsers(isChecked) {
+            users.forEach(user => {
+                if (isChecked) {
+                    adminSelectedUserIds.add(user.id);
+                } else {
+                    adminSelectedUserIds.delete(user.id);
+                }
+                const cb = document.getElementById(`admin-user-check-${user.id}`);
+                const row = document.getElementById(`admin-user-row-${user.id}`);
+                if (cb) cb.checked = isChecked;
+                if (row) {
+                    if (isChecked) row.classList.add('table-warning');
+                    else row.classList.remove('table-warning');
+                }
+            });
+            updateAdminBulkActionsUI();
+        }
+
+        function clearAdminUserSelection() {
+            adminSelectedUserIds.clear();
+            document.querySelectorAll('.admin-user-row-checkbox').forEach(cb => cb.checked = false);
+            document.querySelectorAll('#usersTableBody tr').forEach(tr => tr.classList.remove('table-warning'));
+            updateAdminBulkActionsUI();
+        }
+
+        function bulkDeactivateAdminUsers() {
+            if (adminSelectedUserIds.size === 0) return;
+            const count = adminSelectedUserIds.size;
+            if (!confirm(`Are you sure you want to deactivate ${count} selected user(s)?`)) return;
+
+            users.forEach(user => {
+                if (adminSelectedUserIds.has(user.id)) {
+                    user.status = 'inactive';
+                }
+            });
+            renderUsersTable();
+            alert(`Deactivated ${count} user(s).`);
+        }
+
+        function bulkActivateAdminUsers() {
+            if (adminSelectedUserIds.size === 0) return;
+            const count = adminSelectedUserIds.size;
+            if (!confirm(`Are you sure you want to activate ${count} selected user(s)?`)) return;
+
+            users.forEach(user => {
+                if (adminSelectedUserIds.has(user.id)) {
+                    user.status = 'active';
+                }
+            });
+            renderUsersTable();
+            alert(`Activated ${count} user(s).`);
+        }
+
+        function bulkDeleteAdminUsers() {
+            if (adminSelectedUserIds.size === 0) return;
+            const count = adminSelectedUserIds.size;
+            if (!confirm(`Are you sure you want to delete ${count} selected user(s)? This action cannot be undone.`)) return;
+
+            users = users.filter(user => !adminSelectedUserIds.has(user.id));
+            adminSelectedUserIds.clear();
+            renderUsersTable();
+            alert(`Deleted ${count} user(s).`);
+        }
+
+        function renderUsersTable() {
+            const tableBody = document.getElementById('usersTableBody');
+            tableBody.innerHTML = '';
+            
+            // Clean up invalid selections
+            const validIds = new Set(users.map(u => u.id));
+            adminSelectedUserIds.forEach(id => {
+                if (!validIds.has(id)) adminSelectedUserIds.delete(id);
+            });
+
+            users.forEach(user => {
+                const supervisor = user.supervisor ? 
+                    users.find(u => u.id === user.supervisor)?.name : 'Not assigned';
+                const isSelected = adminSelectedUserIds.has(user.id);
+                
+                const row = document.createElement('tr');
+                row.id = `admin-user-row-${user.id}`;
+                if (isSelected) {
+                    row.classList.add('table-warning');
+                }
+                row.innerHTML = `
+                    <td class="text-center">
+                        <input type="checkbox" class="form-check-input admin-user-row-checkbox" id="admin-user-check-${user.id}" value="${user.id}" ${isSelected ? 'checked' : ''} onchange="onAdminUserCheckboxChange(${user.id}, this.checked)">
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar me-2">${user.name.charAt(0)}</div>
+                            ${user.name}
+                        </div>
+                    </td>
+                    <td>${user.email}</td>
+                    <td><span class="badge bg-light text-dark">${formatRole(user.role)}</span></td>
+                    <td>${user.department}</td>
+                    <td><span class="badge badge-status ${getStatusBadgeClass(user.status)}">${formatStatus(user.status)}</span></td>
+                    <td>
+                        <div class="d-flex">
+                            <button class="btn btn-sm btn-outline-primary me-1 edit-btn" data-id="${user.id}">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${user.id}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            updateAdminBulkActionsUI();
+
+            // Add event listeners to action buttons
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = parseInt(this.getAttribute('data-id'));
+                    editUser(userId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const userId = parseInt(this.getAttribute('data-id'));
+                    deleteUser(userId);
+                });
+            });
+        }
+
+        function renderDepartmentsTable() {
+            const tableBody = document.getElementById('departmentsTableBody');
+            tableBody.innerHTML = '';
+            
+            departments.forEach(dept => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${dept.division}</td>
+                    <td>${dept.directorate}</td>
+                    <td>${dept.department}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1 edit-dept-btn" data-id="${dept.id}">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-dept-btn" data-id="${dept.id}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderAuditLogs() {
+            const tableBody = document.getElementById('auditLogsTableBody');
+            tableBody.innerHTML = '';
+            
+            auditLogs.forEach(log => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${log.timestamp}</td>
+                    <td>${log.user}</td>
+                    <td>${log.action}</td>
+                    <td>${log.details}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function populateDepartmentDropdowns() {
+            const deptSelects = [
+                document.getElementById('userDepartment'),
+                document.getElementById('editUserDepartment')
+            ];
+            
+            deptSelects.forEach(select => {
+                select.innerHTML = '<option value="">Select Department</option>';
+                departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept.department;
+                    option.textContent = `${dept.department} (${dept.division})`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function populateSupervisorDropdowns() {
+            const supervisorSelects = [
+                document.getElementById('userSupervisor'),
+                document.getElementById('editUserSupervisor')
+            ];
+            
+            supervisorSelects.forEach(select => {
+                select.innerHTML = '<option value="">Select Supervisor (if intern)</option>';
+                supervisors.forEach(supervisor => {
+                    const option = document.createElement('option');
+                    option.value = supervisor.id;
+                    option.textContent = supervisor.name;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function addNewUser() {
+            const newUser = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                role: document.getElementById('userRole').value,
+                department: document.getElementById('userDepartment').value,
+                supervisor: document.getElementById('userSupervisor').value || null,
+                status: 'active'
+            };
+            
+            // Simulate API call
+            setTimeout(() => {
+                newUser.id = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+                users.push(newUser);
+                
+                // Update supervisors list if new user is a supervisor
+                if (newUser.role === 'supervisor') {
+                    supervisors.push(newUser);
+                    populateSupervisorDropdowns();
+                }
+                
+                // Add to audit log
+                auditLogs.unshift({
+                    id: auditLogs.length + 1,
+                    timestamp: new Date().toISOString(),
+                    user: 'System Admin',
+                    action: 'User Created',
+                    details: `Created user ${newUser.name} (${formatRole(newUser.role)})`
+                });
+                
+                renderUsersTable();
+                renderAuditLogs();
+                updateDashboardStats();
+                
+                alert('User created successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+            }, 500);
+        }
+
+        function editUser(userId) {
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editUserName').value = user.name;
+            document.getElementById('editUserEmail').value = user.email;
+            document.getElementById('editUserRole').value = user.role;
+            document.getElementById('editUserDepartment').value = user.department;
+            document.getElementById('editUserSupervisor').value = user.supervisor || '';
+            document.getElementById('editUserStatus').value = user.status;
+            
+            new bootstrap.Modal(document.getElementById('editUserModal')).show();
+        }
+
+        function updateUser() {
+            const userId = parseInt(document.getElementById('editUserId').value);
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            
+            const oldRole = user.role;
+            const oldSupervisor = user.supervisor;
+            
+            user.name = document.getElementById('editUserName').value;
+            user.email = document.getElementById('editUserEmail').value;
+            user.role = document.getElementById('editUserRole').value;
+            user.department = document.getElementById('editUserDepartment').value;
+            user.supervisor = document.getElementById('editUserSupervisor').value || null;
+            user.status = document.getElementById('editUserStatus').value;
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Update supervisors list if role changed
+                if (oldRole !== user.role) {
+                    if (user.role === 'supervisor') {
+                        supervisors.push(user);
+                    } else if (oldRole === 'supervisor') {
+                        supervisors = supervisors.filter(s => s.id !== user.id);
+                    }
+                    populateSupervisorDropdowns();
+                }
+                
+                // Add to audit log
+                auditLogs.unshift({
+                    id: auditLogs.length + 1,
+                    timestamp: new Date().toISOString(),
+                    user: 'System Admin',
+                    action: 'User Updated',
+                    details: `Updated user ${user.name} (${formatRole(user.role)})`
+                });
+                
+                renderUsersTable();
+                renderAuditLogs();
+                updateDashboardStats();
+                
+                alert('User updated successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            }, 500);
+        }
+
+        function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user?')) return;
+            
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            
+            // Simulate API call
+            setTimeout(() => {
+                users = users.filter(u => u.id !== userId);
+                
+                // Remove from supervisors list if needed
+                if (user.role === 'supervisor') {
+                    supervisors = supervisors.filter(s => s.id !== userId);
+                    populateSupervisorDropdowns();
+                }
+                
+                // Add to audit log
+                auditLogs.unshift({
+                    id: auditLogs.length + 1,
+                    timestamp: new Date().toISOString(),
+                    user: 'System Admin',
+                    action: 'User Deleted',
+                    details: `Deleted user ${user.name} (${formatRole(user.role)})`
+                });
+                
+                renderUsersTable();
+                renderAuditLogs();
+                updateDashboardStats();
+                
+                alert('User deleted successfully!');
+            }, 500);
+        }
+
+        function addNewDepartment() {
+            const newDept = {
+                division: document.getElementById('divisionName').value,
+                directorate: document.getElementById('directorateName').value,
+                department: document.getElementById('departmentName').value
+            };
+            
+            // Simulate API call
+            setTimeout(() => {
+                newDept.id = departments.length > 0 ? Math.max(...departments.map(d => d.id)) + 1 : 1;
+                departments.push(newDept);
+                
+                // Add to audit log
+                auditLogs.unshift({
+                    id: auditLogs.length + 1,
+                    timestamp: new Date().toISOString(),
+                    user: 'System Admin',
+                    action: 'Department Added',
+                    details: `Added department ${newDept.department}`
+                });
+                
+                renderDepartmentsTable();
+                renderAuditLogs();
+                populateDepartmentDropdowns();
+                
+                alert('Department added successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('addDepartmentModal')).hide();
+            }, 500);
+        }
+
+        function resetUserPassword() {
+            const userId = parseInt(document.getElementById('editUserId').value);
+            const newPassword = generateRandomPassword();
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Add to audit log
+                const user = users.find(u => u.id === userId);
+                auditLogs.unshift({
+                    id: auditLogs.length + 1,
+                    timestamp: new Date().toISOString(),
+                    user: 'System Admin',
+                    action: 'Password Reset',
+                    details: `Reset password for ${user.name}`
+                });
+                
+                renderAuditLogs();
+                alert(`Password for ${user.name} has been reset to: ${newPassword}`);
+            }, 500);
+        }
+
+        function updateDashboardStats() {
+            document.getElementById('totalUsers').textContent = users.length;
+            document.getElementById('activeInterns').textContent = 
+                users.filter(u => u.role === 'intern' && u.status === 'active').length;
+        }
+
+        // Helper functions
+        function formatRole(role) {
+            const roles = {
+                'intern': 'Intern',
+                'supervisor': 'Supervisor',
+                'hr': 'HR',
+                'admin': 'System Admin'
+            };
+            return roles[role] || role;
+        }
+
+        function formatStatus(status) {
+            const statuses = {
+                'active': 'Active',
+                'inactive': 'Inactive',
+                'pending': 'Pending'
+            };
+            return statuses[status] || status;
+        }
+
+        function getStatusBadgeClass(status) {
+            const classes = {
+                'active': 'badge-active',
+                'inactive': 'badge-inactive',
+                'pending': 'badge-pending'
+            };
+            return classes[status] || 'badge-secondary';
+        }
+
+        function generateRandomPassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+            let password = '';
+            for (let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        }
+
+        // Update last sync time
+        function updateLastSync() {
+            const now = new Date();
+            document.getElementById('lastSync').textContent = 
+                now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        setInterval(updateLastSync, 60000);
+        updateLastSync();
+
+        // Theme Toggle Implementation
+        function updateThemeButtonState(theme) {
+            const btn = document.getElementById('theme-toggle-btn');
+            const icon = document.getElementById('theme-toggle-icon');
+            const text = document.getElementById('theme-toggle-text');
+            if (icon && text) {
+                if (theme === 'dark') {
+                    icon.className = 'bi bi-sun-fill text-warning';
+                    text.textContent = 'Light Mode';
+                } else {
+                    icon.className = 'bi bi-moon-fill text-warning';
+                    text.textContent = 'Dark Mode';
+                }
+            }
+        }
+
+        function toggleGlobalTheme() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', next);
+            document.documentElement.setAttribute('data-theme', next);
+            document.documentElement.classList.remove('light-mode', 'dark-mode');
+            document.documentElement.classList.add(next === 'dark' ? 'dark-mode' : 'light-mode');
+            try {
+                localStorage.setItem('ears_theme', next);
+                localStorage.setItem('theme', next);
+            } catch (e) {}
+            updateThemeButtonState(next);
+        }
+
+        // Recharts 7-Day Registration Trend Chart for frontend/admin/admin.html
+        let admin2ChartRoot = null;
+        let admin2Filter = 'all';
+        let admin2Data = null;
+
+        function get7DaysTrendData() {
+            const data = [];
+            const today = new Date();
+            const bases = [
+                { interns: 5, supervisors: 2, admins: 1 },
+                { interns: 8, supervisors: 3, admins: 0 },
+                { interns: 12, supervisors: 2, admins: 1 },
+                { interns: 9, supervisors: 1, admins: 0 },
+                { interns: 15, supervisors: 4, admins: 1 },
+                { interns: 11, supervisors: 2, admins: 0 },
+                { interns: 16, supervisors: 3, admins: 1 }
+            ];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i);
+                const dayBase = bases[6 - i];
+                const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+                const monthDay = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                const label = i === 0 ? 'Today' : (i === 1 ? 'Yesterday' : `${dayName}, ${monthDay}`);
+                const total = dayBase.interns + dayBase.supervisors + dayBase.admins;
+                data.push({
+                    date: label,
+                    shortDate: monthDay,
+                    interns: dayBase.interns,
+                    supervisors: dayBase.supervisors,
+                    total: total
+                });
+            }
+            return data;
+        }
+
+        function filterAdmin2Chart(role) {
+            admin2Filter = role;
+            ['all', 'intern', 'supervisor'].forEach(r => {
+                const btn = document.getElementById(`admin2-btn-${r}`);
+                if (btn) {
+                    if (r === role) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                }
+            });
+            renderAdmin2RegistrationChart();
+        }
+
+        function refreshAdmin2Chart() {
+            admin2Data = get7DaysTrendData().map(d => ({
+                ...d,
+                interns: Math.max(3, d.interns + Math.floor(Math.random() * 3) - 1),
+                total: d.total + Math.floor(Math.random() * 3) - 1
+            }));
+            renderAdmin2RegistrationChart();
+        }
+
+        function renderAdmin2RegistrationChart() {
+            const container = document.getElementById('admin2-recharts-chart-root');
+            if (!container) return;
+            if (!window.React || !window.ReactDOM || !window.Recharts) {
+                setTimeout(renderAdmin2RegistrationChart, 100);
+                return;
+            }
+
+            if (!admin2Data) admin2Data = get7DaysTrendData();
+
+            let total = 0;
+            let totalInterns = 0;
+            let peak = 0;
+            let peakDate = '';
+            admin2Data.forEach(d => {
+                total += d.total;
+                totalInterns += d.interns;
+                if (d.total > peak) {
+                    peak = d.total;
+                    peakDate = d.shortDate;
+                }
+            });
+            const tEl = document.getElementById('admin2-trend-total');
+            const aEl = document.getElementById('admin2-trend-avg');
+            const pEl = document.getElementById('admin2-trend-peak');
+            const sEl = document.getElementById('admin2-trend-share');
+            if (tEl) tEl.textContent = total;
+            if (aEl) aEl.textContent = (total / 7).toFixed(1);
+            if (pEl) pEl.textContent = `${peak} (${peakDate})`;
+            if (sEl) sEl.textContent = Math.round((totalInterns / (total || 1)) * 100) + '%';
+
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            const e = window.React.createElement;
+            const { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } = window.Recharts;
+
+            const gridColor = isDark ? '#27313f' : '#e2e8f0';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+
+            const lines = [];
+            if (admin2Filter === 'all') {
+                lines.push(e(Line, { key: 'l-total', type: 'monotone', dataKey: 'total', name: 'Total', stroke: '#008540', strokeWidth: 3, dot: { r: 4, fill: '#008540' } }));
+            }
+            if (admin2Filter === 'all' || admin2Filter === 'intern') {
+                lines.push(e(Line, { key: 'l-intern', type: 'monotone', dataKey: 'interns', name: 'Interns', stroke: '#E30613', strokeWidth: 2.5, strokeDasharray: admin2Filter === 'all' ? '4 4' : undefined, dot: { r: 4, fill: '#E30613' } }));
+            }
+            if (admin2Filter === 'all' || admin2Filter === 'supervisor') {
+                lines.push(e(Line, { key: 'l-super', type: 'monotone', dataKey: 'supervisors', name: 'Supervisors', stroke: '#f59e0b', strokeWidth: 2, dot: { r: 3.5, fill: '#f59e0b' } }));
+            }
+
+            const chart = e(ResponsiveContainer, { width: '100%', height: 320 },
+                e(LineChart, { data: admin2Data, margin: { top: 10, right: 20, left: -10, bottom: 0 } },
+                    e(CartesianGrid, { key: 'g', strokeDasharray: '3 3', stroke: gridColor }),
+                    e(XAxis, { key: 'x', dataKey: 'date', stroke: textColor, tick: { fill: textColor, fontSize: 12 } }),
+                    e(YAxis, { key: 'y', stroke: textColor, tick: { fill: textColor, fontSize: 12 }, allowDecimals: false }),
+                    e(Tooltip, { key: 't' }),
+                    e(Legend, { key: 'l' }),
+                    ...lines
+                )
+            );
+
+            if (!admin2ChartRoot) admin2ChartRoot = window.ReactDOM.createRoot(container);
+            admin2ChartRoot.render(chart);
+        }
+
+        // Initialize button on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            updateThemeButtonState(current);
+            renderAdmin2RegistrationChart();
+        });
+    </script>
+
+    <!-- React & Recharts Dependencies -->
+    <script src="js/vendor/react.min.js"></script>
+    <script src="js/vendor/prop-types.min.js"></script>
+    <script src="js/vendor/react-dom.min.js"></script>
+    <script src="js/vendor/recharts.min.js"></script>
+</body>
+</html>

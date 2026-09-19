@@ -1,11 +1,20 @@
-<div align="center">
+ E-Attendance Report System (EARS)
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A centralized digital platform for managing internship attendance and activity reporting across Kampala Capital City Authority (KCCA).
 
-  <h1>Built with AI Studio</h2>
+## 📁 Project Structure
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+ears-system/
+│
+├── frontend/     # All HTML, CSS, JavaScript code (UI and logic)
+├── backend/      # PHP APIs, controllers, models, DB connection
+├── database/     # SQL schema, ER diagrams, seed data
+├── .gitignore    # Ignored files and folders
+├── README.md     # Project description and documentation
+└── LICENSE       # Open-source license (MIT)
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+<!-- Inside <head> -->
+<link rel="stylesheet" href="../styles/colors.css">
+<link rel="stylesheet" href="../styles/buttons.css">
 
-</div>
+<link rel="stylesheet" href="../styles/forms.css">

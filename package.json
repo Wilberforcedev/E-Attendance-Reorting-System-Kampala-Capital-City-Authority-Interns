@@ -1,0 +1,21 @@
+{
+  "name": "ears-system",
+  "version": "1.0.0",
+  "description": "EARS - E-Attendance Report System",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "node build.js"
+  },
+  "keywords": [
+    "ears",
+    "admin-panel",
+    "attendance-report-system"
+  ],
+  "dependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "recharts": "^3.10.1"
+  }
+}

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Approvals | EARS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --kcca-red: #E30613;
+            --kcca-green: #008540;
+            --kcca-yellow: #FFD100;
+            --kcca-black: #000000;
+            --kcca-white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Offcanvas sidebar */
+        .offcanvas-start {
+            width: 250px;
+        }
+
+        /* Sidebar navigation */
+        .sidebar-nav .nav-link {
+            color: #f8f9fa;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active {
+            background-color: #343a40;
+            color: var(#FFFFFF);
+        }
+        .sidebar-nav i {
+            margin-right: 8px;
+        }
+
+        /* Main content */
+        .content {
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (min-width: 992px) {
+            .content.sidebar-open {
+                margin-left: 250px;
+            }
+        }
+
+        /* Table styling */
+        .table thead th {
+            background-color: #343a40;
+            color: white;
+        }
+
+        .badge-pending {
+            background-color: #FFD100;
+            color: #000;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Sidebar brand styling */
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo {
+            height: 40px;
+            width: auto;
+            transform: scale(2.0);
+        }
+
+        .sidebar-title {
+            color: #008540; /* KCCA green */
+            letter-spacing: 1px;
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar with hamburger -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <button class="btn btn-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <span class="navbar-brand mb-0 h1 ms-3">Pending Approvals</span>
+        </div>
+    </nav>
+
+    <!-- Sidebar - Matching Supervisor Dashboard -->
+    <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <div class="d-flex align-items-center">
+                <!-- KCCA Logo -->
+                <img src="https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png" alt="KCCA Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                <!-- EARS Text -->
+                <h5 class="offcanvas-title fw-bold mb-0" style="color: #008540; letter-spacing: 1px;">
+                    EARS
+                </h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <nav class="nav flex-column sidebar-nav px-3">
+                <a class="nav-link d-flex align-items-center mb-2" href="Dashboard.html">
+                    <i class="bi bi-house-door-fill"></i> Dashboard
+                </a>
+                <a class="nav-link active d-flex align-items-center mb-2" href="#">
+                    <i class="bi bi-hourglass-split"></i> Pending Approvals
+                    <span class="badge bg-danger ms-auto">0</span>
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="ApprovedReports.html">
+                    <i class="bi bi-check2-square"></i> Approved Reports
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="Profile.html">
+                    <i class="bi bi-person-circle"></i> Profile
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="content" id="mainContent">
+        <h3 class="mb-4">Pending Approvals</h3>
+        
+        <!-- Filters -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Filter Reports</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="filterDepartment" class="form-label">Department</label>
+                        <select class="form-select" id="filterDepartment">
+                            <option value="">All Departments</option>
+                            <option value="BPR">BPR</option>
+                            <option value="Applications">Applications</option>
+                            <option value="System Admin">System Admin</option>
+                            <option value="Hardware">Hardware</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filterWeek" class="form-label">Week</label>
+                        <select class="form-select" id="filterWeek">
+                            <option value="">All Weeks</option>
+                            <option>Week 1</option>
+                            <option>Week 2</option>
+                            <option>Week 3</option>
+                            <option>Week 4</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filterStatus" class="form-label">Status</label>
+                        <select class="form-select" id="filterStatus">
+                            <option value="">All Statuses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Reviewed">Reviewed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button class="btn btn-primary w-100" id="filterBtn">Apply Filters</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports Table -->
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Intern Name</th>
+                                <th>Department</th>
+                                <th>Week</th>
+                                <th>Submission Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <!-- Empty state -->
+                            <tr id="emptyStateRow">
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-journal-text"></i>
+                                        <h5>No pending reports</h5>
+                                        <p>Reports requiring your approval will appear here</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report View Modal -->
+        <div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Review Intern Report</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="reportModalContent">
+                        <div class="mb-4">
+                            <h6>Intern: <span class="text-primary" id="modalInternName">-</span></h6>
+                            <p class="text-muted"><span id="modalDepartment">-</span> | <span id="modalWeek">-</span> Report</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Activities Performed</h6>
+                            <div class="card bg-light p-3" id="modalActivities">
+                                <p>No activities reported</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Challenges Faced</h6>
+                            <div class="card bg-light p-3" id="modalChallenges">
+                                <p>No challenges reported</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h6>Comments</h6>
+                            <textarea class="form-control" rows="3" placeholder="Add your comments here..." id="modalComments"></textarea>
+                        </div>
+
+                        <div class="mb-3 d-none" id="rejectReasonBox">
+                            <label for="modalRejectReason" class="form-label fw-bold text-danger">Reason for Rejection <span class="text-danger">*</span>:</label>
+                            <textarea class="form-control border-danger" id="modalRejectReason" rows="2" placeholder="Enter reason for rejection" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" id="approveBtn">Approve</button>
+                        <button type="button" class="btn btn-danger" id="rejectBtn">Reject</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const reportsTableBody = document.getElementById('reportsTableBody');
+            const emptyStateRow = document.getElementById('emptyStateRow');
+            const filterDepartment = document.getElementById('filterDepartment');
+            const filterWeek = document.getElementById('filterWeek');
+            const filterStatus = document.getElementById('filterStatus');
+            const filterBtn = document.getElementById('filterBtn');
+            
+            // Modal elements
+            const modalInternName = document.getElementById('modalInternName');
+            const modalDepartment = document.getElementById('modalDepartment');
+            const modalWeek = document.getElementById('modalWeek');
+            const modalActivities = document.getElementById('modalActivities');
+            const modalChallenges = document.getElementById('modalChallenges');
+            const modalComments = document.getElementById('modalComments');
+            const rejectReasonBox = document.getElementById('rejectReasonBox');
+            const modalRejectReason = document.getElementById('modalRejectReason');
+            const approveBtn = document.getElementById('approveBtn');
+            const rejectBtn = document.getElementById('rejectBtn');
+            
+            // Report modal instance
+            const reportModal = new bootstrap.Modal(document.getElementById('reportModal'));
+            let rejectMode = false;
+            let currentReportId = null;
+
+            // Sample data - will be replaced with API calls
+            let reportsData = [];
+            
+            // Initialize the page
+            function initPage() {
+                loadReports();
+                setupEventListeners();
+            }
+            
+            // Load reports data
+            function loadReports() {
+                // In a real app, this would be an API call
+                // For now, we'll use an empty array to show the empty state
+                reportsData = [];
+                updateReportsTable();
+            }
+            
+            // Update the reports table
+            function updateReportsTable() {
+                reportsTableBody.innerHTML = '';
+                
+                if (reportsData.length > 0) {
+                    emptyStateRow.style.display = 'none';
+                    
+                    reportsData.forEach(report => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${report.internName}</td>
+                            <td>${report.department}</td>
+                            <td>${report.week}</td>
+                            <td>${report.submissionDate}</td>
+                            <td><span class="badge badge-pending">${report.status}</span></td>
+                            <td><button class="btn btn-sm btn-primary view-btn" data-id="${report.id}">View</button></td>
+                        `;
+                        reportsTableBody.appendChild(row);
+                    });
+                    
+                    // Add event listeners to view buttons
+                    document.querySelectorAll('.view-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const reportId = this.getAttribute('data-id');
+                            viewReport(reportId);
+                        });
+                    });
+                } else {
+                    emptyStateRow.style.display = '';
+                }
+            }
+            
+            // View report details
+            function viewReport(reportId) {
+                // In a real app, this would fetch report details from API
+                currentReportId = reportId;
+                rejectMode = false;
+                rejectReasonBox.classList.add('d-none');
+                modalRejectReason.value = '';
+                
+                // Sample data - replace with actual report data
+                modalInternName.textContent = "Sample Intern";
+                modalDepartment.textContent = "BPR";
+                modalWeek.textContent = "Week 1";
+                modalActivities.innerHTML = "<p>1. Attended team meetings<br>2. Completed assigned tasks<br>3. Participated in training</p>";
+                modalChallenges.innerHTML = "<p>1. Network connectivity issues<br>2. Limited access to some resources</p>";
+                modalComments.value = "";
+                
+                reportModal.show();
+            }
+            
+            // Setup event listeners
+            function setupEventListeners() {
+                // Filter button
+                filterBtn.addEventListener('click', function() {
+                    // In a real app, this would filter the reports
+                    console.log("Filters applied:", {
+                        department: filterDepartment.value,
+                        week: filterWeek.value,
+                        status: filterStatus.value
+                    });
+                });
+                
+                // Reject button
+                rejectBtn.addEventListener('click', function() {
+                    if (!rejectMode) {
+                        // First click - show reason box
+                        rejectReasonBox.classList.remove('d-none');
+                        modalRejectReason.focus();
+                        rejectMode = true;
+                    } else {
+                        // Second click - validate and reject
+                        if (!modalRejectReason.value.trim()) {
+                            modalRejectReason.classList.add('is-invalid');
+                            return;
+                        }
+                        
+                        // In a real app, this would send rejection to API
+                        alert(`Report ${currentReportId} rejected with reason: ${modalRejectReason.value}`);
+                        reportModal.hide();
+                    }
+                });
+                
+                // Approve button
+                approveBtn.addEventListener('click', function() {
+                    // In a real app, this would send approval to API
+                    alert(`Report ${currentReportId} approved!`);
+                    reportModal.hide();
+                });
+                
+                // Modal hidden event
+                document.getElementById('reportModal').addEventListener('hidden.bs.modal', function() {
+                    rejectMode = false;
+                    rejectReasonBox.classList.add('d-none');
+                    modalRejectReason.value = '';
+                    modalRejectReason.classList.remove('is-invalid');
+                });
+            }
+            
+            // Initialize the page
+            initPage();
+        });
+    </script>
+</body>
+</html>

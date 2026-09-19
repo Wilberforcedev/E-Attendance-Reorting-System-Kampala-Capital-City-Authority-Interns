@@ -1,0 +1,711 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Dashboard | EARS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --kcca-red: #E30613;
+            --kcca-green: #008540;
+            --kcca-yellow: #FFD100;
+            --kcca-black: #000000;
+            --kcca-white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Offcanvas sidebar */
+        .offcanvas-start {
+            width: 250px;
+        }
+
+        /* Sidebar navigation */
+        .sidebar-nav .nav-link {
+            color: #f8f9fa;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active {
+            background-color: #343a40;
+            color: var( #FFFFFF);
+        }
+        .sidebar-nav i {
+            margin-right: 8px;
+        }
+
+        /* Stats cards */
+        .card-stat-primary {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+        .card-stat-warning {
+            background-color: #d35400;
+            color: #fdf2e9;
+        }
+        .card-stat-success {
+            background-color: #27ae60;
+            color: #dff0d8;
+        }
+        .card-stat-info {
+            background-color: #2980b9;
+            color: #dbe9f4;
+        }
+
+        .card-stat-primary i,
+        .card-stat-warning i,
+        .card-stat-success i,
+        .card-stat-info i {
+            font-size: 2.5rem;
+            opacity: 0.85;
+            margin-bottom: 0.3rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+        }
+
+        /* Main content */
+        .content {
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (min-width: 992px) {
+            .content.sidebar-open {
+                margin-left: 250px;
+            }
+        }
+        
+        /* Loading spinner */
+        .spinner-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Notification items */
+        .notification-item {
+            transition: all 0.2s;
+        }
+        .notification-item:hover {
+            background-color: rgba(0,0,0,0.03);
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Add to your style section */
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-logo {
+    height: 40px;
+    width: auto;
+    transform: scale(2.0);
+}
+
+.sidebar-title {
+    color: #FFD100;
+    letter-spacing: 1px;
+    margin-bottom: 0;
+}
+
+.sidebar-subtitle {
+    font-size: 0.6rem;
+    letter-spacing: 0.5px;
+    display: block;
+    color: #6c757d;
+}
+    </style>
+</head>
+<body>
+    <!-- Loading Spinner -->
+    <div class="spinner-container" id="spinner">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <button class="btn btn-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <span class="navbar-brand mb-0 h1 ms-3">Supervisor Dashboard</span>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+    <div class="offcanvas-header border-bottom border-secondary">
+        <div class="d-flex align-items-center">
+            <!-- KCCA Logo -->
+            <img src="https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png" alt="KCCA Logo" style="height: 40px; width: auto; margin-right: 10px;">
+            <!-- EARS Text -->
+            <h5 class="offcanvas-title fw-bold mb-0" style="color: #008540; letter-spacing: 1px;">
+                EARS
+            </h5>
+        </div>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+        <div class="offcanvas-body p-0">
+            <nav class="nav flex-column sidebar-nav px-3">
+                <a class="nav-link active d-flex align-items-center mb-2" href="#">
+                    <i class="bi bi-house-door-fill"></i> Dashboard
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="PendingApprovals.html">
+                    <i class="bi bi-hourglass-split"></i> Pending Approvals
+                    <span class="badge bg-danger ms-auto" id="pendingBadge">0</span>
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="ApprovedReports.html">
+                    <i class="bi bi-check2-square"></i> Approved Reports
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="Profile.html">
+                    <i class="bi bi-person-circle"></i> Profile
+                </a>
+                <a class="nav-link text-white d-flex align-items-center mt-auto" href="#" id="logoutLink">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="content" id="mainContent">
+        <h3 class="mb-4">Supervisor Dashboard</h3>
+        <div class="mb-4">
+            <h5>Welcome, <span id="supervisorName">Loading...</span></h5>
+            <p class="text-muted">Your activity overview will appear here</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-stat-primary h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-hourglass-split"></i>
+                        <h4 class="card-title mt-2" id="pendingCount">0</h4>
+                        <p class="card-text">Pending Approvals</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-stat-success h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-check2-square"></i>
+                        <h4 class="card-title mt-2" id="approvedCount">0</h4>
+                        <p class="card-text">Approved Reports</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-stat-info h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people-fill"></i>
+                        <h4 class="card-title mt-2" id="internsCount">0</h4>
+                        <p class="card-text">Total Interns</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-stat-warning h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-bell-fill"></i>
+                        <h4 class="card-title mt-2" id="notificationsCount">0</h4>
+                        <p class="card-text">Notifications</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Recent Reports Needing Approval</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="recentReportsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Intern</th>
+                                        <th>Week</th>
+                                        <th>Department</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="reportsEmptyState" class="empty-state">
+                            <i class="bi bi-journal-text"></i>
+                            <h5>No pending reports</h5>
+                            <p>Reports requiring your approval will appear here</p>
+                        </div>
+                        <div class="text-end mt-3">
+                            <a href="PendingApprovals.html" class="btn btn-primary">View All Pending Approvals</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Recent Notifications</h5>
+                        <ul class="list-group" id="notificationsList">
+                            <!-- Will be populated by JavaScript -->
+                        </ul>
+                        <div id="notificationsEmptyState" class="empty-state">
+                            <i class="bi bi-bell"></i>
+                            <h5>No notifications</h5>
+                            <p>Your notifications will appear here</p>
+                        </div>
+                        <div class="text-end mt-3">
+                            <a href="#" class="btn btn-outline-secondary">View All Notifications</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Review Report Modal -->
+    <div class="modal fade" id="reviewReportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Review Intern Report</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="reportModalContent">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Reject</button>
+                    <button type="button" class="btn btn-success" id="approveReportBtn">Approve Report</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Get user data from session
+  const user = JSON.parse(sessionStorage.setItem('currentuser' , JSON.stringify(data.user)));
+    if(!user || user.role !== 'supervisor') {
+        window.location.href = '../login.html';
+    }
+
+    // Load pending reports
+    loadPendingReports();
+
+    // Handle report approval/rejection
+    document.getElementById('approveReportBtn').addEventListener('click', function() {
+        const reportId = document.getElementById('reportId').value;
+        const comments = document.getElementById('supervisorComments').value;
+        
+        if(!reportId) return;
+        
+        fetch('http://localhost/ears-system/backend/api/reports/approve.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                report_id: reportId,
+                status: 'approved',
+                comments: comments
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.message === "Report status updated.") {
+                alert('Report approved successfully!');
+                $('#reportModal').modal('hide');
+                loadPendingReports();
+            } else {
+                alert('Failed to approve report: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while approving the report.');
+        });
+    });
+
+    document.getElementById('rejectReportBtn').addEventListener('click', function() {
+        const reportId = document.getElementById('reportId').value;
+        const comments = document.getElementById('supervisorComments').value;
+        
+        if(!reportId || !comments) {
+            alert('Please provide a reason for rejection.');
+            return;
+        }
+        
+        fetch('http://localhost/ears-system/backend/api/reports/approve.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                report_id: reportId,
+                status: 'rejected',
+                comments: comments
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.message === "Report status updated.") {
+                alert('Report rejected successfully!');
+                $('#reportModal').modal('hide');
+                loadPendingReports();
+            } else {
+                alert('Failed to reject report: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while rejecting the report.');
+        });
+    });
+});
+
+function loadPendingReports() {
+    fetch('http://localhost/ears-system/backend/api/reports/pending.php', {
+        headers: {
+            'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const tableBody = document.getElementById('pendingReportsTable').querySelector('tbody');
+        tableBody.innerHTML = '';
+        
+        data.records.forEach(report => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${report.intern_name}</td>
+                <td>${report.week_number}</td>
+                <td>${new Date(report.created_at).toLocaleDateString()}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="viewReportForApproval(${report.id})">
+                        Review
+                    </button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function viewReportForApproval(reportId) {
+    fetch(`http://localhost/ears-system/backend/api/reports.php?id=${reportId}`, {
+        headers: {
+            'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+        }
+    })
+    .then(response => response.json())
+    .then(report => {
+        document.getElementById('reportId').value = report.id;
+        document.getElementById('modalInternName').textContent = report.intern_name;
+        document.getElementById('modalWeekNumber').textContent = report.week_number;
+        document.getElementById('modalStartDate').textContent = report.start_date;
+        document.getElementById('modalEndDate').textContent = report.end_date;
+        document.getElementById('modalActivities').textContent = report.activities;
+        document.getElementById('modalChallenges').textContent = report.challenges || 'N/A';
+        document.getElementById('modalTasks').textContent = report.tasks_in_progress || 'N/A';
+        
+        // Show file link if exists
+        const fileLink = document.getElementById('modalFileLink');
+        if(report.file_path) {
+            fileLink.href = report.file_path;
+            fileLink.textContent = 'Download Attachment';
+            fileLink.style.display = 'inline';
+        } else {
+            fileLink.style.display = 'none';
+        }
+        
+        // Clear previous comments
+        document.getElementById('supervisorComments').value = '';
+        
+        // Show modal
+        $('#reportModal').modal('show');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to load report details.');
+    });
+}
+        // DOM Elements
+        const elements = {
+            spinner: document.getElementById('spinner'),
+            sidebar: document.getElementById('sidebar'),
+            mainContent: document.getElementById('mainContent'),
+            logoutLink: document.getElementById('logoutLink'),
+            supervisorName: document.getElementById('supervisorName'),
+            pendingBadge: document.getElementById('pendingBadge'),
+            pendingCount: document.getElementById('pendingCount'),
+            approvedCount: document.getElementById('approvedCount'),
+            internsCount: document.getElementById('internsCount'),
+            notificationsCount: document.getElementById('notificationsCount'),
+            recentReportsTable: document.getElementById('recentReportsTable').getElementsByTagName('tbody')[0],
+            reportsEmptyState: document.getElementById('reportsEmptyState'),
+            notificationsList: document.getElementById('notificationsList'),
+            notificationsEmptyState: document.getElementById('notificationsEmptyState'),
+            reportModalContent: document.getElementById('reportModalContent'),
+            approveReportBtn: document.getElementById('approveReportBtn')
+        };
+
+        // Dashboard data
+        let dashboardData = {
+            supervisorName: "",
+            pendingApprovals: 0,
+            approvedReports: 0,
+            totalInterns: 0,
+            notifications: 0,
+            recentReports: [],
+            recentNotifications: []
+        };
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                showSpinner();
+                await fetchDashboardData();
+                updateDashboardUI();
+                setupEventListeners();
+            } catch (error) {
+                console.error("Dashboard initialization error:", error);
+                alert("Failed to load dashboard data");
+            } finally {
+                hideSpinner();
+            }
+        });
+
+        // Fetch dashboard data from API
+        async function fetchDashboardData() {
+            // In a real application, this would be an API call to your backend
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // Simulate API response with empty data
+                    resolve({
+                        supervisorName: "",
+                        pendingApprovals: 0,
+                        approvedReports: 0,
+                        totalInterns: 0,
+                        notifications: 0,
+                        recentReports: [],
+                        recentNotifications: []
+                    });
+                }, 1000);
+            });
+        }
+
+        // Update UI with dashboard data
+        function updateDashboardUI() {
+            // Update counts
+            elements.supervisorName.textContent = dashboardData.supervisorName || "Supervisor";
+            elements.pendingCount.textContent = dashboardData.pendingApprovals;
+            elements.approvedCount.textContent = dashboardData.approvedReports;
+            elements.internsCount.textContent = dashboardData.totalInterns;
+            elements.notificationsCount.textContent = dashboardData.notifications;
+            elements.pendingBadge.textContent = dashboardData.pendingApprovals;
+
+            // Update recent reports table
+            updateReportsTable();
+            
+            // Update notifications list
+            updateNotificationsList();
+        }
+
+        // Update reports table
+        function updateReportsTable() {
+            elements.recentReportsTable.innerHTML = '';
+            
+            if (dashboardData.recentReports.length > 0) {
+                elements.reportsEmptyState.style.display = 'none';
+                
+                dashboardData.recentReports.forEach(report => {
+                    const row = elements.recentReportsTable.insertRow();
+                    row.innerHTML = `
+                        <td>${report.intern}</td>
+                        <td>${report.week}</td>
+                        <td>${report.department}</td>
+                        <td>${report.submitted}</td>
+                        <td><button class="btn btn-sm btn-outline-primary review-btn">Review</button></td>
+                    `;
+                });
+            } else {
+                elements.reportsEmptyState.style.display = 'block';
+            }
+        }
+
+        // Update notifications list
+        function updateNotificationsList() {
+            elements.notificationsList.innerHTML = '';
+            
+            if (dashboardData.recentNotifications.length > 0) {
+                elements.notificationsEmptyState.style.display = 'none';
+                
+                dashboardData.recentNotifications.forEach(notification => {
+                    const item = document.createElement('li');
+                    item.className = `list-group-item notification-item`;
+                    item.innerHTML = `
+                        <div class="d-flex align-items-center">
+                            <i class="bi ${notification.icon} ${notification.color} me-3 fs-4"></i>
+                            <div>
+                                <strong>${notification.title}</strong>
+                                <div class="text-muted small">${notification.description}</div>
+                                <div class="text-muted small">${notification.time}</div>
+                            </div>
+                        </div>
+                    `;
+                    elements.notificationsList.appendChild(item);
+                });
+            } else {
+                elements.notificationsEmptyState.style.display = 'block';
+            }
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Sidebar functionality
+            elements.sidebar.addEventListener('show.bs.offcanvas', () => {
+                if (window.innerWidth >= 992) {
+                    elements.mainContent.classList.add('sidebar-open');
+                }
+            });
+
+            elements.sidebar.addEventListener('hide.bs.offcanvas', () => {
+                elements.mainContent.classList.remove('sidebar-open');
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth < 992) {
+                    elements.mainContent.classList.remove('sidebar-open');
+                }
+            });
+
+            // Logout functionality
+            elements.logoutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (confirm('Are you sure you want to logout?')) {
+                    logout();
+                }
+            });
+
+            // Approve report button
+            elements.approveReportBtn.addEventListener('click', approveReport);
+        }
+
+        // Show report modal
+        function showReportModal(reportId) {
+            elements.reportModalContent.innerHTML = `
+                <div class="mb-4">
+                    <h6>Intern: <span class="text-primary">Loading...</span></h6>
+                    <p class="text-muted">Loading report details...</p>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Activities Performed</h6>
+                    <div class="card bg-light p-3">
+                        <p>Loading activities...</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Challenges Faced</h6>
+                    <div class="card bg-light p-3">
+                        <p>Loading challenges...</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Comments</h6>
+                    <textarea class="form-control" rows="3" placeholder="Add your comments here..."></textarea>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('reviewReportModal'));
+            modal.show();
+        }
+
+        // Approve report function
+        function approveReport() {
+            showSpinner();
+            // In a real app, this would send an API request
+            setTimeout(() => {
+                hideSpinner();
+                alert('Report approved successfully!');
+                bootstrap.Modal.getInstance(document.getElementById('reviewReportModal')).hide();
+            }, 1000);
+        }
+
+        // Logout function
+        async function logout() {
+            showSpinner();
+            try {
+                // Clear client-side data
+                localStorage.removeItem('authToken');
+                sessionStorage.removeItem('authToken');
+                document.cookie = 'PHPSESSID=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                
+                // Redirect to login
+                window.location.href = 'login.php';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                window.location.href = 'login.php?error=logout_failed';
+            }
+        }
+
+        // Helper functions
+        function showSpinner() {
+            elements.spinner.style.display = 'flex';
+        }
+
+        function hideSpinner() {
+            elements.spinner.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

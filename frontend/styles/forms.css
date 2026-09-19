@@ -1,0 +1,36 @@
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="date"],
+input[type="time"],
+
+textarea,
+select {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.6rem;
+  width: 100%;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--kcca-red);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(227, 6, 19, 0.2);
+}
+label {
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--kcca-black);
+}
+.hidden {
+  display: none;
+}
+
+.form-error {
+  color: #dc3545;
+  font-size: 0.9rem;
+}

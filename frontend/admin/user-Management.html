@@ -1,0 +1,2214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EARS - User Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        /* Add this to your existing CSS */
+select:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
+select:disabled + .form-text {
+    opacity: 0.5;
+}
+
+        /* Offcanvas sidebar custom width */
+        .offcanvas-start {
+            width: 250px;
+        }
+
+        /* Sidebar nav styles */
+        .sidebar-nav .nav-link {
+            color: #f8f9fa;
+            font-size: 0.95rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active {
+            background-color: #343a40;
+            color: #f8f9fa;
+        }
+        .sidebar-nav i {
+            margin-right: 8px;
+        }
+
+        /* Card base style override */
+        .card {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgb(0 0 0 / 0.1);
+        }
+
+        /* Content padding */
+        .content {
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        /* Large screen: add left margin when sidebar is shown */
+        @media (min-width: 992px) {
+            .content.sidebar-open {
+                margin-left: 250px;
+            }
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #008540; /* KCCA green */
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .role-badge {
+            font-size: 0.75em;
+            padding: 4px 8px;
+        }
+        
+        .password-container {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+        }
+
+        /* Professional custom stats cards */
+        .card-stat-primary {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+        .card-stat-warning {
+            background-color: #d35400;
+            color: #fdf2e9;
+        }
+        .card-stat-success {
+            background-color: #27ae60;
+            color: #dff0d8;
+        }
+        .card-stat-info {
+            background-color: #2980b9;
+            color: #dbe9f4;
+        }
+
+        /* Hierarchy tree */
+        .hierarchy-tree {
+            list-style: none;
+            padding-left: 1rem;
+        }
+        .hierarchy-tree li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .hierarchy-tree li:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.75rem;
+            width: 1rem;
+            height: 1px;
+            background: #dee2e6;
+        }
+        .hierarchy-tree li:after {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 1px;
+            background: #dee2e6;
+        }
+        .hierarchy-tree li:last-child:after {
+            height: 0.75rem;
+        }
+        .password-container {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 1.1rem;
+  user-select: none;
+}
+
+.toggle-password:hover {
+  color: #343a40;
+}
+
+#generatePassword {
+  min-width: 44px;
+  height: 38px; /* match input height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+#generatePassword i {
+  font-size: 1.2rem;
+}
+
+    </style>
+</head>
+<body>
+
+<!-- Navbar with hamburger -->
+<nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+        <button
+            class="btn btn-dark"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#sidebar"
+            aria-controls="sidebar"
+            aria-label="Toggle sidebar"
+            id="sidebarToggleBtn"
+        >
+            <i class="bi bi-list fs-3"></i>
+        </button>
+        <span class="navbar-brand mb-0 h1 ms-3">User Management</span>
+    </div>
+</nav>
+
+<!-- Offcanvas sidebar -->
+<div
+    class="offcanvas offcanvas-start bg-dark text-white"
+    tabindex="-1"
+    id="sidebar"
+    aria-labelledby="sidebarLabel"
+>
+    <div class="offcanvas-header border-bottom border-secondary">
+        <h5 class="offcanvas-title fw-bold text-danger" id="sidebarLabel" style="letter-spacing: 1px;">
+            EARS
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <nav class="nav flex-column sidebar-nav px-3">
+            <a class="nav-link" href="admin.html">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </a>
+            <a class="nav-link active" href="user-Management.html">
+                <i class="bi bi-people"></i> User Management
+            </a>
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#orgStructureModal">
+                <i class="bi bi-diagram-3"></i> Organization Structure
+            </a>
+            </a>
+        </nav>
+    </div>
+</div>
+
+<!-- Main Content -->
+<main class="content" id="mainContent">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="bi bi-people me-2"></i> User Management</h2>
+            <div>
+                <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="bi bi-plus-lg me-1"></i> Add User
+                </button>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card card-stat-primary h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-people-fill"></i>
+                        <h4 class="card-title mt-2" id="totalUsersCount">0</h4>
+                        <p class="card-text">Total Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stat-success h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-person-check"></i>
+                        <h4 class="card-title mt-2" id="activeUsersCount">0</h4>
+                        <p class="card-text">Active Users</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stat-warning h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-person-gear"></i>
+                        <h4 class="card-title mt-2" id="supervisorsCount">0</h4>
+                        <p class="card-text">Supervisors</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card card-stat-info h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="bi bi-person-vcard"></i>
+                        <h4 class="card-title mt-2" id="internsCount">0</h4>
+                        <p class="card-text">Interns</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Division</th>
+                                <th>Directorate</th>
+                                <th>Department</th>
+                                <th>Supervisor</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTable">
+                            <!-- Users will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addUserForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" name="fullName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" name="role" id="userRole" required>
+                                    <option value="">Select Role</option>
+                                    <option value="intern">Intern</option>
+                                    <option value="supervisor">Supervisor</option>
+                                    <option value="hr">HR </option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Division</label>
+                                <select class="form-select" name="division" id="divisionSelect" required>
+                                    <option value="">Select Division</option>
+                                    <!-- Will be populated from backend -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Directorate</label>
+                                <select class="form-select" name="directorate" id="directorateSelect" required>
+                                    <option value="">Select Directorate</option>
+                                    <!-- Will be populated from backend -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Department</label>
+                                <select class="form-select" name="department" id="departmentSelect" required>
+                                    <option value="">Select Department</option>
+                                    <option value="">Hardware</option>
+                                    <!-- Will be populated from backend -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <div class="password-container position-relative">
+                                    <input type="password" class="form-control" name="password" id="passwordField" required autocomplete="new-password">
+                                    <i class="bi bi-eye toggle-password" id="togglePassword" title="Show/Hide Password" style="user-select:none;"></i>
+                                </div>
+                                <small class="text-muted">Minimum 8 characters with uppercase, number and special character</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Supervisor (for Interns)</label>
+                                <select class="form-select" name="supervisor" id="supervisorSelect" disabled>
+                                    <option value="">Select Supervisor</option>
+                                    <!-- Will be populated from backend -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+  <label class="form-label">Password</label>
+  <div class="d-flex align-items-center gap-2">
+    <div class="password-container position-relative flex-grow-1">
+      <input
+        type="password"
+        class="form-control"
+        name="password"
+        id="passwordField"
+        required
+        autocomplete="new-password"
+        placeholder="Enter or generate password"
+      />
+      <i
+        class="bi bi-eye toggle-password"
+        id="togglePassword"
+        title="Show/Hide Password"
+        style="user-select:none;"
+      ></i>
+    </div>
+    <button
+      type="button"
+      class="btn btn-outline-secondary flex-shrink-0"
+      id="generatePassword"
+      title="Generate Strong Password"
+      aria-label="Generate Strong Password"
+    >
+      <i class="bi bi-arrow-repeat"></i>
+    </button>
+  </div>
+  <small class="text-muted">Minimum 8 characters with uppercase, number, and special character</small>
+</div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUserForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editUserId" name="id">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" class="form-control" name="fullName" id="editFullName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" id="editEmail" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" name="role" id="editUserRole" required>
+                                    <option value="">Select Role</option>
+                                    <option value="intern">Intern</option>
+                                    <option value="supervisor">Supervisor</option>
+                                    <option value="hr">HR Personnel</option>
+                                    <option value="admin">System Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Division</label>
+                                <select class="form-select" name="division" id="editDivisionSelect" required>
+                                    <option value="">Select Division</option>
+                                    <!-- Will be populated from backend -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Directorate</label>
+                                <select class="form-select" name="directorate" id="editDirectorateSelect" required>
+                                    <option value="">Select Directorate</option>
+                                    <option value="">ICT</option>
+                                    <!-- Will be populated from backend -->
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Department</label>
+                                <select class="form-select" name="department" id="editDepartmentSelect" required>
+                                    <option value="">Select Department</option>
+                                    <option value="">System Admin</option>
+                                    <option value="">Hardware</option>
+                                    <option value="">Applications</option>
+                                    <option value="">BPR</option>
+                                    <!-- Will be populated from backend -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Supervisor (for Interns)</label>
+                        <select class="form-select" name="supervisor" id="editSupervisorSelect" disabled>
+                            <option value="">Select Supervisor</option>
+                            <!-- Will be populated from backend -->
+                        </select>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="editUserActive" name="active">
+                        <label class="form-check-label" for="editUserActive">Active User</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Supervisor Modal -->
+<div class="modal fade" id="assignSupervisorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Assign Supervisor to Intern</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="assignSupervisorForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Intern</label>
+                        <select class="form-select" name="intern" id="internSelect" required>
+                            <option value="">Select Intern</option>
+                            <!-- Will be populated from backend -->
+                        </select>
+                    </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Organization Structure Modal -->
+<div class="modal fade" id="orgStructureModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Organization Structure Management</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="orgStructureTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="divisions-tab" data-bs-toggle="tab" data-bs-target="#divisions" type="button" role="tab">Divisions</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="directorates-tab" data-bs-toggle="tab" data-bs-target="#directorates" type="button" role="tab">Directorates</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="departments-tab" data-bs-toggle="tab" data-bs-target="#departments" type="button" role="tab">Departments</button>
+                    </li>
+                </ul>
+                <div class="tab-content p-3 border border-top-0 rounded-bottom" id="orgStructureTabsContent">
+                    <div class="tab-pane fade show active" id="divisions" role="tabpanel">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h6>Manage Divisions</h6>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDivisionModal">
+                                <i class="bi bi-plus"></i> Add Division
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Code</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="divisionsTable">
+                                    <!-- Divisions will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="directorates" role="tabpanel">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h6>Manage Directorates</h6>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDirectorateModal">
+                                <i class="bi bi-plus"></i> Add Directorate
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Code</th>
+                                        <th>Division</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="directoratesTable">
+                                    <!-- Directorates will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="departments" role="tabpanel">
+                        <div class="d-flex justify-content-between mb-3">
+                            <h6>Manage Departments</h6>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDepartmentModal">
+                                <i class="bi bi-plus"></i> Add Department
+                            </button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Code</th>
+                                        <th>Directorate</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="departmentsTable">
+                                    <!-- Departments will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Division Modal -->
+<div class="modal fade" id="addDivisionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Division</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addDivisionForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Division Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Division Code</label>
+                        <input type="text" class="form-control" name="code" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Division</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Directorate Modal -->
+<div class="modal fade" id="addDirectorateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Directorate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addDirectorateForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Directorate Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Directorate Code</label>
+                        <input type="text" class="form-control" name="code" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Division</label>
+                        <select class="form-select" name="division" required>
+                            <option value="">Select Division</option>
+                            <!-- Will be populated from backend -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Directorate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Department Modal -->
+<div class="modal fade" id="addDepartmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Department</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addDepartmentForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Department Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Department Code</label>
+                        <input type="text" class="form-control" name="code" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Directorate</label>
+                        <select class="form-select" name="directorate" required>
+                            <option value="">Select Directorate</option>
+                            <!-- Will be populated from backend -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Department</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Edit Department Modal -->
+<div class="modal fade" id="editDepartmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Department</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editDepartmentForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editDepartmentId" name="id">
+                    <div class="mb-3">
+                        <label class="form-label">Department Name</label>
+                        <input type="text" class="form-control" id="editDepartmentName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Department Code</label>
+                        <input type="text" class="form-control" id="editDepartmentCode" name="code" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Directorate</label>
+                        <select class="form-select" id="editDepartmentDirectorate" name="directorate_id" required>
+                            <option value="">Select Directorate</option>
+                            <!-- Will be populated from backend -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Sample data structure
+    const organization = {
+        divisions: [
+            { id: 1, name: "City Hall", code: "CH" },
+            { id: 2, name: "Central", code: "CN" }
+        ],
+        directorates: [
+            { id: 1, name: "ICT", code: "ICT", divisionId: 1 },
+            { id: 2, name: "Treasury", code: "TR", divisionId: 1 },
+            { id: 3, name: "Revenue", code: "RV", divisionId: 2 }
+        ],
+        departments: [
+            { id: 1, name: "Hardware", code: "HW", directorateId: 1 },
+            { id: 2, name: "Applications", code: "APP", directorateId: 1 },
+            { id: 3, name: "Business Process Reengineering", code: "BPR", directorateId: 1 },
+            { id: 4, name: "System Administration", code: "SYSADM", directorateId: 1 }
+        ],
+        users: [
+            {
+                id: 1,
+                name: "Admin User",
+                email: "admin@kcca.go.ug",
+                role: "admin",
+                division: "City Hall",
+                directorate: "ICT",
+                department: "System Administration",
+                supervisor: null,
+                active: true
+            },
+            {
+                id: 2,
+                name: "HR Officer",
+                email: "hr@kcca.go.ug",
+                role: "hr",
+                division: "City Hall",
+                directorate: "ICT",
+                department: "System Administration",
+                supervisor: null,
+                active: true
+            },
+            {
+                id: 3,
+                name: "Supervisor 1",
+                email: "supervisor1@kcca.go.ug",
+                role: "supervisor",
+                division: "City Hall",
+                directorate: "ICT",
+                department: "Applications",
+                supervisor: null,
+                active: true
+            },
+            {
+                id: 4,
+                name: "Intern 1",
+                email: "intern1@kcca.go.ug",
+                role: "intern",
+                division: "City Hall",
+                directorate: "ICT",
+                department: "Hardware",
+                supervisor: "Supervisor 1",
+                active: true
+            }
+        ]
+    };
+
+    // DOM Ready
+  document.addEventListener('DOMContentLoaded',  async function()  {
+    const apiAvailable = await checkApiConnection();
+    if (!apiAvailable) return;
+    // Load initial data
+    loadUsers();
+    
+    // Setup event listeners
+    setupEventListeners();
+    
+    // Initialize sidebar behavior
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+
+    sidebar.addEventListener('show.bs.offcanvas', () => {
+        if (window.innerWidth >= 992) {
+            mainContent.classList.add('sidebar-open');
+        }
+    });
+
+    sidebar.addEventListener('hide.bs.offcanvas', () => {
+        mainContent.classList.remove('sidebar-open');
+    });
+
+    window.addEventListener('resize', () => {
+        if (window.innerWidth < 992) {
+            mainContent.classList.remove('sidebar-open');
+        }
+    });
+});
+async function loadUsers() {
+    try {
+        console.log("Loading users...");
+        const response = await fetch('http://localhost:8080/ears-system/backend/api/users.php');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("API Response:", data);
+        
+        // Check for both possible response formats:
+        let usersArray = Array.isArray(data) ? data : (data.users || []);
+        
+        if (usersArray.length === 0) {
+            console.warn("Received empty users array");
+        }
+        
+        populateUsersTable(usersArray);
+        updateUserCounts(usersArray);
+        
+    } catch (error) {
+        console.error('Error loading users:', error);
+        alert('Error loading users: ' + error.message);
+    }
+}
+    function loadOrganizationStructure() {
+        // Load divisions
+        const divisionsTable = document.getElementById('divisionsTable');
+        divisionsTable.innerHTML = '';
+        organization.divisions.forEach(division => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${division.name}</td>
+                <td>${division.code}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editDivision(${division.id})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDivision(${division.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            divisionsTable.appendChild(row);
+        });
+
+        // Load directorates
+        const directoratesTable = document.getElementById('directoratesTable');
+        directoratesTable.innerHTML = '';
+        organization.directorates.forEach(directorate => {
+            const division = organization.divisions.find(d => d.id === directorate.divisionId);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${directorate.name}</td>
+                <td>${directorate.code}</td>
+                <td>${division ? division.name : 'N/A'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editDirectorate(${directorate.id})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDirectorate(${directorate.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            directoratesTable.appendChild(row);
+        });
+
+        // Load departments
+        const departmentsTable = document.getElementById('departmentsTable');
+        departmentsTable.innerHTML = '';
+        organization.departments.forEach(department => {
+            const directorate = organization.directorates.find(d => d.id === department.directorateId);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${department.name}</td>
+                <td>${department.code}</td>
+                <td>${directorate ? directorate.name : 'N/A'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editDepartment(${department.id})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDepartment(${department.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            departmentsTable.appendChild(row);
+        });
+
+        // Populate dropdowns
+        populateDivisionDropdowns();
+        populateDirectorateDropdowns();
+        populateDepartmentDropdowns();
+        populateSupervisorDropdowns();
+        populateInternDropdowns();
+    }
+
+    function populateDivisionDropdowns() {
+    const divisionSelects = [
+        document.getElementById('divisionSelect'),
+        document.getElementById('editDivisionSelect'),
+        document.querySelector('#addDirectorateForm select[name="division"]')
+    ];
+
+    const divisions = window.orgData?.divisions || [];
+    
+    if (!Array.isArray(divisions)) {
+        console.error('Divisions data is not an array:', divisions);
+        return;
+    }
+
+    divisionSelects.forEach(select => {
+        if (select) {
+            select.innerHTML = '<option value="">Select Division</option>';
+            divisions.forEach(division => {
+                const option = document.createElement('option');
+                option.value = division.id;
+                option.textContent = division.name;
+                select.appendChild(option);
+            });
+        }
+    });
+}
+    async function testApiEndpoint() {
+    try {
+        const response = await fetch('http://localhost:8080/ears-system/backend/test.php');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Test API Response:', data);
+        alert(`API Test Successful!\n\n${JSON.stringify(data, null, 2)}`);
+        return true;
+    } catch (error) {
+        console.error('API Test Failed:', error);
+        alert(`API Test Failed:\n${error.message}`);
+        return false;
+    }
+}
+
+// Call this function when your page loads
+document.addEventListener('DOMContentLoaded', function() {
+    testApiEndpoint().then(success => {
+        if (success) {
+            loadUsers(); // Only try to load users if test succeeds
+        }
+    });
+});
+
+    function populateDirectorateDropdowns() {
+        const directorateSelects = [
+            document.getElementById('directorateSelect'),
+            document.getElementById('editDirectorateSelect'),
+            document.querySelector('#addDepartmentForm select[name="directorate"]')
+        ];
+
+        directorateSelects.forEach(select => {
+            if (select) {
+                select.innerHTML = '<option value="">Select Directorate</option>';
+                organization.directorates.forEach(directorate => {
+                    const option = document.createElement('option');
+                    option.value = directorate.id;
+                    option.textContent = directorate.name;
+                    select.appendChild(option);
+                });
+            }
+        });
+    }
+
+    function populateDepartmentDropdowns() {
+        const departmentSelects = [
+            document.getElementById('departmentSelect'),
+            document.getElementById('editDepartmentSelect')
+        ];
+
+        departmentSelects.forEach(select => {
+            if (select) {
+                select.innerHTML = '<option value="">Select Department</option>';
+                organization.departments.forEach(department => {
+                    const option = document.createElement('option');
+                    option.value = department.id;
+                    option.textContent = department.name;
+                    select.appendChild(option);
+                });
+            }
+        });
+    }
+
+    function populateSupervisorDropdowns() {
+    const supervisorSelects = [
+        document.getElementById('supervisorSelect'),
+        document.getElementById('editSupervisorSelect')
+    ];
+
+    const supervisors = [
+        { id: 1, name: "Justus.B" },
+        { id: 2, name: "Richard.M" },
+        { id: 2, name: "Tendo Taliq" },
+
+    ];
+
+    supervisorSelects.forEach(select => {
+        if (select) {
+            select.innerHTML = '<option value="">Select Supervisor</option>';
+            supervisors.forEach(supervisor => {
+                const option = document.createElement('option');
+                option.value = supervisor.id;
+                option.textContent = supervisor.name;
+                select.appendChild(option);
+            });
+        }
+    });
+}
+
+// Make sure to call populateSupervisorDropdowns() when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    populateSupervisorDropdowns();
+    
+    // Also call it when the add user modal opens
+    document.getElementById('addUserModal').addEventListener('show.bs.modal', function() {
+        populateSupervisorDropdowns();
+    });
+});
+    function populateInternDropdowns() {
+        const internSelect = document.getElementById('internSelect');
+        if (internSelect) {
+            internSelect.innerHTML = '<option value="">Select Intern</option>';
+            const interns = organization.users.filter(user => user.role === 'intern' && user.active);
+            interns.forEach(intern => {
+                const option = document.createElement('option');
+                option.value = intern.id;
+                option.textContent = intern.name;
+                internSelect.appendChild(option);
+            });
+        }
+    }
+
+   function updateUserCounts(users) {
+    if (!users || !Array.isArray(users)) {
+        console.error("Invalid users data for counting:", users);
+        return;
+    }
+
+    const totalUsers = users.length;
+    const activeUsers = users.length; // Assuming all are active since we don't have status field
+    const supervisors = users.filter(u => u.role === 'supervisor').length;
+    const interns = users.filter(u => u.role === 'intern').length;
+
+    console.log(`Updating counts - Total: ${totalUsers}, Supervisors: ${supervisors}, Interns: ${interns}`);
+
+    document.getElementById('totalUsersCount').textContent = totalUsers;
+    document.getElementById('activeUsersCount').textContent = activeUsers;
+    document.getElementById('supervisorsCount').textContent = supervisors;
+    document.getElementById('internsCount').textContent = interns;
+}
+async function checkApiConnection() {
+    try {
+        const response = await fetch('http://localhost:8080/ears-system/backend/api/users.php', {
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            let errorDetails = '';
+            try {
+                const errorData = await response.json();
+                errorDetails = JSON.stringify(errorData);
+            } catch (e) {
+                errorDetails = await response.text();
+            }
+            throw new Error(`API returned status ${response.status}\nDetails: ${errorDetails}`);
+        }
+        
+        return true;
+    } catch (error) {
+        console.error("API Connection Error:", error);
+        alert(`Cannot connect to API: ${error.message}`);
+        return false;
+    }
+}
+
+async function populateDropdowns() {
+  // Populate Divisions
+  const divisionSelect = document.getElementById('divisionSelect');
+  divisionSelect.innerHTML = '<option value="">Select Division</option>';
+  const divisions = await fetch('/ears-system/backend/api/divisions.php').then(res => res.json());
+  divisions.forEach(div => {
+    const option = document.createElement('option');
+    option.value = div.id;
+    option.textContent = div.name;
+    divisionSelect.appendChild(option);
+  });
+
+  // Populate Directorates
+  const directorateSelect = document.getElementById('directorateSelect');
+  directorateSelect.innerHTML = '<option value="">Select Directorate</option>';
+  const directorates = await fetch('/ears-system/backend/api/directorates.php').then(res => res.json());
+  directorates.forEach(dir => {
+    const option = document.createElement('option');
+    option.value = dir.id;
+    option.textContent = dir.name;
+    directorateSelect.appendChild(option);
+  });
+
+  // Populate Departments
+  const departmentSelect = document.getElementById('departmentSelect');
+  departmentSelect.innerHTML = '<option value="">Select Department</option>';
+  const departments = await fetch('/ears-system/backend/api/departments.php').then(res => res.json());
+  departments.forEach(dep => {
+    const option = document.createElement('option');
+    option.value = dep.id;
+    option.textContent = dep.name;
+    departmentSelect.appendChild(option);
+  });
+
+  // Populate Supervisors (users with role 'supervisor')
+  const supervisorSelect = document.getElementById('supervisorSelect');
+  if (supervisorSelect) {
+    supervisorSelect.innerHTML = '<option value="">Select Supervisor</option>';
+    const users = await fetch('/ears-system/backend/api/users.php').then(res => res.json());
+    const supervisors = users.filter(u => u.role === 'supervisor' && u.active);
+    supervisors.forEach(sup => {
+      const option = document.createElement('option');
+      option.value = sup.id;
+      option.textContent = sup.name;
+      supervisorSelect.appendChild(option);
+    });
+  }
+}
+
+// Call this after DOM is ready
+document.addEventListener('DOMContentLoaded', populateDropdowns);
+
+    function setupEventListeners() {
+        // Password visibility toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordField = document.getElementById('passwordField');
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            this.classList.toggle('bi-eye');
+            this.classList.toggle('bi-eye-slash');
+
+
+document.getElementById('editDivisionSelect').addEventListener('change', function() {
+    updateDirectorateDropdown(this.value, true);
+});
+
+// Directorate change handler for department dropdown
+document.getElementById('directorateSelect').addEventListener('change', function() {
+    updateDepartmentDropdown(this.value);
+});
+
+document.getElementById('editDirectorateSelect').addEventListener('change', function() {
+    updateDepartmentDropdown(this.value, true);
+});
+        });
+
+
+        // Role change handler for supervisor selection
+  document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const role = document.getElementById(
+        'userRole').value;
+    const supervisor = document.getElementById('supervisorSelect').value;
+    
+    if (role === 'intern' && !supervisor) {
+        alert('Please select a supervisor for interns');
+        return;
+    }
+    
+    await addUser();
+});    document.getElementById('editUserForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            updateUser();
+        });
+
+        document.getElementById('assignSupervisorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            assignSupervisor();
+        });
+
+        document.getElementById('addDivisionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addDivision();
+        });
+
+        document.getElementById('addDirectorateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addDirectorate();
+        });
+
+        document.getElementById('addDepartmentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            addDepartment();
+        });
+
+        // Division change handler for directorate dropdown
+        document.getElementById('divisionSelect').addEventListener('change', function() {
+            updateDirectorateDropdown(this.value);
+        });
+
+        document.getElementById('editDivisionSelect').addEventListener('change', function() {
+            updateDirectorateDropdown(this.value, true);
+        });
+
+        // Directorate change handler for department dropdown
+        document.getElementById('directorateSelect').addEventListener('change', function() {
+            updateDepartmentDropdown(this.value);
+        });
+
+        document.getElementById('editDirectorateSelect').addEventListener('change', function() {
+            updateDepartmentDropdown(this.value, true);
+        });
+    }
+    async function updateDirectorateDropdown(divisionId, isEdit = false) {
+    const directorateSelect = isEdit ? 
+        document.getElementById('editDirectorateSelect') : 
+        document.getElementById('directorateSelect');
+    
+    directorateSelect.innerHTML = '<option value="">Select Directorate</option>';
+    
+    if (!divisionId) return;
+    
+    try {
+        const response = await fetch(`http://localhost:8080/ears-system/backend/api/directorates.php?division_id=${divisionId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Directorates API Response:", data); // Debug log
+        
+        // Check both possible response formats
+        const directorates = data.directorates || data;
+        
+        if (!Array.isArray(directorates)) {
+            throw new Error('Invalid directorates data format');
+        }
+        
+        directorates.forEach(directorate => {
+            const option = document.createElement('option');
+            option.value = directorate.id;
+            option.textContent = directorate.name;
+            directorateSelect.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Error loading directorates:', error);
+        alert('Failed to load directorates. Please try again.');
+    }
+}
+    function updateDirectorateDropdown(divisionId, isEdit = false) {
+        const directorateSelect = isEdit ? 
+            document.getElementById('editDirectorateSelect') : 
+            document.getElementById('directorateSelect');
+        
+        directorateSelect.innerHTML = '<option value="">Select Directorate</option>';
+        
+        if (divisionId) {
+            const filteredDirectorates = organization.directorates.filter(d => d.divisionId == divisionId);
+            filteredDirectorates.forEach(directorate => {
+                const option = document.createElement('option');
+                option.value = directorate.id;
+                option.textContent = directorate.name;
+                directorateSelect.appendChild(option);
+            });
+        }
+    }
+
+    function updateDepartmentDropdown(directorateId, isEdit = false) {
+        const departmentSelect = isEdit ? 
+            document.getElementById('editDepartmentSelect') : 
+            document.getElementById('departmentSelect');
+        
+        departmentSelect.innerHTML = '<option value="">Select Department</option>';
+        
+        if (directorateId) {
+            const filteredDepartments = organization.departments.filter(d => d.directorateId == directorateId);
+            filteredDepartments.forEach(department => {
+                const option = document.createElement('option');
+                option.value = department.id;
+                option.textContent = department.name;
+                departmentSelect.appendChild(option);
+            });
+        }
+    }
+    // Update your form submission event listener
+document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await addUser();
+});
+
+  async function addUser() {
+    const form = document.getElementById('addUserForm');
+    const formData = new FormData(form);
+    const role = formData.get('role');
+    const supervisorId = formData.get('supervisor');
+    
+    // Validate supervisor for interns
+    if (role === 'intern' && !supervisorId) {
+        alert('Please select a supervisor for interns');
+        return;
+    }
+    
+    // If supervisor is provided, verify it exists
+    if (supervisorId) {
+        try {
+            const supervisorExists = await checkSupervisorExists(supervisorId);
+            if (!supervisorExists) {
+                alert('The selected supervisor does not exist');
+                return;
+            }
+        } catch (error) {
+            console.error('Error checking supervisor:', error);
+            alert('Error verifying supervisor');
+            return;
+        }
+    }
+
+    async function checkSupervisorExists(supervisorId) {
+    const response = await fetch(`http://localhost:8080/ears-system/backend/api/users.php?id=${supervisorId}`);
+    return response.ok;
+}
+
+    const userData = {
+    full_name: formData.get('fullName'),
+    email: formData.get('email'),
+    password: formData.get('password'),
+    role: formData.get('role'),
+    division_id: formData.get('division'),
+    directorate_id: formData.get('directorate'),
+    department_id: formData.get('department'),
+    supervisor_id: role === 'intern' ? supervisorId : null
+};
+
+    try {
+        const response = await fetch('http://localhost:8080/ears-system/backend/api/users.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to add user');
+        }
+
+        if (result.success) {
+            alert('User added successfully!');
+            loadUsers(); // Refresh the user list
+            bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+            form.reset();
+        } else {
+            throw new Error(result.message || 'Unknown error occurred');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding user: ' + error.message);
+    }
+}
+async function editUser(userId) {
+    try {
+        const response = await fetch(`http://localhost:8080/ears-system/backend/api/users.php?id=${userId}`);
+        const user = await response.json();
+        
+        if (!user) return;
+        
+        document.getElementById('editUserId').value = user.id;
+        document.getElementById('editFullName').value = user.name;
+        document.getElementById('editEmail').value = user.email;
+        document.getElementById('editUserRole').value = user.role;
+        
+        // Set division
+        const divisionSelect = document.getElementById('editDivisionSelect');
+        const divisionResponse = await fetch('http://localhost:8080/ears-system/backend/api/divisions.php');
+        const divisions = await divisionResponse.json();
+        const division = divisions.find(d => d.name === user.division);
+        if (division) {
+            divisionSelect.value = division.id;
+            updateDirectorateDropdown(division.id, true);
+        }
+        
+        // Set directorate
+        const directorateSelect = document.getElementById('editDirectorateSelect');
+        const directorateResponse = await fetch('http://localhost:8080/ears-system/backend/api/directorates.php');
+        const directorates = await directorateResponse.json();
+        const directorate = directorates.find(d => d.name === user.directorate);
+        if (directorate) {
+            directorateSelect.value = directorate.id;
+            updateDepartmentDropdown(directorate.id, true);
+        }
+        
+        // Set department
+        const departmentSelect = document.getElementById('editDepartmentSelect');
+        const departmentResponse = await fetch('http://localhost:8080/ears-system/backend/api/departments.php');
+        const departments = await departmentResponse.json();
+        const department = departments.find(d => d.name === user.department);
+        if (department) {
+            departmentSelect.value = department.id;
+        }
+        
+        supervisorSelect.disabled = user.role !== 'intern';
+        
+        // Set active status
+        document.getElementById('editUserActive').checked = user.active;
+        
+        // Show modal
+        const editModal = new bootstrap.Modal(document.getElementById('editUserModal'));
+        editModal.show();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error loading user data');
+    }
+}
+
+async function updateUser() {
+    const form = document.getElementById('editUserForm');
+    const formData = new FormData(form);
+    const userId = formData.get('id');
+    
+    try {
+        const response = await fetch(`http://localhost:8080/ears-system/backend/api/users.php?id=${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                fullName: formData.get('fullName'),
+                email: formData.get('email'),
+                role: formData.get('role'),
+                division: formData.get('division'),
+                directorate: formData.get('directorate'),
+                department: formData.get('department'),
+                supervisor: formData.get('supervisor'),
+                active: formData.get('active') === 'on'
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('User updated successfully!');
+            loadUsersTable();
+            updateStats();
+            populateSupervisorDropdowns();
+            populateInternDropdowns();
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+        } else {
+            alert(result.error || 'Failed to update user');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error updating user');
+    }
+}
+
+async function addDivision() {
+    const form = document.getElementById('addDivisionForm');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('http://localhost:8080/ears-system/backend/api/divisions.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: formData.get('name'),
+                code: formData.get('code')
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Division added successfully!');
+            loadOrganizationStructure();
+            bootstrap.Modal.getInstance(document.getElementById('addDivisionModal')).hide();
+            form.reset();
+        } else {
+            alert(result.error || 'Failed to add division');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding division');
+    }
+}
+
+async function editDivision(divisionId) {
+    try {
+        const response = await fetch(`http://localhost:8080/ears-system/backend/api/divisions.php?id=${divisionId}`);
+        const division = await response.json();
+        
+        // Show edit modal with division data
+        // Implementation would be similar to editUser
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error loading division data');
+    }
+}
+
+async function deleteDivision(divisionId) {
+    if (confirm('Are you sure you want to delete this division? This will also delete associated directorates and departments.')) {
+        try {
+            const response = await fetch(`http://localhost:8080/ears-system/backend/api/divisions.php?id=${divisionId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Division and associated directorates/departments deleted successfully!');
+                loadOrganizationStructure();
+            } else {
+                alert(result.error || 'Failed to delete division');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error deleting division');
+        }
+    }
+}
+async function addDirectorate() {
+    const form = document.getElementById('addDirectorateForm');
+    const formData = {
+        name: form.querySelector('[name="name"]').value,
+        code: form.querySelector('[name="code"]').value,
+        divisionId: form.querySelector('[name="division"]').value
+    };
+
+    // Frontend validation
+    if (!formData.name || !formData.code || !formData.divisionId) {
+        alert('Please fill in all required fields');
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:8080/ears-system/backend/api/directorates.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to add directorate');
+        }
+
+        if (result.status === 'success') {
+            alert('Directorate added successfully!');
+            
+            // Refresh the directorates dropdown
+            updateDirectorateDropdown(formData.divisionId);
+            
+            // Reload organization structure
+            loadOrganizationStructureModal();
+            
+            // Reset form and close modal
+            form.reset();
+            bootstrap.Modal.getInstance(document.getElementById('addDirectorateModal')).hide();
+        } else {
+            throw new Error(result.message || 'Unknown error occurred');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + error.message);
+    }
+}
+
+async function addDepartment() {
+    const form = document.getElementById('addDepartmentForm');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('http://localhost:8080/ears-system/backend/api/departments.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: formData.get('name'),
+                code: formData.get('code'),
+                directorateId: formData.get('directorate')
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Department added successfully!');
+            loadOrganizationStructure();
+            bootstrap.Modal.getInstance(document.getElementById('addDepartmentModal')).hide();
+            form.reset();
+        } else {
+            alert(result.error || 'Failed to add department');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding department');
+    }
+}
+function populateUsersTable(users) {
+    const usersTable = document.getElementById('usersTable');
+    usersTable.innerHTML = '';
+
+    if (!users || users.length === 0) {
+        usersTable.innerHTML = `
+            <tr>
+                <td colspan="9" class="text-center py-4 text-muted">
+                    No users found
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    users.forEach(user => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="user-avatar me-2">${getInitials(user.full_name)}</div>
+                    <div>
+                        <div class="fw-bold">${user.full_name}</div>
+                        <small class="text-muted">ID: ${user.id}</small>
+                    </div>
+                </div>
+            </td>
+            <td>${user.email}</td>
+            <td>
+                <span class="badge ${getRoleBadgeClass(user.role)}">
+                    ${formatRole(user.role)}
+                </span>
+            </td>
+            <td>${user.division || 'N/A'}</td>
+            <td>${user.directorate || 'N/A'}</td>
+            <td>${user.department || 'N/A'}</td>
+            <td>${user.supervisor_name || 'N/A'}</td>
+            <td>
+                <span class="badge ${user.active ? 'bg-success' : 'bg-secondary'}">
+                    ${user.active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="editUser(${user.id})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        usersTable.appendChild(row);
+    });
+}
+
+// Helper function to get initials from name
+function getInitials(name) {
+    if (!name) return '';
+    return name.split(' ')
+        .map(part => part[0])
+        .join('')
+        .toUpperCase();
+}
+
+async function editDepartment(departmentId) {
+    try {
+        // 1. Fetch department data
+        const response = await fetch(`http://localhost:8080/ears-system/backend/api/departments.php?id=${departmentId}`);
+        if (!response.ok) throw new Error('Failed to fetch department');
+        
+        const department = await response.json();
+        
+        // 2. Populate the modal form
+        document.getElementById('editDepartmentId').value = department.id;
+        document.getElementById('editDepartmentName').value = department.name;
+        document.getElementById('editDepartmentCode').value = department.code;
+        
+        // 3. Load directorates for dropdown
+        await loadDirectoratesForEdit(department.directorate_id);
+        
+        // 4. Show the modal
+        const editModal = new bootstrap.Modal(document.getElementById('editDepartmentModal'));
+        editModal.show();
+        
+    } catch (error) {
+        console.error('Error loading department:', error);
+        showAlert(`Error loading department: ${error.message}`, 'danger');
+    }
+}
+
+async function loadDirectoratesForEdit(selectedDirectorateId = null) {
+    try {
+        const response = await fetch('http://localhost:8080/ears-system/backend/api/directorates.php');
+        if (!response.ok) throw new Error('Failed to load directorates');
+        
+        const directorates = await response.json();
+        const select = document.getElementById('editDepartmentDirectorate');
+        
+        // Clear existing options
+        select.innerHTML = '<option value="">Select Directorate</option>';
+        
+        // Add new options
+        directorates.forEach(directorate => {
+            const option = document.createElement('option');
+            option.value = directorate.id;
+            option.textContent = `${directorate.name} (${directorate.code})`;
+            option.selected = (directorate.id == selectedDirectorateId);
+            select.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Error loading directorates:', error);
+        showAlert('Error loading directorates', 'danger');
+    }
+}
+
+async function deleteDepartment(departmentId) {
+    if (confirm('Are you sure you want to delete this department?')) {
+        try {
+            const response = await fetch(`http://localhost:8080/ears-system/backend/api/departments.php?id=${departmentId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                alert('Department deleted successfully!');
+                loadOrganizationStructure();
+            } else {
+                alert(result.error || 'Failed to delete department');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error deleting department');
+        }
+    }
+}
+// Add this to your existing JavaScript code
+
+// Function to toggle fields based on selected role
+function toggleFieldsBasedOnRole(role) {
+    const directorateSelect = document.getElementById('directorateSelect');
+    const departmentSelect = document.getElementById('departmentSelect');
+    const supervisorSelect = document.getElementById('supervisorSelect');
+    
+    // Enable all fields by default
+    directorateSelect.disabled = false;
+    departmentSelect.disabled = false;
+    supervisorSelect.disabled = true; // Disabled by default unless intern is selected
+    
+    if (role === 'hr' || role === 'admin') {
+        // Disable these fields for HR and Admin roles
+        directorateSelect.disabled = true;
+        departmentSelect.disabled = true;
+        supervisorSelect.disabled = true;
+        
+        // Clear the values
+        directorateSelect.value = '';
+        departmentSelect.value = '';
+        supervisorSelect.value = '';
+    } else if (role === 'intern') {
+        // Enable supervisor field only for interns
+        supervisorSelect.disabled = false;
+    }
+}
+
+// Add event listener to the role dropdown in the Add User modal
+document.getElementById('userRole').addEventListener('change', function() {
+    toggleFieldsBasedOnRole(this.value);
+});
+document.getElementById('userRole').addEventListener('change', function() {
+    const supervisorSelect = document.getElementById('supervisorSelect');
+    supervisorSelect.disabled = this.value !== 'intern';
+});
+
+// Also call this function when the modal is shown to set initial state
+document.getElementById('addUserModal').addEventListener('show.bs.modal', function() {
+    const roleSelect = document.getElementById('userRole');
+    toggleFieldsBasedOnRole(roleSelect.value);
+});
+
+// For the edit modal as well (if needed)
+document.getElementById('editUserRole').addEventListener('change', function() {
+    const directorateSelect = document.getElementById('editDirectorateSelect');
+    const departmentSelect = document.getElementById('editDepartmentSelect');
+    const supervisorSelect = document.getElementById('editSupervisorSelect');
+    
+    if (this.value === 'hr' || this.value === 'admin') {
+        directorateSelect.disabled = true;
+        departmentSelect.disabled = true;
+        supervisorSelect.disabled = true;
+        
+        directorateSelect.value = '';
+        departmentSelect.value = '';
+        supervisorSelect.value = '';
+    } else if (this.value === 'intern') {
+        supervisorSelect.disabled = false;
+    } else {
+        directorateSelect.disabled = false;
+        departmentSelect.disabled = false;
+        supervisorSelect.disabled = true;
+    }
+});
+
+// Initialize edit modal fields when shown
+document.getElementById('editUserModal').addEventListener('show.bs.modal', function() {
+    const roleSelect = document.getElementById('editUserRole');
+    const directorateSelect = document.getElementById('editDirectorateSelect');
+    const departmentSelect = document.getElementById('editDepartmentSelect');
+    const supervisorSelect = document.getElementById('editSupervisorSelect');
+    
+    if (roleSelect.value === 'hr' || roleSelect.value === 'admin') {
+        directorateSelect.disabled = true;
+        departmentSelect.disabled = true;
+        supervisorSelect.disabled = true;
+    } else if (roleSelect.value === 'intern') {
+        supervisorSelect.disabled = false;
+    }
+});
+async function loadOrganizationalStructure() {
+    try {
+        console.log("Loading organizational structure...");
+        
+        // Load all data with error handling
+        const [divisionsRes, directoratesRes, departmentsRes] = await Promise.all([
+            fetch('http://localhost:8080/ears-system/backend/api/divisions.php'),
+            fetch('http://localhost:8080/ears-system/backend/api/directorates.php'),
+            fetch('http://localhost:8080/ears-system/backend/api/departments.php')
+        ]);
+
+        // Check responses
+        if (!divisionsRes.ok || !directoratesRes.ok || !departmentsRes.ok) {
+            throw new Error('Failed to load organizational data');
+        }
+
+        // Parse JSON
+        const divisions = await divisionsRes.json();
+        const directorates = await directoratesRes.json();
+        const departments = await departmentsRes.json();
+
+        // Initialize orgData with proper structure
+        window.orgData = {
+            divisions: divisions.divisions || divisions,
+            directorates: directorates.directorates || directorates,
+            departments: departments.departments || departments
+        };
+
+        console.log("Organizational data loaded:", window.orgData);
+        
+        // Initialize dropdowns
+        populateDivisionDropdowns();
+        
+    } catch (error) {
+        console.error('Error loading organizational structure:', error);
+        alert('Error loading organizational data. Check console for details.');
+        // Initialize empty structure to prevent further errors
+        window.orgData = {
+            divisions: [],
+            directorates: [],
+            departments: []
+        };
+    }
+}
+function populateDivisionDropdowns() {
+    const divisionSelects = [
+        document.getElementById('divisionSelect'),
+        document.getElementById('editDivisionSelect'),
+        document.querySelector('#addDirectorateForm select[name="division"]')
+    ];
+
+    divisionSelects.forEach(select => {
+        if (select) {
+            select.innerHTML = '<option value="">Select Division</option>';
+            window.orgData.divisions.forEach(division => {
+                const option = document.createElement('option');
+                option.value = division.id;
+                option.textContent = division.name;
+                select.appendChild(option);
+            });
+        }
+    });
+}
+
+function updateDirectorateDropdown(divisionId, isEdit = false) {
+    const directorateSelect = isEdit ? 
+        document.getElementById('editDirectorateSelect') : 
+        document.getElementById('directorateSelect');
+    
+    // Clear existing options
+    directorateSelect.innerHTML = '<option value="">Select Directorate</option>';
+    
+    if (!divisionId) return;
+    
+    // Safely access orgData
+    const directorates = window.orgData?.directorates || [];
+    
+    if (!Array.isArray(directorates)) {
+        console.error('Directorates data is not an array:', directorates);
+        return;
+    }
+    
+    // Filter directorates by division
+    const filteredDirectorates = directorates.filter(d => d.division_id == divisionId || d.divisionId == divisionId);
+    
+    // Add options to dropdown
+    filteredDirectorates.forEach(directorate => {
+        const option = document.createElement('option');
+        option.value = directorate.id;
+        option.textContent = directorate.name;
+        directorateSelect.appendChild(option);
+    });
+}
+document.addEventListener('DOMContentLoaded', async function() {
+    // Initialize empty structure first
+    window.orgData = {
+        divisions: [],
+        directorates: [],
+        departments: []
+    };
+    
+    // Load data
+    await loadOrganizationalStructure();
+    await loadUsers();
+    
+    // Set up event listeners
+    setupEventListeners();
+    
+    // Initialize division dropdown
+    const divisionSelect = document.getElementById('divisionSelect');
+    if (divisionSelect) {
+        divisionSelect.addEventListener('change', function() {
+            updateDirectorateDropdown(this.value);
+        });
+        
+        // Trigger initial update if a division is selected
+        if (divisionSelect.value) {
+            updateDirectorateDropdown(divisionSelect.value);
+        }
+    }
+});
+
+function updateDepartmentDropdown(directorateId, isEdit = false) {
+    const departmentSelect = isEdit ? 
+        document.getElementById('editDepartmentSelect') : 
+        document.getElementById('departmentSelect');
+    
+    departmentSelect.innerHTML = '<option value="">Select Department</option>';
+    
+    if (directorateId) {
+        const filteredDepartments = window.orgData.departments.filter(d => d.directorate_id == directorateId);
+        filteredDepartments.forEach(department => {
+            const option = document.createElement('option');
+            option.value = department.id;
+            option.textContent = department.name;
+            departmentSelect.appendChild(option);
+        });
+    }
+}
+document.getElementById('divisionSelect').addEventListener('change', function() {
+    updateDirectorateDropdown(this.value);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize division dropdown
+    const divisionSelect = document.getElementById('divisionSelect');
+    if (divisionSelect) {
+        divisionSelect.addEventListener('change', function() {
+            updateDirectorateDropdown(this.value);
+        });
+    }
+    
+    // Load initial data
+    loadOrganizationalStructure();
+    loadUsers();
+});
+async function loadOrganizationStructureModal() {
+    try {
+        // Load divisions for the table
+        const divisionsRes = await fetch('http://localhost:8080/ears-system/backend/api/divisions.php');
+        const divisions = await divisionsRes.json();
+        
+        // Load directorates for the table
+        const directoratesRes = await fetch('http://localhost:8080/ears-system/backend/api/directorates.php');
+        const directorates = await directoratesRes.json();
+        
+        // Load departments for the table
+        const departmentsRes = await fetch('http://localhost:8080/ears-system/backend/api/departments.php');
+        const departments = await departmentsRes.json();
+        
+        // Populate tables
+        populateDivisionsTable(divisions);
+        populateDirectoratesTable(directorates);
+        populateDepartmentsTable(departments);
+        
+    } catch (error) {
+        console.error('Error loading org structure:', error);
+    }
+}
+
+function populateDivisionsTable(divisions) {
+    const table = document.getElementById('divisionsTable');
+    table.innerHTML = '';
+    
+    divisions.forEach(division => {
+        const row = `<tr>
+            <td>${division.name}</td>
+            <td>${division.code}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteDivision(${division.id})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>`;
+        table.innerHTML += row;
+    });
+}
+
+// Similar functions for directorates and departments tables
+async function addDivision() {
+    const form = document.getElementById('addDivisionForm');
+    const formData = {
+        name: form.querySelector('[name="name"]').value,
+        code: form.querySelector('[name="code"]').value
+    };
+    
+    try {
+        const response = await fetch('http://localhost:8080/ears-system/backend/api/divisions.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.message || 'Failed to add division');
+        }
+        
+        alert('Division added successfully!');
+        
+        // Reload the organizational structure
+        await loadOrganizationalStructure();
+        
+        // Reset form and hide modal
+        form.reset();
+        bootstrap.Modal.getInstance(document.getElementById('addDivisionModal')).hide();
+        
+    } catch (error) {
+        console.error('Error adding division:', error);
+        alert('Error adding division: ' + error.message);
+    }
+}
+// Helper functions remain the same
+function formatRole(role) {
+    const roles = {
+        'intern': 'Intern',
+        'supervisor': 'Supervisor',
+        'hr': 'HR',
+        'admin': 'System Admin'
+    };
+    return roles[role] || role;
+}
+
+function getRoleBadgeClass(role) {
+    const classes = {
+        'intern': 'bg-info text-dark',
+        'supervisor': 'bg-primary',
+        'hr': 'bg-warning text-dark',
+        'admin': 'bg-danger'
+    };
+    return classes[role] || 'bg-secondary';
+}
+document.addEventListener("DOMContentLoaded", () => {
+  const passwordField = document.getElementById("passwordField");
+  const togglePassword = document.getElementById("togglePassword");
+  const generatePasswordBtn = document.getElementById("generatePassword");
+
+  // Generate strong password and show it as text
+  generatePasswordBtn.addEventListener("click", () => {
+    const newPassword = generateStrongPassword();
+    passwordField.value = newPassword;
+    passwordField.type = "text";
+    togglePassword.classList.remove("bi-eye");
+    togglePassword.classList.add("bi-eye-slash");
+  });
+
+  // Toggle show/hide password
+  togglePassword.addEventListener("click", () => {
+    if (passwordField.type === "password") {
+      passwordField.type = "text";
+      togglePassword.classList.remove("bi-eye");
+      togglePassword.classList.add("bi-eye-slash");
+    } else {
+      passwordField.type = "password";
+      togglePassword.classList.remove("bi-eye-slash");
+      togglePassword.classList.add("bi-eye");
+    }
+  });
+});
+function generateStrongPassword() {
+  const length = 12;
+  const charset =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_=+[]{}|;:,.<>?";
+  let password = "";
+  for (let i = 0, n = charset.length; i < length; ++i) {
+    password += charset.charAt(Math.floor(Math.random() * n));
+  }
+  return password;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const passwordField = document.getElementById("passwordField");
+  const togglePassword = document.getElementById("togglePassword");
+  const generatePasswordBtn = document.getElementById("generatePassword");
+
+  // Generate strong password and show it as text
+  generatePasswordBtn.addEventListener("click", () => {
+    const newPassword = generateStrongPassword();
+    passwordField.value = newPassword;
+    passwordField.type = "text";
+    togglePassword.classList.remove("bi-eye");
+    togglePassword.classList.add("bi-eye-slash");
+  });
+  console.log("Loading directorates for division:", divisionId);
+console.log("Received directorates:", directorates);
+
+  // Toggle show/hide password
+  togglePassword.addEventListener("click", () => {
+    if (passwordField.type === "password") {
+      passwordField.type = "text";
+      togglePassword.classList.remove("bi-eye");
+      togglePassword.classList.add("bi-eye-slash");
+    } else {
+      passwordField.type = "password";
+      togglePassword.classList.remove("bi-eye-slash");
+      togglePassword.classList.add("bi-eye");
+    }
+  });
+});
+
+
+</script>
+</body>
+</html>

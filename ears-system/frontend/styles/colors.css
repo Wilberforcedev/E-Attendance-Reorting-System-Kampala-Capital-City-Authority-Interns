@@ -1,0 +1,13 @@
+:root {
+  --kcca-red: #E30613;
+  --kcca-green: #008540;
+  --kcca-yellow: #FFD100;
+  --kcca-black: #000000;
+  --kcca-white: #FFFFFF;
+
+  --btn-primary-bg: var(--kcca-red);
+  --btn-primary-hover: #b8000f;
+
+  --link-color: var(--kcca-green);
+  --link-hover-color: #005f2f;
+}

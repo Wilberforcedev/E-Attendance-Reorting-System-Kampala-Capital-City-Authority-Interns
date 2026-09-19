@@ -1,0 +1,909 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EARS - HR Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --kcca-red: #E30613;
+            --kcca-green: #008540;
+            --kcca-yellow: #FFD100;
+            --kcca-black: #000000;
+            --kcca-white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        /* Offcanvas sidebar */
+        .offcanvas-start {
+            width: 250px;
+        }
+
+        /* Sidebar navigation */
+        .sidebar-nav .nav-link {
+            color: #f8f9fa;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .sidebar-nav .nav-link:hover,
+        .sidebar-nav .nav-link.active {
+            background-color: #343a40;
+            color: var(--kcca-yellow);
+        }
+        .sidebar-nav i {
+            margin-right: 8px;
+        }
+
+        /* Main content */
+        .content {
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (min-width: 992px) {
+            .content.sidebar-open {
+                margin-left: 250px;
+            }
+        }
+
+        /* Stats cards */
+        .stat-card {
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card .icon {
+            font-size: 2rem;
+            opacity: 0.8;
+        }
+        
+        /* Status badges */
+        .badge-approved {
+            background-color: rgba(0, 133, 64, 0.1);
+            color: var(--kcca-green);
+        }
+        
+        .badge-pending {
+            background-color: rgba(255, 209, 0, 0.1);
+            color: var(--kcca-yellow);
+        }
+        
+        .badge-rejected {
+            background-color: rgba(227, 6, 19, 0.1);
+            color: var(--kcca-red);
+        }
+        
+        .badge-submitted {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+        }
+
+        /* Table styles */
+        .table thead {
+            background-color: var(--kcca-red);
+            color: white;
+        }
+
+        /* Filter section */
+        .filter-section {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Notification badge */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar with hamburger -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <button class="btn btn-dark" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+                <i class="bi bi-list fs-3"></i>
+            </button>
+            <span class="navbar-brand mb-0 h1 ms-3">HR Dashboard</span>
+            <div class="d-flex align-items-center">
+                <div class="position-relative me-3">
+                    <button class="btn btn-dark position-relative" id="notificationsDropdown" data-bs-toggle="dropdown">
+                        <i class="bi bi-bell fs-5"></i>
+                        <span class="notification-badge badge rounded-pill bg-danger">3</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
+                        <li><h6 class="dropdown-header">Notifications</h6></li>
+                        <li><a class="dropdown-item" href="#">Report Week 4 approved by supervisor</a></li>
+                        <li><a class="dropdown-item" href="#">Report Week 3 rejected - "Incomplete tasks"</a></li>
+                        <li><a class="dropdown-item" href="#">New intern assigned to your department</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-primary" href="#" id="markAllRead">Mark all as read</a></li>
+                    </ul>
+                </div>
+                <span class="text-white me-2">Last sync: <span id="lastSync">Just now</span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
+        <div class="offcanvas-header border-bottom border-secondary">
+            <div class="d-flex align-items-center">
+                <img src="https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png" alt="KCCA Logo" style="height: 40px; width: auto; margin-right: 10px;">
+                <h5 class="offcanvas-title fw-bold mb-0" style="color: #008540; letter-spacing: 1px;">
+                    EARS
+                </h5>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <nav class="nav flex-column sidebar-nav px-3">
+                <a class="nav-link  d-flex align-items-center mb-2" href="#">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="Reports.html">
+                    <i class="bi bi-file-earmark-text"></i> All Reports
+                </a>
+                <a class="nav-link d-flex align-items-center mb-2" href="analytics.html">
+                    <i class="bi bi-bar-chart"></i> Analytics
+                </a>
+                <a class="nav-link text-white d-flex align-items-center mt-auto" href="#" id="logoutLink">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <main class="content" id="mainContent">
+        <div class="container-fluid">
+            <!-- Stats Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="card stat-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-2">Total Interns</h6>
+                                    <h3 class="mb-0" id="totalInterns">0</h3>
+                                </div>
+                                <i class="bi bi-people-fill text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card stat-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-2">Reports This Week</h6>
+                                    <h3 class="mb-0" id="reportsThisWeek">0</h3>
+                                </div>
+                                <i class="bi bi-file-earmark-text text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card stat-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-2">Pending Approvals</h6>
+                                    <h3 class="mb-0" id="pendingApprovals">0</h3>
+                                </div>
+                                <i class="bi bi-hourglass-split text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card stat-card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-2">HR Reviewed</h6>
+                                    <h3 class="mb-0" id="hrReviewed">0</h3>
+                                </div>
+                                <i class="bi bi-check-circle text-success"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="divisionFilter" class="form-label">Division</label>
+                        <select class="form-select" id="divisionFilter">
+                            <option value="">All Divisions</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="directorateFilter" class="form-label">Directorate</label>
+                        <select class="form-select" id="directorateFilter">
+                            <option value="">All Directorates</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="departmentFilter" class="form-label">Department</label>
+                        <select class="form-select" id="departmentFilter">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Statuses</option>
+                            <option value="submitted_to_hr">Submitted to HR</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="dateRange" class="form-label">Date Range</label>
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="startDate">
+                            <span class="input-group-text">to</span>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <div class="d-flex gap-2 w-100">
+                            <button class="btn btn-primary flex-grow-1" id="applyFilters">
+                                <i class="bi bi-funnel"></i> Apply Filters
+                            </button>
+                            <button class="btn btn-outline-secondary" id="resetFilters">
+                                <i class="bi bi-arrow-counterclockwise"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Table -->
+            <div class="card mt-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Intern Reports</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-danger me-2" id="exportPdf">
+                            <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" id="exportExcel">
+                            <i class="bi bi-file-earmark-excel"></i> Export Excel
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="reportsTable">
+                            <thead>
+                                <tr>
+                                    <th>Intern</th>
+                                    <th>Division</th>
+                                    <th>Directorate</th>
+                                    <th>Department</th>
+                                    <th>Week</th>
+                                    <th>Supervisor</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportsTableBody">
+                                <!-- Reports will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Reports pagination" class="mt-4">
+                        <ul class="pagination justify-content-center" id="pagination">
+                            <!-- Pagination will be loaded here -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Report Details Modal -->
+    <div class="modal fade" id="reportDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Report Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="reportDetailsContent">
+                    <!-- Report details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="approveReportBtn">Approve</button>
+                    <button type="button" class="btn btn-danger" id="rejectReportBtn">Reject</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+
+        document.addEventListener('DOMContentLoaded', function() {
+    // Get user data from session
+    const user = JSON.parse(sessionStorage.setItem('currentuser' , JSON.stringify(data.user)));
+    if(!user || user.role !== 'hr') {
+        window.location.href = '../login.html';
+    }
+
+
+    // Load stats
+    loadStats();
+    
+    // Load all reports
+    loadAllReports();
+    
+    // Set up filters
+    document.getElementById('filterForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        loadAllReports();
+    });
+    
+    // Export buttons
+    document.getElementById('exportPdf').addEventListener('click', exportToPdf);
+    document.getElementById('exportExcel').addEventListener('click', exportToExcel);
+});
+
+function loadStats() {
+    fetch('http://localhost/ears-system/backend/api/hr/stats.php', {
+        headers: {
+            'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('totalInterns').textContent = data.total_interns;
+        document.getElementById('reportsThisWeek').textContent = data.reports_this_week;
+        document.getElementById('pendingApprovals').textContent = data.pending_approvals;
+        document.getElementById('hrReviewed').textContent = data.hr_reviewed;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function loadAllReports() {
+    const division = document.getElementById('divisionFilter').value;
+    const directorate = document.getElementById('directorateFilter').value;
+    const department = document.getElementById('departmentFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const startDate = document.getElementById('startDateFilter').value;
+    const endDate = document.getElementById('endDateFilter').value;
+    
+    let url = 'http://localhost/ears-system/backend/api/hr/reports.php?';
+    if(division) url += `division=${division}&`;
+    if(directorate) url += `directorate=${directorate}&`;
+    if(department) url += `department=${department}&`;
+    if(status) url += `status=${status}&`;
+    if(startDate) url += `start_date=${startDate}&`;
+    if(endDate) url += `end_date=${endDate}&`;
+    
+    fetch(url, {
+        headers: {
+            'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const tableBody = document.getElementById('allReportsTable').querySelector('tbody');
+        tableBody.innerHTML = '';
+        
+        data.records.forEach(report => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${report.intern_name}</td>
+                <td>${report.division}</td>
+                <td>${report.week_number}</td>
+                <td>${report.supervisor_name || 'N/A'}</td>
+                <td><span class="badge ${getStatusBadgeClass(report.status)}">${report.status}</span></td>
+                <td>${new Date(report.created_at).toLocaleDateString()}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="viewReport(${report.id})">View</button>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function exportToPdf() {
+    // Get current filters
+    const division = document.getElementById('divisionFilter').value;
+    const directorate = document.getElementById('directorateFilter').value;
+    const department = document.getElementById('departmentFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    const startDate = document.getElementById('startDateFilter').value;
+    const endDate = document.getElementById('endDateFilter').value;
+    
+    let url = 'http://localhost/ears-system/backend/api/hr/export.php?format=pdf&';
+    if(division) url += `division=${division}&`;
+    if(directorate) url += `directorate=${directorate}&`;
+    if(department) url += `department=${department}&`;
+    if(status) url += `status=${status}&`;
+    if(startDate) url += `start_date=${startDate}&`;
+    if(endDate) url += `end_date=${endDate}&`;
+    
+    window.open(url, '_blank');
+}
+
+function exportToExcel() {
+    // Similar to exportToPdf but with format=excel
+    let url = 'http://localhost/ears-system/backend/api/hr/export.php?format=excel&';
+    // Add filters...
+    window.open(url, '_blank');
+}
+
+function viewReport(reportId) {
+    // Implement report viewing functionality
+    console.log('View report:', reportId);
+}
+        // Sample data for demonstration
+        const sampleData = {
+            divisions: ["City Hall", "Public Health", "Engineering", "Education"],
+            directorates: ["ICT", "Finance", "Medical", "Construction", "Schools"],
+            departments: ["Software", "Hardware", "Networking", "Accounts", "Pharmacy", "Roads", "Primary"],
+            interns: 142,
+            reportsThisWeek: 87,
+            pendingApprovals: 23,
+            hrReviewed: 64,
+            reports: [
+                {
+                    id: 1,
+                    intern: "John Doe",
+                    division: "City Hall",
+                    directorate: "ICT",
+                    department: "Software",
+                    week: "Week 5",
+                    supervisor: "Sarah Smith",
+                    submitted: "2023-06-15",
+                    status: "approved",
+                    activities: "Developed new features for the EARS system, fixed bugs in reporting module",
+                    challenges: "Had difficulty integrating with the legacy system",
+                    tasks: "Complete integration testing"
+                },
+                {
+                    id: 2,
+                    intern: "Jane Smith",
+                    division: "Public Health",
+                    directorate: "Medical",
+                    department: "Pharmacy",
+                    week: "Week 5",
+                    supervisor: "Michael Brown",
+                    submitted: "2023-06-14",
+                    status: "submitted_to_hr",
+                    activities: "Organized medication inventory, assisted in patient record keeping",
+                    challenges: "Some records were incomplete",
+                    tasks: "Follow up on incomplete records"
+                },
+                {
+                    id: 3,
+                    intern: "Robert Johnson",
+                    division: "Engineering",
+                    directorate: "Construction",
+                    department: "Roads",
+                    week: "Week 5",
+                    supervisor: "David Wilson",
+                    submitted: "2023-06-13",
+                    status: "rejected",
+                    activities: "Site inspection, material quality checks",
+                    challenges: "Heavy rains delayed some inspections",
+                    tasks: "Complete pending inspections"
+                },
+                {
+                    id: 4,
+                    intern: "Emily Davis",
+                    division: "Education",
+                    directorate: "Schools",
+                    department: "Primary",
+                    week: "Week 4",
+                    supervisor: "Jessica Lee",
+                    submitted: "2023-06-08",
+                    status: "approved",
+                    activities: "Assisted teachers with lesson planning, organized learning materials",
+                    challenges: "None",
+                    tasks: "Continue supporting teachers"
+                },
+                {
+                    id: 5,
+                    intern: "Michael Wilson",
+                    division: "City Hall",
+                    directorate: "Finance",
+                    department: "Accounts",
+                    week: "Week 4",
+                    supervisor: "Sarah Smith",
+                    submitted: "2023-06-07",
+                    status: "pending",
+                    activities: "Processed invoices, assisted with budget preparation",
+                    challenges: "Some invoices were missing approval signatures",
+                    tasks: "Follow up on unsigned invoices"
+                }
+            ]
+        };
+
+        // Current state
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        let filteredReports = [];
+        let currentReportId = null;
+
+        // DOM Elements
+        const reportsTableBody = document.getElementById('reportsTableBody');
+        const pagination = document.getElementById('pagination');
+        const divisionFilter = document.getElementById('divisionFilter');
+        const directorateFilter = document.getElementById('directorateFilter');
+        const departmentFilter = document.getElementById('departmentFilter');
+        const statusFilter = document.getElementById('statusFilter');
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+        const applyFiltersBtn = document.getElementById('applyFilters');
+        const resetFiltersBtn = document.getElementById('resetFilters');
+        const exportPdfBtn = document.getElementById('exportPdf');
+        const exportExcelBtn = document.getElementById('exportExcel');
+        const reportDetailsModal = new bootstrap.Modal('#reportDetailsModal');
+        const reportDetailsContent = document.getElementById('reportDetailsContent');
+        const approveReportBtn = document.getElementById('approveReportBtn');
+        const rejectReportBtn = document.getElementById('rejectReportBtn');
+        const logoutLink = document.getElementById('logoutLink');
+        const markAllRead = document.getElementById('markAllRead');
+        const notificationBadge = document.querySelector('.notification-badge');
+
+        // Initialize the dashboard
+        function initDashboard() {
+            // Set current date as default end date
+            const today = new Date().toISOString().split('T')[0];
+            endDate.value = today;
+            
+            // Set start date as 30 days before
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            startDate.value = thirtyDaysAgo.toISOString().split('T')[0];
+            
+            // Populate stats
+            document.getElementById('totalInterns').textContent = sampleData.interns;
+            document.getElementById('reportsThisWeek').textContent = sampleData.reportsThisWeek;
+            document.getElementById('pendingApprovals').textContent = sampleData.pendingApprovals;
+            document.getElementById('hrReviewed').textContent = sampleData.hrReviewed;
+            
+            // Populate filters
+            populateFilter(divisionFilter, sampleData.divisions);
+            populateFilter(directorateFilter, sampleData.directorates);
+            populateFilter(departmentFilter, sampleData.departments);
+            
+            // Load reports
+            filterReports();
+            
+            // Set up auto-refresh
+            setInterval(updateLastSync, 60000); // Update every minute
+        }
+
+        // Populate filter dropdown
+        function populateFilter(selectElement, options) {
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                selectElement.appendChild(opt);
+            });
+        }
+
+        // Filter reports based on selected filters
+        function filterReports() {
+            const division = divisionFilter.value;
+            const directorate = directorateFilter.value;
+            const department = departmentFilter.value;
+            const status = statusFilter.value;
+            const start = startDate.value;
+            const end = endDate.value;
+            
+            filteredReports = sampleData.reports.filter(report => {
+                return (!division || report.division === division) &&
+                       (!directorate || report.directorate === directorate) &&
+                       (!department || report.department === department) &&
+                       (!status || report.status === status) &&
+                       (!start || report.submitted >= start) &&
+                       (!end || report.submitted <= end);
+            });
+            
+            currentPage = 1;
+            renderReports();
+            renderPagination();
+        }
+
+        // Render reports table
+        function renderReports() {
+            reportsTableBody.innerHTML = '';
+            
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredReports.length);
+            const paginatedReports = filteredReports.slice(startIndex, endIndex);
+            
+            if (paginatedReports.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="9" class="text-center py-4 text-muted">No reports found matching your criteria</td>`;
+                reportsTableBody.appendChild(row);
+                return;
+            }
+            
+            paginatedReports.forEach(report => {
+                const row = document.createElement('tr');
+                
+                // Determine badge class based on status
+                let badgeClass, statusText;
+                switch(report.status) {
+                    case 'approved':
+                        badgeClass = 'badge-approved';
+                        statusText = 'Approved';
+                        break;
+                    case 'submitted_to_hr':
+                        badgeClass = 'badge-submitted';
+                        statusText = 'Submitted to HR';
+                        break;
+                    case 'rejected':
+                        badgeClass = 'badge-rejected';
+                        statusText = 'Rejected';
+                        break;
+                    case 'pending':
+                        badgeClass = 'badge-pending';
+                        statusText = 'Pending';
+                        break;
+                    default:
+                        badgeClass = 'badge-secondary';
+                        statusText = report.status;
+                }
+                
+                row.innerHTML = `
+                    <td>${report.intern}</td>
+                    <td>${report.division}</td>
+                    <td>${report.directorate}</td>
+                    <td>${report.department}</td>
+                    <td>${report.week}</td>
+                    <td>${report.supervisor}</td>
+                    <td>${report.submitted}</td>
+                    <td><span class="badge ${badgeClass} rounded-pill">${statusText}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary view-report" data-id="${report.id}">
+                            <i class="bi bi-eye"></i> View
+                        </button>
+                    </td>
+                `;
+                reportsTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to view buttons
+            document.querySelectorAll('.view-report').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const reportId = parseInt(this.getAttribute('data-id'));
+                    viewReportDetails(reportId);
+                });
+            });
+        }
+
+        // Render pagination
+        function renderPagination() {
+            pagination.innerHTML = '';
+            const totalPages = Math.ceil(filteredReports.length / itemsPerPage);
+            
+            if (totalPages <= 1) return;
+            
+            // Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#">Previous</a>`;
+            prevLi.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderReports();
+                }
+            });
+            pagination.appendChild(prevLi);
+            
+            // Page numbers
+            for (let i = 1; i <= totalPages; i++) {
+                const pageLi = document.createElement('li');
+                pageLi.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                pageLi.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentPage = i;
+                    renderReports();
+                });
+                pagination.appendChild(pageLi);
+            }
+            
+            // Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#">Next</a>`;
+            nextLi.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderReports();
+                }
+            });
+            pagination.appendChild(nextLi);
+        }
+
+        // View report details
+        function viewReportDetails(reportId) {
+            const report = sampleData.reports.find(r => r.id === reportId);
+            if (!report) return;
+            
+            currentReportId = reportId;
+            
+            // Determine status text
+            let statusText;
+            switch(report.status) {
+                case 'approved': statusText = 'Approved'; break;
+                case 'submitted_to_hr': statusText = 'Submitted to HR'; break;
+                case 'rejected': statusText = 'Rejected'; break;
+                case 'pending': statusText = 'Pending'; break;
+                default: statusText = report.status;
+            }
+            
+            reportDetailsContent.innerHTML = `
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6>Intern Information</h6>
+                        <p><strong>Name:</strong> ${report.intern}</p>
+                        <p><strong>Division:</strong> ${report.division}</p>
+                        <p><strong>Directorate:</strong> ${report.directorate}</p>
+                        <p><strong>Department:</strong> ${report.department}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Report Details</h6>
+                        <p><strong>Week:</strong> ${report.week}</p>
+                        <p><strong>Supervisor:</strong> ${report.supervisor}</p>
+                        <p><strong>Submitted:</strong> ${report.submitted}</p>
+                        <p><strong>Status:</strong> ${statusText}</p>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h6>Activities Performed</h6>
+                    <div class="p-3 bg-light rounded">${report.activities}</div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <h6>Challenges Faced</h6>
+                        <div class="p-3 bg-light rounded">${report.challenges}</div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <h6>Tasks in Progress</h6>
+                        <div class="p-3 bg-light rounded">${report.tasks}</div>
+                    </div>
+                </div>
+            `;
+            
+            // Show/hide action buttons based on status
+            if (report.status === 'submitted_to_hr') {
+                approveReportBtn.style.display = 'inline-block';
+                rejectReportBtn.style.display = 'inline-block';
+            } else {
+                approveReportBtn.style.display = 'none';
+                rejectReportBtn.style.display = 'none';
+            }
+            
+            reportDetailsModal.show();
+        }
+
+        // Approve report
+        function approveReport() {
+            if (!currentReportId) return;
+            
+            const reportIndex = sampleData.reports.findIndex(r => r.id === currentReportId);
+            if (reportIndex === -1) return;
+            
+            sampleData.reports[reportIndex].status = 'approved';
+            sampleData.hrReviewed++;
+            
+            alert('Report has been approved successfully!');
+            reportDetailsModal.hide();
+            filterReports();
+            
+            // Update stats
+            document.getElementById('hrReviewed').textContent = sampleData.hrReviewed;
+        }
+
+        // Reject report
+        function rejectReport() {
+            if (!currentReportId) return;
+            
+            const reason = prompt('Please enter the reason for rejection:');
+            if (!reason) return;
+            
+            const reportIndex = sampleData.reports.findIndex(r => r.id === currentReportId);
+            if (reportIndex === -1) return;
+            
+            sampleData.reports[reportIndex].status = 'rejected';
+            
+            alert(`Report has been rejected. Reason: ${reason}`);
+            reportDetailsModal.hide();
+            filterReports();
+        }
+
+        // Export to PDF
+        function exportToPdf() {
+            alert('PDF export functionality would be implemented here. This would generate a PDF of the current filtered reports.');
+        }
+
+        // Export to Excel
+        function exportToExcel() {
+            alert('Excel export functionality would be implemented here. This would generate an Excel file of the current filtered reports.');
+        }
+
+        // Update last sync time
+        function updateLastSync() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('lastSync').textContent = timeString;
+        }
+
+        // Mark all notifications as read
+        function markNotificationsAsRead() {
+            notificationBadge.style.display = 'none';
+        }
+
+       // Enhanced logout handler for supervisors
+document.getElementById('logoutLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    if (confirm('Are you sure you want to logout?')) {
+        // 1. Call logout API
+        fetch('/api/auth/logout', {
+            method: 'POST',
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            // 2. Clear client-side data
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // 3. Redirect to login
+            window.location.href = '/login?logout=success';
+        })
+        .catch(error => {
+            console.error('Logout error:', error);
+            window.location.href = '/login'; // Force logout anyway
+        });
+    }
+});
+
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>

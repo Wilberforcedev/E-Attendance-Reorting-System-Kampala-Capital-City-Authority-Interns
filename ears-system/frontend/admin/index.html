@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EARS - Admin Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/admin.css" rel="stylesheet">
+    <script>
+        // Immediately apply stored or preferred theme to avoid FOUC
+        (function() {
+            try {
+                var storedTheme = localStorage.getItem('ears_theme') || localStorage.getItem('theme');
+                var theme = storedTheme;
+                if (!theme || theme === 'system') {
+                    theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+                }
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.classList.add(theme === 'dark' ? 'dark-mode' : 'light-mode');
+            } catch (e) {
+                console.warn('Could not read theme from localStorage', e);
+            }
+        })();
+    </script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand text-warning" href="#"><i class="fas fa-clipboard-check me-2"></i>EARS</a>
+            
+            <div class="navbar-nav ms-auto d-flex flex-row align-items-center">
+                <!-- Global Theme Toggle Button -->
+                <div class="nav-item me-3">
+                    <button id="theme-toggle-btn" class="theme-toggle-btn" type="button" aria-label="Toggle light and dark mode" title="Switch between Light and Dark mode">
+                        <i id="theme-toggle-icon" class="fas fa-moon"></i>
+                        <span id="theme-toggle-text" class="d-none d-sm-inline">Dark Mode</span>
+                    </button>
+                </div>
+
+                <!-- Notifications Dropdown -->
+                <div class="nav-item dropdown me-2">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge bg-danger">3</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" onclick="showUserManagement()">New user registration</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSystemSettings()">System backup completed</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showAuditLogs()">Audit log export ready</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showOrganizationalStructure()">Add department/division</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Admin Dropdown -->
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle"></i> Admin
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" onclick="showProfile()">Profile</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="changePassword()">Change Password</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item d-flex align-items-center justify-content-between" href="#" id="menu-theme-toggle" onclick="toggleTheme(); return false;">
+                            <span><i id="menu-theme-icon" class="fas fa-moon me-2"></i> Appearance</span>
+                            <span id="menu-theme-badge" class="badge bg-secondary">Light</span>
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" onclick="showDashboard()">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showUserManagement()">
+                                <i class="fas fa-users"></i> User Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showOrganizationalStructure()">
+                                <i class="fas fa-sitemap"></i> Organizational Structure
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSupervisorAssignment()">
+                                <i class="fas fa-user-tie"></i> Supervisor Assignment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showAuditLogs()">
+                                <i class="fas fa-history"></i> Audit Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" onclick="showSystemSettings()">
+                                <i class="fas fa-cog"></i> System Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="content-section">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Admin Dashboard</h1>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Total Users</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-users">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                Active Interns</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="active-interns">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                                Supervisors</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-supervisors">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-user-tie fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Pending Reports</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="pending-reports">0</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Registration Trends Line Chart Section (Recharts) -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card shadow mb-4 chart-card-container">
+                                <div class="card-header py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="background-color: rgba(0, 133, 64, 0.12); width: 38px; height: 38px;">
+                                            <i class="fas fa-chart-line text-success"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="m-0 font-weight-bold text-primary">User Registration Trends (Last 7 Days)</h6>
+                                            <small class="text-muted">Daily account registrations breakdown by role</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <!-- Role Filter Buttons -->
+                                        <div class="btn-group btn-group-sm" role="group" id="chart-role-filters" aria-label="Role Filters">
+                                            <button type="button" class="btn btn-outline-primary active" id="btn-filter-all" onclick="filterRegistrationTrend('all')">
+                                                All Roles
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary" id="btn-filter-intern" onclick="filterRegistrationTrend('intern')">
+                                                Interns
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary" id="btn-filter-supervisor" onclick="filterRegistrationTrend('supervisor')">
+                                                Supervisors
+                                            </button>
+                                        </div>
+
+                                        <!-- Refresh and View Options -->
+                                        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="refreshRegistrationTrendData()" title="Refresh registration trend data">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- 7-Day Performance Metric Badges -->
+                                    <div class="row g-3 mb-3 text-center" id="registration-trend-metrics">
+                                        <div class="col-xl-3 col-sm-6">
+                                            <div class="p-2 rounded border bg-light-subtle">
+                                                <small class="text-muted d-block fw-semibold text-uppercase" style="font-size: 0.72rem;">7-Day Registrations</small>
+                                                <div class="d-flex align-items-center justify-content-center gap-1 mt-1">
+                                                    <span class="fs-4 fw-bold text-primary" id="trend-7day-total">--</span>
+                                                    <span class="badge bg-success-subtle text-success ms-1"><i class="fas fa-arrow-up"></i> Active</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-sm-6">
+                                            <div class="p-2 rounded border bg-light-subtle">
+                                                <small class="text-muted d-block fw-semibold text-uppercase" style="font-size: 0.72rem;">Daily Average</small>
+                                                <div class="d-flex align-items-center justify-content-center gap-1 mt-1">
+                                                    <span class="fs-4 fw-bold text-success" id="trend-daily-avg">--</span>
+                                                    <small class="text-muted">users/day</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-sm-6">
+                                            <div class="p-2 rounded border bg-light-subtle">
+                                                <small class="text-muted d-block fw-semibold text-uppercase" style="font-size: 0.72rem;">Peak Day</small>
+                                                <div class="d-flex align-items-center justify-content-center gap-1 mt-1">
+                                                    <span class="fs-4 fw-bold text-warning" id="trend-peak-count">--</span>
+                                                    <small class="text-muted ms-1" id="trend-peak-date">--</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-3 col-sm-6">
+                                            <div class="p-2 rounded border bg-light-subtle">
+                                                <small class="text-muted d-block fw-semibold text-uppercase" style="font-size: 0.72rem;">Intern Share</small>
+                                                <div class="d-flex align-items-center justify-content-center gap-1 mt-1">
+                                                    <span class="fs-4 fw-bold text-info" id="trend-intern-share">--</span>
+                                                    <small class="text-muted ms-1">of total</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Recharts React Container -->
+                                    <div id="recharts-registration-trend-root" style="width: 100%; height: 320px; position: relative;">
+                                        <div class="d-flex align-items-center justify-content-center h-100 text-muted">
+                                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+                                            <span>Loading registration trend chart...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Recent System Activity</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recent-activity">
+                                        <!-- Activity items will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card shadow mb-4">
+                                <div class="card-header py-3">
+                                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-primary btn-sm mb-2 w-100" onclick="showUserManagement()">
+                                        <i class="fas fa-user-plus"></i> Add New User
+                                    </button>
+                                    <button class="btn btn-success btn-sm mb-2 w-100" onclick="showOrganizationalStructure()">
+                                        <i class="fas fa-plus"></i> Add Department
+                                    </button>
+                                    <button class="btn btn-info btn-sm mb-2 w-100" onclick="showAuditLogs()">
+                                        <i class="fas fa-download"></i> Export Audit Log
+                                    </button>
+                                    <button class="btn btn-warning btn-sm mb-2 w-100" onclick="showSystemSettings()">
+                                        <i class="fas fa-cog"></i> System Settings
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Management Section -->
+                <div id="user-management-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">User Management</h1>
+                        <button class="btn btn-primary" onclick="showAddUserModal()">
+                            <i class="fas fa-plus"></i> Add New User
+                        </button>
+                    </div>
+
+                    <!-- User Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <select class="form-select" id="role-filter">
+                                <option value="">All Roles</option>
+                                <option value="intern">Intern</option>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="hr">HR</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="department-filter">
+                                <option value="">All Departments</option>
+                                <!-- Departments will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" id="search-user" placeholder="Search users...">
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-secondary" onclick="filterUsers()">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Action Toolbar -->
+                    <div id="bulk-actions-container" class="bulk-actions-container mb-3 p-2 rounded border d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="form-check m-0 d-flex align-items-center">
+                                <input class="form-check-input me-2" type="checkbox" id="bulk-select-all-checkbox" onchange="toggleSelectAllUsers(this.checked)">
+                                <label class="form-check-label fw-semibold" for="bulk-select-all-checkbox" id="bulk-select-label">
+                                    Select All
+                                </label>
+                            </div>
+                            <span id="bulk-selected-badge" class="badge bg-secondary ms-1">0 selected</span>
+                        </div>
+                        
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <button id="bulk-clear-btn" class="btn btn-sm btn-outline-secondary" type="button" onclick="clearUserSelection()" disabled title="Clear selection">
+                                <i class="fas fa-times me-1"></i> Deselect
+                            </button>
+
+                            <!-- Bulk Action Menu Dropdown -->
+                            <div class="dropdown">
+                                <button id="bulk-actions-dropdown-btn" class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" disabled>
+                                    <i class="fas fa-tasks me-1"></i> Bulk Actions
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bulk-actions-dropdown-btn">
+                                    <li><h6 class="dropdown-header">Status Modification</h6></li>
+                                    <li><a class="dropdown-item" href="#" onclick="bulkDeactivateUsers(); return false;">
+                                        <i class="fas fa-user-slash text-warning me-2"></i> Deactivate selected
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="bulkActivateUsers(); return false;">
+                                        <i class="fas fa-user-check text-success me-2"></i> Activate selected
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Credentials</h6></li>
+                                    <li><a class="dropdown-item" href="#" onclick="bulkResetPasswords(); return false;">
+                                        <i class="fas fa-key text-info me-2"></i> Reset passwords
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="bulkDeleteUsers(); return false;">
+                                        <i class="fas fa-trash-alt me-2"></i> Delete selected
+                                    </a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Dedicated Quick Action Buttons -->
+                            <button id="bulk-deactivate-btn" class="btn btn-sm btn-warning text-dark" type="button" onclick="bulkDeactivateUsers()" disabled title="Deactivate selected users">
+                                <i class="fas fa-user-slash me-1"></i> Deactivate selected
+                            </button>
+                            <button id="bulk-delete-btn" class="btn btn-sm btn-danger" type="button" onclick="bulkDeleteUsers()" disabled title="Delete selected users">
+                                <i class="fas fa-trash-alt me-1"></i> Delete selected
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 44px;" class="text-center">
+                                        <input type="checkbox" class="form-check-input" id="select-all-users" onchange="toggleSelectAllUsers(this.checked)" title="Select all users" aria-label="Select all users">
+                                    </th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Department</th>
+                                    <th>Status</th>
+                                    <th>Last Login</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Organizational Structure Section -->
+                <div id="organizational-structure-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Organizational Structure</h1>
+                        <div>
+                            <button class="btn btn-success me-2" onclick="showAddDivisionModal()">
+                                <i class="fas fa-plus"></i> Add Division
+                            </button>
+                            <button class="btn btn-info" onclick="showAddDepartmentModal()">
+                                <i class="fas fa-plus"></i> Add Department
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Divisions</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="divisions-list">
+                                        <!-- Divisions will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Departments</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="departments-list">
+                                        <!-- Departments will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supervisor Assignment Section -->
+                <div id="supervisor-assignment-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Supervisor Assignment</h1>
+                        <button class="btn btn-primary" onclick="showAssignSupervisorModal()">
+                            <i class="fas fa-link"></i> Assign Supervisor
+                        </button>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Unassigned Interns</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="unassigned-interns">
+                                        <!-- Unassigned interns will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Current Assignments</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="current-assignments">
+                                        <!-- Current assignments will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Audit Logs Section -->
+                <div id="audit-logs-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">Audit Logs</h1>
+                        <div>
+                            <button class="btn btn-success me-2" onclick="exportAuditLogs()">
+                                <i class="fas fa-download"></i> Export Logs
+                            </button>
+                            <button class="btn btn-warning" onclick="clearAuditLogs()">
+                                <i class="fas fa-trash"></i> Clear Logs
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Audit Log Filters -->
+                    <div class="row mb-3">
+                        <div class="col-md-2">
+                            <select class="form-select" id="log-action-filter">
+                                <option value="">All Actions</option>
+                                <option value="login">Login</option>
+                                <option value="logout">Logout</option>
+                                <option value="create">Create</option>
+                                <option value="update">Update</option>
+                                <option value="delete">Delete</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select class="form-select" id="log-user-filter">
+                                <option value="">All Users</option>
+                                <!-- Users will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" id="log-date-from" placeholder="From Date">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" id="log-date-to" placeholder="To Date">
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary" onclick="filterAuditLogs()">
+                                <i class="fas fa-search"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Audit Logs Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                    <th>IP Address</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-logs-table-body">
+                                <!-- Audit logs will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- System Settings Section -->
+                <div id="system-settings-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2">System Settings</h1>
+                        <button class="btn btn-primary" onclick="saveSystemSettings()">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">General Settings</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3 pb-3 border-bottom">
+                                        <label class="form-label d-flex justify-content-between align-items-center">
+                                            <span class="fw-bold"><i class="fas fa-palette me-1 text-warning"></i> Theme Preference</span>
+                                            <span id="settings-active-theme-badge" class="badge bg-primary">Active: Light</span>
+                                        </label>
+                                        <div class="btn-group w-100 mb-2" role="group" aria-label="Theme mode selector">
+                                            <input type="radio" class="btn-check" name="admin-theme-radio" id="theme-radio-light" autocomplete="off" onchange="setTheme('light')">
+                                            <label class="btn btn-outline-secondary" for="theme-radio-light">
+                                                <i class="fas fa-sun text-warning me-1"></i> Light
+                                            </label>
+
+                                            <input type="radio" class="btn-check" name="admin-theme-radio" id="theme-radio-dark" autocomplete="off" onchange="setTheme('dark')">
+                                            <label class="btn btn-outline-secondary" for="theme-radio-dark">
+                                                <i class="fas fa-moon text-info me-1"></i> Dark
+                                            </label>
+
+                                            <input type="radio" class="btn-check" name="admin-theme-radio" id="theme-radio-system" autocomplete="off" onchange="setTheme('system')">
+                                            <label class="btn btn-outline-secondary" for="theme-radio-system">
+                                                <i class="fas fa-desktop me-1"></i> System Auto
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block">Theme preference is globally saved to your browser's localStorage.</small>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Session Timeout (minutes)</label>
+                                        <input type="number" class="form-control" id="session-timeout" value="30" min="5" max="120">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Maximum File Upload Size (MB)</label>
+                                        <input type="number" class="form-control" id="max-file-size" value="5" min="1" max="10">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">System Maintenance Mode</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="maintenance-mode">
+                                            <label class="form-check-label" for="maintenance-mode">
+                                                Enable maintenance mode
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Security Settings</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Password Policy</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="require-uppercase" checked>
+                                            <label class="form-check-label" for="require-uppercase">
+                                                Require uppercase letters
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="require-numbers" checked>
+                                            <label class="form-check-label" for="require-numbers">
+                                                Require numbers
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="require-symbols" checked>
+                                            <label class="form-check-label" for="require-symbols">
+                                                Require symbols
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Minimum Password Length</label>
+                                        <input type="number" class="form-control" id="min-password-length" value="8" min="6" max="20">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">MFA Required</label>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="mfa-required" checked>
+                                            <label class="form-check-label" for="mfa-required">
+                                                Enable MFA for all users
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-user-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">First Name *</label>
+                                    <input type="text" class="form-control" id="user-firstname" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Last Name *</label>
+                                    <input type="text" class="form-control" id="user-lastname" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="user-email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="user-phone">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Role *</label>
+                                    <select class="form-select" id="user-role" required>
+                                        <option value="">Select Role</option>
+                                        <option value="intern">Intern</option>
+                                        <option value="supervisor">Supervisor</option>
+                                        <option value="hr">HR</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Department</label>
+                                    <select class="form-select" id="user-department">
+                                        <option value="">Select Department</option>
+                                        <!-- Departments will be loaded dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Password *</label>
+                                    <input type="password" class="form-control" id="user-password" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Confirm Password *</label>
+                                    <input type="password" class="form-control" id="user-confirm-password" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addUser()">Add User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-user-form">
+                        <input type="hidden" id="edit-user-id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">First Name *</label>
+                                    <input type="text" class="form-control" id="edit-user-firstname" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Last Name *</label>
+                                    <input type="text" class="form-control" id="edit-user-lastname" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="edit-user-email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="edit-user-phone">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Role *</label>
+                                    <select class="form-select" id="edit-user-role" required>
+                                        <option value="">Select Role</option>
+                                        <option value="intern">Intern</option>
+                                        <option value="supervisor">Supervisor</option>
+                                        <option value="hr">HR</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Department</label>
+                                    <select class="form-select" id="edit-user-department">
+                                        <option value="">Select Department</option>
+                                        <!-- Departments will be loaded dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" id="edit-user-status">
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                        <option value="suspended">Suspended</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">New Password (leave blank to keep current)</label>
+                                    <input type="password" class="form-control" id="edit-user-password">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateUser()">Update User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Supervisor Modal -->
+    <div class="modal fade" id="assignSupervisorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign Supervisor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="assign-supervisor-form">
+                        <div class="mb-3">
+                            <label class="form-label">Select Intern *</label>
+                            <select class="form-select" id="assign-intern" required>
+                                <option value="">Select Intern</option>
+                                <!-- Interns will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select Supervisor *</label>
+                            <select class="form-select" id="assign-supervisor" required>
+                                <option value="">Select Supervisor</option>
+                                <!-- Supervisors will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Assignment Notes</label>
+                            <textarea class="form-control" id="assignment-notes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="assignSupervisor()">Assign</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- React & Recharts Dependencies for Analytics Charts -->
+    <script src="js/vendor/react.min.js"></script>
+    <script src="js/vendor/prop-types.min.js"></script>
+    <script src="js/vendor/react-dom.min.js"></script>
+    <script src="js/vendor/recharts.min.js"></script>
+    
+    <script src="js/admin.js"></script>
+</body>
+</html> 
