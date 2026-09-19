@@ -161,6 +161,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeAdminPanel();
     loadDashboardData();
     setupEventListeners();
+    const yearEl = document.getElementById('kcca-footer-year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
 });
 
 // Initialize admin panel

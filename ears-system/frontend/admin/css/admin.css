@@ -777,4 +777,120 @@ main {
 .dark-mode .input-group .btn-outline-secondary:hover {
     background-color: #2e3a4b;
     color: #f0f4f8;
+}
+
+/* KCCA Official Footer */
+.kcca-official-footer {
+    background-color: var(--theme-card-bg);
+    color: var(--theme-text-secondary);
+    border: 1px solid var(--theme-border-color);
+    border-radius: 12px;
+    padding: 2.25rem 2rem 1.5rem 2rem;
+    box-shadow: var(--theme-card-shadow);
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.kcca-stripe {
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(90deg, #000000 25%, #FFD100 25%, #FFD100 50%, #E30613 50%, #E30613 75%, #008540 75%);
+    border-radius: 2px;
+}
+
+.kcca-footer-heading {
+    color: var(--theme-text-primary);
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.kcca-footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.kcca-footer-links li {
+    margin-bottom: 0.45rem;
+    font-size: 0.83rem;
+}
+
+.kcca-footer-links a {
+    color: var(--theme-text-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease-in-out, padding-left 0.15s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+}
+
+.kcca-footer-links a:hover {
+    color: var(--kcca-green, #008540);
+    padding-left: 3px;
+}
+
+.kcca-footer-contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-bottom: 0.65rem;
+    font-size: 0.83rem;
+    line-height: 1.45;
+}
+
+.kcca-footer-contact-item i {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+.kcca-footer-contact-item a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.kcca-footer-contact-item a:hover {
+    color: var(--kcca-green, #008540);
+    text-decoration: underline;
+}
+
+.kcca-portal-btn {
+    background-color: var(--kcca-green, #008540);
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 0.82rem;
+    border-radius: 6px;
+    padding: 0.45rem 1rem;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    transition: background-color 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.kcca-portal-btn:hover {
+    background-color: #006b33;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}
+
+.kcca-footer-divider {
+    border-color: var(--theme-border-color) !important;
+    opacity: 0.6;
+    margin: 1.5rem 0 1rem 0;
+}
+
+.kcca-footer-bottom {
+    font-size: 0.78rem;
+    color: var(--theme-text-secondary);
+}
+
+.sidebar-kcca-header {
+    background-color: rgba(255, 255, 255, 0.04);
+    border-radius: 8px;
+    margin: 0 0.5rem 0.75rem 0.5rem;
 } 

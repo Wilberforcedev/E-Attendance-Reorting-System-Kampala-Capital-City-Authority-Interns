@@ -1,6 +1,6 @@
 {
   "name": "EARS Admin Panel",
-  "description": "E-Attendance Report System (EARS) Admin Panel with global light and dark mode theme toggle, bulk user action management, interactive Recharts registration trends visualization, and real-time password strength visual indicators in user modals.",
+  "description": "E-Attendance Report System (EARS) for Kampala Capital City Authority (KCCA) featuring an interactive Intern & Staff Client Portal with real-time clock-in/out attendance punch, weekly report submissions, approval status tracking, and the comprehensive Admin Panel with official branding and analytics.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

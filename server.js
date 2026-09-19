@@ -41,9 +41,15 @@ const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
 
-  // Root redirect to the admin panel
+  // Root and section redirects
   if (pathname === '/' || pathname === '/admin' || pathname === '/admin/') {
     res.writeHead(302, { 'Location': '/ears-system/frontend/admin/index.html' });
+    res.end();
+    return;
+  }
+
+  if (pathname === '/client' || pathname === '/client/' || pathname === '/intern' || pathname === '/intern/' || pathname === '/portal' || pathname === '/portal/') {
+    res.writeHead(302, { 'Location': '/ears-system/frontend/client/index.html' });
     res.end();
     return;
   }
@@ -58,6 +64,7 @@ const server = http.createServer((req, res) => {
   // Potential local file locations to check
   const candidatePaths = [
     path.join(__dirname, pathname),
+    path.join(__dirname, 'ears-system/frontend/client', pathname),
     path.join(__dirname, 'ears-system/frontend/admin', pathname),
     path.join(__dirname, 'ears-system/frontend', pathname),
     path.join(__dirname, 'frontend', pathname)

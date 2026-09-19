@@ -1,0 +1,250 @@
+:root {
+    --kcca-red: #E30613;
+    --kcca-green: #008540;
+    --kcca-yellow: #FFD100;
+    --kcca-black: #111827;
+    --kcca-white: #FFFFFF;
+
+    /* Light Theme (Default) */
+    --theme-bg-body: #f4f6f9;
+    --theme-text-primary: #1e293b;
+    --theme-text-secondary: #64748b;
+    --theme-card-bg: #ffffff;
+    --theme-card-border: #e2e8f0;
+    --theme-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --theme-header-bg: #ffffff;
+    --theme-sidebar-bg: #1e2530;
+    --theme-sidebar-text: #e2e8f0;
+    --theme-sidebar-active-bg: #2d3748;
+    --theme-input-bg: #ffffff;
+    --theme-input-border: #cbd5e1;
+    --theme-table-hover: #f8fafc;
+    --theme-border-color: #e2e8f0;
+}
+
+[data-bs-theme="dark"],
+.dark-mode {
+    --theme-bg-body: #0f172a;
+    --theme-text-primary: #f8fafc;
+    --theme-text-secondary: #94a3b8;
+    --theme-card-bg: #1e293b;
+    --theme-card-border: #334155;
+    --theme-card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+    --theme-header-bg: #1e293b;
+    --theme-sidebar-bg: #0b1120;
+    --theme-sidebar-text: #cbd5e1;
+    --theme-sidebar-active-bg: #1e293b;
+    --theme-input-bg: #0f172a;
+    --theme-input-border: #475569;
+    --theme-table-hover: #263345;
+    --theme-border-color: #334155;
+}
+
+body {
+    background-color: var(--theme-bg-body);
+    color: var(--theme-text-primary);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+/* Card Styling */
+.client-card {
+    background-color: var(--theme-card-bg);
+    border: 1px solid var(--theme-card-border);
+    border-radius: 12px;
+    box-shadow: var(--theme-card-shadow);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.client-card:hover {
+    box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.08);
+}
+
+/* Punch / Clock Widget */
+.clock-display {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--theme-text-primary);
+}
+
+.session-timer-badge {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+/* Punch Action Buttons */
+.btn-clock-in {
+    background-color: var(--kcca-green);
+    color: #ffffff;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-clock-in:hover {
+    background-color: #006b33;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.btn-clock-out {
+    background-color: var(--kcca-red);
+    color: #ffffff;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-clock-out:hover {
+    background-color: #ba0510;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* Sidebar Custom Styling */
+.client-sidebar {
+    background-color: var(--theme-sidebar-bg);
+    min-height: calc(100vh - 65px);
+    transition: background-color 0.2s ease;
+}
+
+.client-sidebar .nav-link {
+    color: var(--theme-sidebar-text);
+    padding: 0.75rem 1.15rem;
+    border-radius: 8px;
+    margin: 0.2rem 0.6rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.client-sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--kcca-yellow);
+}
+
+.client-sidebar .nav-link.active {
+    background-color: var(--theme-sidebar-active-bg);
+    color: var(--kcca-yellow);
+    border-left: 3px solid var(--kcca-yellow);
+    font-weight: 600;
+}
+
+/* Stat Card */
+.stat-widget {
+    background-color: var(--theme-card-bg);
+    border: 1px solid var(--theme-card-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--theme-card-shadow);
+}
+
+.stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+/* Badges */
+.status-badge-approved {
+    background-color: rgba(0, 133, 64, 0.15);
+    color: #008540;
+    border: 1px solid rgba(0, 133, 64, 0.3);
+    font-weight: 600;
+}
+
+.status-badge-pending {
+    background-color: rgba(245, 158, 11, 0.15);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    font-weight: 600;
+}
+
+.status-badge-revision {
+    background-color: rgba(227, 6, 19, 0.15);
+    color: #E30613;
+    border: 1px solid rgba(227, 6, 19, 0.3);
+    font-weight: 600;
+}
+
+/* Form input adaptations */
+.form-control, .form-select {
+    background-color: var(--theme-input-bg);
+    border-color: var(--theme-input-border);
+    color: var(--theme-text-primary);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--theme-input-bg);
+    border-color: var(--kcca-green);
+    color: var(--theme-text-primary);
+    box-shadow: 0 0 0 0.2rem rgba(0, 133, 64, 0.15);
+}
+
+/* Custom Table in Dark Mode */
+.table {
+    color: var(--theme-text-primary);
+    --bs-table-color: var(--theme-text-primary);
+    --bs-table-bg: transparent;
+    --bs-table-border-color: var(--theme-border-color);
+}
+
+.table tbody tr:hover {
+    background-color: var(--theme-table-hover);
+}
+
+/* Official KCCA Footer styles matching admin */
+.kcca-official-footer {
+    background-color: var(--theme-card-bg);
+    color: var(--theme-text-secondary);
+    border: 1px solid var(--theme-border-color);
+    border-radius: 12px;
+    padding: 2.25rem 2rem 1.5rem 2rem;
+    box-shadow: var(--theme-card-shadow);
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.kcca-stripe {
+    height: 4px;
+    width: 100%;
+    background: linear-gradient(90deg, #000000 25%, #FFD100 25%, #FFD100 50%, #E30613 50%, #E30613 75%, #008540 75%);
+    border-radius: 2px;
+}
+
+.kcca-portal-btn {
+    background-color: var(--kcca-green, #008540);
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 0.82rem;
+    border-radius: 6px;
+    padding: 0.45rem 1rem;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    transition: background-color 0.15s ease-in-out, transform 0.15s ease-in-out;
+}
+
+.kcca-portal-btn:hover {
+    background-color: #006b33;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}

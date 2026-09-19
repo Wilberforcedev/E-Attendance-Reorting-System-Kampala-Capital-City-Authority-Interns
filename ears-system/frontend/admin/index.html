@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EARS - Admin Panel</title>
+    <title>EARS Admin Panel - Kampala Capital City Authority (KCCA)</title>
+    <meta name="description" content="E-Attendance Report System (EARS) Admin Panel for Kampala Capital City Authority (KCCA) with official branding, comprehensive footer, global light and dark mode theme toggle, bulk user action management, interactive Recharts registration trends visualization, and real-time password strength visual indicators.">
+    <meta property="og:title" content="EARS Admin Panel - Kampala Capital City Authority (KCCA)">
+    <meta property="og:description" content="E-Attendance Report System (EARS) Admin Panel for Kampala Capital City Authority (KCCA) with official branding, comprehensive footer, global light and dark mode theme toggle, bulk user action management, interactive Recharts registration trends visualization, and real-time password strength visual indicators.">
+    <link rel="icon" type="image/png" href="/assets/Logo.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="css/admin.css" rel="stylesheet">
@@ -27,11 +31,28 @@
 </head>
 <body>
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
         <div class="container-fluid">
-            <a class="navbar-brand text-warning" href="#"><i class="fas fa-clipboard-check me-2"></i>EARS</a>
+            <a class="navbar-brand d-flex align-items-center gap-2 py-1" href="#" style="text-decoration: none;">
+                <img src="/assets/Logo.png" alt="KCCA Crest Logo" class="kcca-brand-logo" style="height: 38px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));" onerror="this.src='https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png';">
+                <div class="d-flex flex-column lh-1">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold text-white fs-5" style="letter-spacing: 0.5px;">EARS</span>
+                        <span class="badge" style="background-color: #FFD100; color: #000; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px;">KCCA</span>
+                    </div>
+                    <small class="text-white-50" style="font-size: 0.68rem; letter-spacing: 0.2px;">Kampala Capital City Authority</small>
+                </div>
+            </a>
             
             <div class="navbar-nav ms-auto d-flex flex-row align-items-center">
+                <!-- Switch to Client Portal Button -->
+                <div class="nav-item me-2">
+                    <a href="/ears-system/frontend/client/index.html" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1 py-1 px-2" title="Switch to Intern & Staff Client Portal">
+                        <i class="fas fa-user-clock text-warning"></i>
+                        <span class="d-none d-sm-inline small fw-semibold">Client Portal</span>
+                    </a>
+                </div>
+
                 <!-- Global Theme Toggle Button -->
                 <div class="nav-item me-3">
                     <button id="theme-toggle-btn" class="theme-toggle-btn" type="button" aria-label="Toggle light and dark mode" title="Switch between Light and Dark mode">
@@ -80,6 +101,13 @@
             <!-- Sidebar -->
             <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
                 <div class="position-sticky pt-3">
+                    <div class="sidebar-kcca-header p-2 mb-3 border-bottom border-secondary d-flex align-items-center gap-2">
+                        <img src="/assets/Logo.png" alt="KCCA Logo" style="height: 36px; width: auto;" onerror="this.src='https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png';">
+                        <div class="overflow-hidden">
+                            <div class="fw-bold text-white lh-sm text-truncate" style="font-size: 0.85rem;">KCCA Portal</div>
+                            <small class="text-warning lh-sm d-block" style="font-size: 0.7rem; font-weight: 500;">For a Better City</small>
+                        </div>
+                    </div>
                     <ul class="nav flex-column">
                         <li class="nav-item">
                             <a class="nav-link active" href="#" onclick="showDashboard()">
@@ -109,6 +137,11 @@
                         <li class="nav-item">
                             <a class="nav-link" href="#" onclick="showSystemSettings()">
                                 <i class="fas fa-cog"></i> System Settings
+                            </a>
+                        </li>
+                        <li class="nav-item mt-3 pt-2 border-top border-secondary">
+                            <a class="nav-link text-warning" href="/ears-system/frontend/client/index.html">
+                                <i class="fas fa-user-clock text-warning"></i> Switch to Client Portal
                             </a>
                         </li>
                     </ul>
@@ -679,6 +712,119 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- KCCA Official Footer -->
+                <footer class="kcca-official-footer mt-5 mb-4" id="kcca-footer">
+                    <!-- National & KCCA Identity Accent Stripe -->
+                    <div class="kcca-stripe mb-4"></div>
+
+                    <div class="row g-4">
+                        <!-- Col 1: KCCA Brand & Mission -->
+                        <div class="col-12 col-md-5 col-lg-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <img src="/assets/Logo.png" alt="KCCA Official Logo" class="img-fluid" style="height: 52px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.25));" onerror="this.src='https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png';">
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-uppercase" style="color: var(--theme-text-primary); font-size: 0.92rem; letter-spacing: 0.3px;">Kampala Capital City Authority</h6>
+                                    <small class="text-success fw-semibold" style="font-size: 0.78rem;">For a Better City</small>
+                                </div>
+                            </div>
+                            <p class="small text-muted mb-3" style="line-height: 1.55; font-size: 0.82rem;">
+                                The E-Attendance Report System (EARS) provides centralized attendance reporting, intern verification, and supervisor coordination across all urban divisions and directorates.
+                            </p>
+                            <a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer" class="kcca-portal-btn" title="Open official KCCA portal in new tab">
+                                <i class="fas fa-globe"></i>
+                                <span>Visit www.kcca.go.ug</span>
+                                <i class="fas fa-external-link-alt ms-1" style="font-size: 0.7rem;"></i>
+                            </a>
+                        </div>
+
+                        <!-- Col 2: Headquarters & Location -->
+                        <div class="col-12 col-sm-6 col-md-3 col-lg-3">
+                            <h6 class="kcca-footer-heading">
+                                <i class="fas fa-landmark text-success"></i>
+                                <span>Headquarters</span>
+                            </h6>
+                            <div class="kcca-footer-contact-item">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <span>
+                                    <strong>City Hall</strong><br>
+                                    Plot 1-3, Apollo Kaggwa Road<br>
+                                    P.O. Box 7010, Kampala - Uganda
+                                </span>
+                            </div>
+                            <div class="kcca-footer-contact-item">
+                                <i class="fas fa-clock text-warning"></i>
+                                <span>
+                                    <strong>Working Hours:</strong><br>
+                                    Mon - Fri: 8:00 AM - 5:00 PM (EAT)
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Col 3: Direct Helplines & Contacts -->
+                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                            <h6 class="kcca-footer-heading">
+                                <i class="fas fa-headset text-primary"></i>
+                                <span>Helplines & Inquiries</span>
+                            </h6>
+                            <div class="kcca-footer-contact-item">
+                                <i class="fas fa-phone-volume text-success"></i>
+                                <span>
+                                    <strong>Toll-Free Helpline:</strong><br>
+                                    <a href="tel:0800199000" class="fw-bold text-success">0800 199 000</a> / <a href="tel:0800990000">0800 990 000</a>
+                                </span>
+                            </div>
+                            <div class="kcca-footer-contact-item">
+                                <i class="fas fa-phone text-secondary"></i>
+                                <span>
+                                    <strong>General Telephone:</strong><br>
+                                    <a href="tel:0417900100">+256 417 900 100</a>
+                                </span>
+                            </div>
+                            <div class="kcca-footer-contact-item">
+                                <i class="fas fa-envelope text-warning"></i>
+                                <span>
+                                    <strong>Email Inquiries:</strong><br>
+                                    <a href="mailto:info@kcca.go.ug">info@kcca.go.ug</a>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Col 4: Urban Divisions & Links -->
+                        <div class="col-12 col-md-12 col-lg-2">
+                            <h6 class="kcca-footer-heading">
+                                <i class="fas fa-sitemap text-info"></i>
+                                <span>Urban Divisions</span>
+                            </h6>
+                            <ul class="kcca-footer-links">
+                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Central Division</a></li>
+                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Nakawa Division</a></li>
+                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Kawempe Division</a></li>
+                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Makindye Division</a></li>
+                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Rubaga Division</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <hr class="kcca-footer-divider">
+
+                    <!-- Bottom Legal & Certification Bar -->
+                    <div class="row align-items-center kcca-footer-bottom gy-2">
+                        <div class="col-12 col-md-6 text-center text-md-start">
+                            <span>&copy; <span id="kcca-footer-year">2026</span> <strong>Kampala Capital City Authority (KCCA)</strong>. All Rights Reserved.</span>
+                        </div>
+                        <div class="col-12 col-md-6 text-center text-md-end">
+                            <span class="d-inline-flex align-items-center gap-2 flex-wrap justify-content-center justify-content-md-end">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
+                                    <i class="fas fa-shield-alt me-1"></i>Official Government System
+                                </span>
+                                <a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-muted small ms-1">
+                                    www.kcca.go.ug
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                </footer>
             </main>
         </div>
     </div>
