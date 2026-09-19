@@ -726,4 +726,55 @@ main {
         box-shadow: none !important;
         border: 1px solid var(--gray-300) !important;
     }
+}
+
+/* Password Strength Visual Indicator */
+.password-strength-container {
+    transition: all 0.2s ease-in-out;
+}
+
+.password-strength-container .progress {
+    height: 6px;
+    background-color: var(--theme-border-color, #e2e8f0);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.password-strength-container .progress-bar {
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease-in-out;
+}
+
+.password-feedback-hints {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
+
+.password-feedback-hints span {
+    transition: color 0.15s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+}
+
+[data-bs-theme="dark"] .password-strength-container .progress,
+[data-theme="dark"] .password-strength-container .progress,
+.dark-mode .password-strength-container .progress {
+    background-color: #27313f;
+}
+
+[data-bs-theme="dark"] .input-group .btn-outline-secondary,
+[data-theme="dark"] .input-group .btn-outline-secondary,
+.dark-mode .input-group .btn-outline-secondary {
+    border-color: #3b4859;
+    color: #94a3b8;
+}
+
+[data-bs-theme="dark"] .input-group .btn-outline-secondary:hover,
+[data-theme="dark"] .input-group .btn-outline-secondary:hover,
+.dark-mode .input-group .btn-outline-secondary:hover {
+    background-color: #2e3a4b;
+    color: #f0f4f8;
 } 

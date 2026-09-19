@@ -1,6 +1,6 @@
 {
   "name": "EARS Admin Panel",
-  "description": "E-Attendance Report System (EARS) Admin Panel with global light and dark mode theme toggle, bulk user action management, and interactive Recharts registration trends visualization.",
+  "description": "E-Attendance Report System (EARS) Admin Panel with global light and dark mode theme toggle, bulk user action management, interactive Recharts registration trends visualization, and real-time password strength visual indicators in user modals.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

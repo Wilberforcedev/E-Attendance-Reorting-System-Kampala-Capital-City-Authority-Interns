@@ -151,6 +151,9 @@ window.bulkResetPasswords = bulkResetPasswords;
 window.filterRegistrationTrend = filterRegistrationTrend;
 window.refreshRegistrationTrendData = refreshRegistrationTrendData;
 window.renderRegistrationTrendChart = renderRegistrationTrendChart;
+window.togglePasswordVisibility = togglePasswordVisibility;
+window.updatePasswordStrengthUI = updatePasswordStrengthUI;
+window.calculatePasswordStrength = calculatePasswordStrength;
 
 // Initialize the admin panel
 document.addEventListener('DOMContentLoaded', function() {
@@ -996,6 +999,11 @@ function bulkResetPasswords() {
 
 // Modal functions
 function showAddUserModal() {
+    const form = document.getElementById('add-user-form');
+    if (form) form.reset();
+    updatePasswordStrengthUI('user', '');
+    const feedback = document.getElementById('user-confirm-password-feedback');
+    if (feedback) feedback.innerHTML = '';
     const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
     modal.show();
 }
@@ -1014,6 +1022,7 @@ function showEditUserModal(userId) {
     document.getElementById('edit-user-department').value = user.department || '';
     document.getElementById('edit-user-status').value = user.status;
     document.getElementById('edit-user-password').value = '';
+    updatePasswordStrengthUI('edit', '');
     
     const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
     modal.show();
@@ -1553,20 +1562,231 @@ function logAuditAction(action, resource, details) {
     }
 }
 
-function setupFormValidations() {
-    // Password confirmation validation
-    const passwordField = document.getElementById('user-password');
-    const confirmPasswordField = document.getElementById('user-confirm-password');
-    
-    if (passwordField && confirmPasswordField) {
-        confirmPasswordField.addEventListener('input', function() {
-            if (passwordField.value !== confirmPasswordField.value) {
-                confirmPasswordField.setCustomValidity('Passwords do not match');
-            } else {
-                confirmPasswordField.setCustomValidity('');
+// ============================================================================
+// Real-time Password Strength Indicator & Visibility Handlers
+// ============================================================================
+function calculatePasswordStrength(password) {
+    if (!password) {
+        return {
+            score: 0,
+            percent: 0,
+            label: 'None',
+            colorClass: 'bg-secondary-subtle text-secondary border',
+            barColor: '',
+            criteria: {
+                length: false,
+                upper: false,
+                number: false,
+                special: false
+            }
+        };
+    }
+
+    const criteria = {
+        length: password.length >= 8,
+        upper: /[A-Z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[^A-Za-z0-9]/.test(password)
+    };
+
+    let score = 0;
+    if (criteria.length) score++;
+    if (criteria.upper) score++;
+    if (criteria.number) score++;
+    if (criteria.special) score++;
+
+    // Extra length bonus (>= 12 chars)
+    if (password.length >= 12 && score >= 2) {
+        score = Math.min(4, score + 1);
+    }
+
+    // If less than 6 chars, cap score at 1
+    if (password.length < 6) {
+        score = Math.min(score, 1);
+    }
+
+    let percent = 25;
+    let label = 'Very Weak';
+    let colorClass = 'bg-danger';
+    let barColor = '#dc3545';
+
+    switch (score) {
+        case 0:
+        case 1:
+            percent = 25;
+            label = 'Very Weak';
+            colorClass = 'bg-danger';
+            barColor = '#dc3545';
+            break;
+        case 2:
+            percent = 50;
+            label = 'Weak';
+            colorClass = 'bg-warning text-dark';
+            barColor = '#fd7e14';
+            break;
+        case 3:
+            percent = 75;
+            label = 'Medium';
+            colorClass = 'bg-info text-dark';
+            barColor = '#0ea5e9';
+            break;
+        case 4:
+            percent = 100;
+            label = 'Strong';
+            colorClass = 'bg-success';
+            barColor = '#008540';
+            break;
+    }
+
+    return { score, percent, label, colorClass, barColor, criteria };
+}
+
+function updatePasswordStrengthUI(targetId, password) {
+    // targetId is 'user' or 'edit'
+    const bar = document.getElementById(targetId === 'user' ? 'user-password-strength-bar' : 'edit-user-password-strength-bar');
+    const badge = document.getElementById(targetId === 'user' ? 'user-password-strength-badge' : 'edit-user-password-strength-badge');
+    const hintLength = document.getElementById(`hint-${targetId}-length`);
+    const hintUpper = document.getElementById(`hint-${targetId}-upper`);
+    const hintNumber = document.getElementById(`hint-${targetId}-number`);
+    const hintSpecial = document.getElementById(`hint-${targetId}-special`);
+
+    if (!bar || !badge) return;
+
+    if (!password) {
+        bar.style.width = '0%';
+        bar.style.backgroundColor = '';
+        badge.textContent = targetId === 'edit' ? 'Unchanged' : 'None';
+        badge.className = 'badge bg-secondary-subtle text-secondary border';
+
+        [
+            { el: hintLength, text: '8+ chars' },
+            { el: hintUpper, text: 'Uppercase' },
+            { el: hintNumber, text: 'Number' },
+            { el: hintSpecial, text: 'Special char' }
+        ].forEach(item => {
+            if (item.el) {
+                item.el.className = 'text-muted';
+                item.el.innerHTML = `<i class="fas fa-circle me-1" style="font-size: 0.45rem;"></i>${item.text}`;
             }
         });
+        return;
     }
+
+    const strength = calculatePasswordStrength(password);
+    bar.style.width = `${strength.percent}%`;
+    bar.style.backgroundColor = strength.barColor;
+    badge.textContent = strength.label;
+    badge.className = `badge ${strength.colorClass}`;
+
+    function updateHint(el, isMet, text) {
+        if (!el) return;
+        if (isMet) {
+            el.className = 'text-success fw-semibold';
+            el.innerHTML = `<i class="fas fa-check-circle me-1"></i>${text}`;
+        } else {
+            el.className = 'text-muted';
+            el.innerHTML = `<i class="fas fa-circle me-1" style="font-size: 0.45rem;"></i>${text}`;
+        }
+    }
+
+    updateHint(hintLength, strength.criteria.length, '8+ chars');
+    updateHint(hintUpper, strength.criteria.upper, 'Uppercase');
+    updateHint(hintNumber, strength.criteria.number, 'Number');
+    updateHint(hintSpecial, strength.criteria.special, 'Special char');
+}
+
+function updateConfirmPasswordMatch() {
+    const pwd = document.getElementById('user-password');
+    const confirm = document.getElementById('user-confirm-password');
+    const feedback = document.getElementById('user-confirm-password-feedback');
+    if (!pwd || !confirm || !feedback) return;
+
+    if (!confirm.value) {
+        feedback.innerHTML = '';
+        confirm.setCustomValidity('');
+        return;
+    }
+
+    if (pwd.value === confirm.value) {
+        confirm.setCustomValidity('');
+        feedback.innerHTML = '<span class="text-success fw-semibold"><i class="fas fa-check-circle me-1"></i>Passwords match</span>';
+    } else {
+        confirm.setCustomValidity('Passwords do not match');
+        feedback.innerHTML = '<span class="text-danger fw-semibold"><i class="fas fa-times-circle me-1"></i>Passwords do not match</span>';
+    }
+}
+
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const icon = btn ? btn.querySelector('i') : null;
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+            icon.className = 'fas fa-eye-slash';
+        }
+    } else {
+        input.type = 'password';
+        if (icon) {
+            icon.className = 'fas fa-eye';
+        }
+    }
+}
+
+function setupPasswordStrengthIndicators() {
+    const userPwd = document.getElementById('user-password');
+    const userConfirm = document.getElementById('user-confirm-password');
+    const editPwd = document.getElementById('edit-user-password');
+
+    // Real-time updates on Add User modal password field
+    if (userPwd) {
+        ['input', 'change', 'keyup'].forEach(evt => {
+            userPwd.addEventListener(evt, function() {
+                updatePasswordStrengthUI('user', this.value);
+                if (userConfirm && userConfirm.value) {
+                    updateConfirmPasswordMatch();
+                }
+            });
+        });
+    }
+
+    // Real-time confirmation matching
+    if (userConfirm) {
+        ['input', 'change', 'keyup'].forEach(evt => {
+            userConfirm.addEventListener(evt, updateConfirmPasswordMatch);
+        });
+    }
+
+    // Real-time updates on Edit User modal password field
+    if (editPwd) {
+        ['input', 'change', 'keyup'].forEach(evt => {
+            editPwd.addEventListener(evt, function() {
+                updatePasswordStrengthUI('edit', this.value);
+            });
+        });
+    }
+
+    // Modal lifecycle resets
+    const addModal = document.getElementById('addUserModal');
+    if (addModal) {
+        addModal.addEventListener('show.bs.modal', function() {
+            updatePasswordStrengthUI('user', '');
+            const feedback = document.getElementById('user-confirm-password-feedback');
+            if (feedback) feedback.innerHTML = '';
+        });
+    }
+
+    const editModal = document.getElementById('editUserModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', function() {
+            updatePasswordStrengthUI('edit', '');
+        });
+    }
+}
+
+function setupFormValidations() {
+    // Password confirmation validation & real-time strength indicators
+    setupPasswordStrengthIndicators();
 }
 
 function setupAutoSave() {
