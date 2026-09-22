@@ -248,3 +248,124 @@ body {
     color: #ffffff !important;
     transform: translateY(-1px);
 }
+
+/* ===================================================
+   Daily Hours Goal Radial Progress Ring
+   =================================================== */
+.daily-goal-card {
+    background-color: var(--theme-card-bg);
+    border: 1px solid var(--theme-card-border);
+    border-radius: 12px;
+    box-shadow: var(--theme-card-shadow);
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+    position: relative;
+}
+
+.daily-goal-card:hover {
+    box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.08);
+}
+
+.radial-ring-container {
+    position: relative;
+    width: 170px;
+    height: 170px;
+    margin: 0.5rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.radial-progress-svg {
+    transform: rotate(-90deg);
+    overflow: visible;
+}
+
+.radial-track-bg {
+    stroke: var(--theme-border-color);
+    opacity: 0.45;
+}
+
+.radial-indicator-bar {
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), stroke 0.4s ease;
+}
+
+.radial-center-details {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+    width: 120px;
+}
+
+.radial-percent-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.5px;
+    color: var(--theme-text-primary);
+    transition: color 0.3s ease;
+}
+
+.radial-hours-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--theme-text-secondary);
+    margin-top: 0.3rem;
+}
+
+.radial-status-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 0.15rem 0.6rem;
+    border-radius: 9999px;
+    margin-top: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.radial-remaining-banner {
+    background-color: var(--theme-table-hover);
+    border: 1px solid var(--theme-border-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.82rem;
+    margin-top: 0.5rem;
+}
+
+.radial-remaining-banner .remaining-label {
+    color: var(--theme-text-secondary);
+    font-weight: 500;
+}
+
+.radial-remaining-banner .remaining-val {
+    font-weight: 700;
+    color: var(--theme-text-primary);
+}
+
+/* Goal Completed Animation */
+@keyframes ringPulse {
+    0% { filter: drop-shadow(0 0 2px rgba(0, 133, 64, 0.4)); }
+    50% { filter: drop-shadow(0 0 10px rgba(0, 133, 64, 0.8)); }
+    100% { filter: drop-shadow(0 0 2px rgba(0, 133, 64, 0.4)); }
+}
+
+.radial-indicator-completed {
+    animation: ringPulse 2.5s infinite ease-in-out;
+}

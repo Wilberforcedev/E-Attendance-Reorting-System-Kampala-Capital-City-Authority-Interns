@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderReportsTable();
     renderNotifications();
     updateSummaryStats();
+    updateDailyGoalProgress();
     setupEventListeners();
     setTimeout(renderClientCharts, 250);
 });
@@ -161,12 +162,18 @@ function checkActiveSession() {
     const punchBtn = document.getElementById('btn-punch-action');
     const statusBadge = document.getElementById('clock-status-badge');
     const timerContainer = document.getElementById('active-session-timer-container');
+    const quickPunchText = document.getElementById('quick-punch-text');
+    const quickPunchBtn = document.getElementById('btn-quick-punch-toggle');
 
     if (activeClockSession && activeClockSession.inProgress) {
         if (punchBtn) {
             punchBtn.textContent = 'Clock Out Now';
             punchBtn.className = 'btn btn-clock-out btn-lg w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2';
             punchBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> <span>Clock Out (End Shift)</span>';
+        }
+        if (quickPunchText) quickPunchText.textContent = 'Clock Out';
+        if (quickPunchBtn) {
+            quickPunchBtn.className = 'btn btn-sm btn-danger py-2 px-3 d-flex align-items-center gap-1';
         }
         if (statusBadge) {
             statusBadge.className = 'badge bg-success-subtle text-success border border-success px-3 py-2 fs-6';
@@ -181,6 +188,10 @@ function checkActiveSession() {
             punchBtn.className = 'btn btn-clock-in btn-lg w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2';
             punchBtn.innerHTML = '<i class="fas fa-fingerprint fs-4"></i> <span>Clock In (Start Shift)</span>';
         }
+        if (quickPunchText) quickPunchText.textContent = 'Clock In';
+        if (quickPunchBtn) {
+            quickPunchBtn.className = 'btn btn-sm btn-success py-2 px-3 d-flex align-items-center gap-1';
+        }
         if (statusBadge) {
             statusBadge.className = 'badge bg-secondary-subtle text-secondary border px-3 py-2 fs-6';
             statusBadge.innerHTML = '<i class="fas fa-circle text-muted me-1"></i> Not Clocked In';
@@ -190,6 +201,7 @@ function checkActiveSession() {
         }
         if (sessionTimerInterval) clearInterval(sessionTimerInterval);
     }
+    updateDailyGoalProgress();
 }
 
 function handlePunchAction() {
@@ -238,6 +250,7 @@ function handlePunchAction() {
         checkActiveSession();
         renderAttendanceTable();
         updateSummaryStats();
+        updateDailyGoalProgress();
         renderClientCharts();
     }
 }
@@ -254,11 +267,182 @@ function startSessionTimer(startTime) {
         const mins = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
         const secs = String(diff % 60).padStart(2, '0');
         timerDisplay.textContent = `${hrs}:${mins}:${secs}`;
+        updateDailyGoalProgress();
     }
 
     update();
     sessionTimerInterval = setInterval(update, 1000);
 }
+
+// Daily Hours Goal Radial Progress Ring Calculation
+function getTodayHoursData() {
+    const todayStr = new Date().toISOString().split('T')[0];
+    let completedHours = 0;
+    let foundTodayLog = false;
+
+    // Sum completed hours for today from logs
+    if (Array.isArray(clientAttendanceLogs)) {
+        clientAttendanceLogs.forEach(log => {
+            if (log.date === todayStr) {
+                foundTodayLog = true;
+                const parsed = parseFloat(log.hours);
+                if (!isNaN(parsed)) completedHours += parsed;
+            }
+        });
+
+        // If today has no log yet and user hasn't clocked in, default to latest logged day or 6.0h baseline
+        if (!foundTodayLog && clientAttendanceLogs.length > 0) {
+            const firstLog = clientAttendanceLogs[0];
+            const parsed = parseFloat(firstLog.hours);
+            completedHours = !isNaN(parsed) ? Math.min(8.0, parsed) : 6.0;
+        }
+    }
+
+    // Add active ongoing clock session hours
+    let activeSessionHours = 0;
+    if (activeClockSession && activeClockSession.inProgress && activeClockSession.startTime) {
+        const start = new Date(activeClockSession.startTime).getTime();
+        const diffMs = Math.max(0, Date.now() - start);
+        activeSessionHours = diffMs / (1000 * 60 * 60);
+    }
+
+    const totalHours = completedHours + activeSessionHours;
+    return {
+        completedHours,
+        activeSessionHours,
+        totalHours,
+        goalTarget: 8.0
+    };
+}
+
+function updateDailyGoalProgress(forcedHours = null) {
+    const hoursData = getTodayHoursData();
+    const currentHours = (forcedHours !== null) ? forcedHours : hoursData.totalHours;
+    const goalTarget = 8.0;
+
+    const percent = Math.min(125, Math.round((currentHours / goalTarget) * 100));
+    const clampedPercent = Math.min(100, Math.max(0, percent));
+
+    // Circumference for r=66 is ~414.69
+    const circumference = 414.69;
+    const offset = Math.max(0, circumference - (clampedPercent / 100) * circumference);
+
+    const circleEl = document.getElementById('daily-goal-radial-circle');
+    const percentEl = document.getElementById('daily-goal-percent-display');
+    const hoursEl = document.getElementById('daily-goal-hours-display');
+    const statusBadge = document.getElementById('daily-goal-status-badge');
+    const remainingEl = document.getElementById('daily-goal-remaining-display');
+    const loggedSubtext = document.getElementById('daily-goal-logged-subtext');
+    const topBadge = document.getElementById('daily-goal-top-badge');
+
+    if (circleEl) {
+        circleEl.style.strokeDashoffset = offset.toFixed(2);
+    }
+
+    if (percentEl) {
+        percentEl.textContent = `${percent}%`;
+    }
+
+    if (hoursEl) {
+        hoursEl.textContent = `${currentHours.toFixed(1)} / ${goalTarget.toFixed(1)} hrs`;
+    }
+
+    if (loggedSubtext) {
+        loggedSubtext.textContent = `${currentHours.toFixed(1)} hrs`;
+    }
+
+    // Remaining hours & minutes to 8h goal
+    const remainingHours = Math.max(0, goalTarget - currentHours);
+    const remHrsInt = Math.floor(remainingHours);
+    const remMinsInt = Math.round((remainingHours - remHrsInt) * 60);
+
+    if (currentHours >= goalTarget) {
+        // Goal Fulfilled (100%+)
+        if (circleEl) {
+            circleEl.classList.add('radial-indicator-completed');
+            circleEl.style.stroke = '#008540';
+        }
+        if (statusBadge) {
+            statusBadge.className = 'radial-status-badge bg-success text-white shadow-sm';
+            statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Goal Achieved! 🎉';
+        }
+        if (remainingEl) {
+            remainingEl.className = 'remaining-val text-success fw-bold';
+            remainingEl.innerHTML = '<i class="fas fa-award text-success me-1"></i> 8.0h Requirement Fulfilled!';
+        }
+        if (topBadge) {
+            topBadge.className = 'badge bg-success text-white border border-success px-2 py-1';
+            topBadge.innerHTML = '<i class="fas fa-check-double me-1"></i> Goal Met (100%)';
+        }
+        if (percentEl) {
+            percentEl.style.color = '#008540';
+        }
+    } else if (percent >= 75) {
+        // Near Goal (75% - 99%)
+        if (circleEl) {
+            circleEl.classList.remove('radial-indicator-completed');
+            circleEl.style.stroke = 'url(#kccaProgressGradient)';
+        }
+        if (statusBadge) {
+            statusBadge.className = 'radial-status-badge bg-success-subtle text-success border border-success-subtle';
+            statusBadge.innerHTML = '<i class="fas fa-fire text-success"></i> Almost There';
+        }
+        if (remainingEl) {
+            remainingEl.className = 'remaining-val text-success fw-bold';
+            remainingEl.textContent = `${remHrsInt} hr ${remMinsInt} mins left`;
+        }
+        if (topBadge) {
+            topBadge.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-1';
+            topBadge.innerHTML = '<i class="fas fa-clock me-1"></i> Goal Target: 8.0h';
+        }
+        if (percentEl) {
+            percentEl.style.color = 'var(--theme-text-primary)';
+        }
+    } else if (percent >= 40) {
+        // Mid-shift (40% - 74%)
+        if (circleEl) {
+            circleEl.classList.remove('radial-indicator-completed');
+            circleEl.style.stroke = 'url(#kccaProgressGradient)';
+        }
+        if (statusBadge) {
+            statusBadge.className = 'radial-status-badge bg-primary-subtle text-primary border border-primary-subtle';
+            statusBadge.innerHTML = '<i class="fas fa-hourglass-half text-primary"></i> On Track';
+        }
+        if (remainingEl) {
+            remainingEl.className = 'remaining-val text-primary fw-bold';
+            remainingEl.textContent = `${remHrsInt} hrs ${remMinsInt} mins left`;
+        }
+        if (topBadge) {
+            topBadge.className = 'badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1';
+            topBadge.innerHTML = '<i class="fas fa-clock me-1"></i> Goal Target: 8.0h';
+        }
+        if (percentEl) {
+            percentEl.style.color = 'var(--theme-text-primary)';
+        }
+    } else {
+        // Starting Shift (< 40%)
+        if (circleEl) {
+            circleEl.classList.remove('radial-indicator-completed');
+            circleEl.style.stroke = '#FFD100';
+        }
+        if (statusBadge) {
+            statusBadge.className = 'radial-status-badge bg-warning-subtle text-warning border border-warning-subtle';
+            statusBadge.innerHTML = '<i class="fas fa-play text-warning"></i> In Progress';
+        }
+        if (remainingEl) {
+            remainingEl.className = 'remaining-val text-warning fw-bold';
+            remainingEl.textContent = `${remHrsInt} hrs ${remMinsInt} mins left`;
+        }
+        if (topBadge) {
+            topBadge.className = 'badge bg-secondary-subtle text-secondary border px-2 py-1';
+            topBadge.innerHTML = '<i class="fas fa-clock me-1"></i> Goal Target: 8.0h';
+        }
+        if (percentEl) {
+            percentEl.style.color = 'var(--theme-text-primary)';
+        }
+    }
+}
+window.updateDailyGoalProgress = updateDailyGoalProgress;
 
 // Attendance Table Renderer
 function renderAttendanceTable() {
