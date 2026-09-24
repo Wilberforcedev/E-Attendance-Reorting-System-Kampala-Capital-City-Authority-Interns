@@ -472,6 +472,67 @@ function renderAttendanceTable() {
     }).join('');
 }
 
+// Export Attendance Punch Logs to CSV
+function downloadAttendanceCSV() {
+    if (!clientAttendanceLogs || clientAttendanceLogs.length === 0) {
+        showToast('Export Notice', 'No attendance punch records available to export.', 'warning');
+        return;
+    }
+
+    // CSV Headers
+    const headers = ['Record ID', 'Date', 'Day of Week', 'Time In', 'Time Out', 'Duration (Hours)', 'Duty Station', 'Status'];
+
+    // Map existing attendance punch logs
+    const rows = clientAttendanceLogs.map(log => {
+        return [
+            log.id || '',
+            log.date || '',
+            log.day || '',
+            log.timeIn || '',
+            log.timeOut || '',
+            log.hours || '',
+            log.location || '',
+            log.status || ''
+        ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+    });
+
+    // Include active clock-in session if shift is currently ongoing
+    if (activeClockSession && activeClockSession.inProgress && activeClockSession.startTime) {
+        const start = new Date(activeClockSession.startTime);
+        const now = new Date();
+        const diffMs = Math.max(0, now - start);
+        const hours = (diffMs / (1000 * 60 * 60)).toFixed(1);
+        const activeRow = [
+            'active-shift',
+            now.toISOString().split('T')[0],
+            now.toLocaleDateString('en-GB', { weekday: 'long' }),
+            start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+            'Ongoing Shift',
+            `${hours} hrs (active)`,
+            activeClockSession.location || 'City Hall - ICT Lab 2',
+            'In Progress'
+        ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
+        rows.unshift(activeRow);
+    }
+
+    // Build CSV content with UTF-8 BOM for Excel/Sheets compatibility
+    const csvContent = [headers.map(h => `"${h}"`).join(','), ...rows].join('\r\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const downloadLink = document.createElement('a');
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    downloadLink.href = url;
+    downloadLink.setAttribute('download', `KCCA_Attendance_Punch_Logs_${dateStr}.csv`);
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+    URL.revokeObjectURL(url);
+
+    showToast('Download Ready', `Successfully exported ${rows.length} attendance punch log records to CSV.`, 'success');
+}
+window.downloadAttendanceCSV = downloadAttendanceCSV;
+
 // Weekly Reports Table Renderer
 function renderReportsTable() {
     const tbody = document.getElementById('client-reports-tbody');
@@ -855,5 +916,10 @@ function setupEventListeners() {
     const markReadBtn = document.getElementById('btn-mark-all-read');
     if (markReadBtn) {
         markReadBtn.addEventListener('click', markAllNotificationsRead);
+    }
+
+    const exportCsvBtn = document.getElementById('btn-export-punch-csv');
+    if (exportCsvBtn) {
+        exportCsvBtn.addEventListener('click', downloadAttendanceCSV);
     }
 }

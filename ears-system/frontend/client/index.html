@@ -534,14 +534,21 @@
 
                     <!-- Attendance Log History Table -->
                     <div class="client-card p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                             <div>
                                 <h5 class="fw-bold mb-0">Attendance Punch Logs</h5>
                                 <small class="text-muted">Complete records of verified timestamps</small>
                             </div>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="window.print()">
-                                <i class="fas fa-print me-1"></i> Print Log Sheet
-                            </button>
+                            <div class="d-flex align-items-center gap-2">
+                                <button id="btn-export-punch-csv" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1 shadow-sm" onclick="downloadAttendanceCSV()" title="Export attendance history to CSV format">
+                                    <i class="fas fa-file-csv"></i>
+                                    <span>Download CSV</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" onclick="window.print()">
+                                    <i class="fas fa-print"></i>
+                                    <span>Print Log Sheet</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="table-responsive">
                             <table class="table table-hover align-middle mb-0">
