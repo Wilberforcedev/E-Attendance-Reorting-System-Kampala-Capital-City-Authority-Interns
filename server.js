@@ -6,8 +6,8 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = 3000;
-const HOST = '0.0.0.0';
+const PORT = Number.parseInt(process.env.PORT || '3000', 10);
+const HOST = process.env.HOST || '0.0.0.0';
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -26,10 +26,25 @@ const MIME_TYPES = {
   '.eot': 'application/vnd.ms-fontobject'
 };
 
+function sendJson(res, statusCode, payload) {
+  res.writeHead(statusCode, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Cache-Control': 'no-store'
+  });
+  res.end(JSON.stringify(payload));
+}
+
+function isInsideProject(candidatePath) {
+  const relativePath = path.relative(__dirname, candidatePath);
+  return relativePath === '' ||
+    (!relativePath.startsWith(`..${path.sep}`) &&
+      relativePath !== '..' &&
+      !path.isAbsolute(relativePath));
+}
+
 const server = http.createServer((req, res) => {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
@@ -38,30 +53,42 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  let pathname = decodeURIComponent(parsedUrl.pathname);
+  let pathname;
+  try {
+    pathname = decodeURIComponent(new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname);
+  } catch {
+    sendJson(res, 400, {
+      status: 'error',
+      code: 'INVALID_URL',
+      message: 'The requested URL is malformed.'
+    });
+    return;
+  }
 
-  // Root and section redirects
+  // Convenience redirects for the main application areas.
   if (pathname === '/' || pathname === '/admin' || pathname === '/admin/') {
-    res.writeHead(302, { 'Location': '/ears-system/frontend/admin/index.html' });
+    res.writeHead(302, { Location: '/ears-system/frontend/admin/index.html' });
     res.end();
     return;
   }
 
-  if (pathname === '/client' || pathname === '/client/' || pathname === '/intern' || pathname === '/intern/' || pathname === '/portal' || pathname === '/portal/') {
-    res.writeHead(302, { 'Location': '/ears-system/frontend/client/index.html' });
+  if (['/client', '/client/', '/intern', '/intern/', '/portal', '/portal/'].includes(pathname)) {
+    res.writeHead(302, { Location: '/ears-system/frontend/client/index.html' });
     res.end();
     return;
   }
 
-  // Handle mock API endpoints if client requests PHP endpoints
+  // This Node server serves static files only. Do not pretend that PHP/API
+  // requests succeeded: no database operation is performed by this fallback.
   if (pathname.includes('/api/') || pathname.endsWith('.php')) {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'success', message: 'OK', data: [] }));
+    sendJson(res, 501, {
+      status: 'error',
+      code: 'API_NOT_CONFIGURED',
+      message: 'This endpoint is not connected to a running backend. No data was saved or changed.'
+    });
     return;
   }
 
-  // Potential local file locations to check
   const candidatePaths = [
     path.join(__dirname, pathname),
     path.join(__dirname, 'ears-system/frontend/client', pathname),
@@ -72,50 +99,63 @@ const server = http.createServer((req, res) => {
 
   let filePathToServe = null;
   for (const candidate of candidatePaths) {
+    const resolvedCandidate = path.resolve(candidate);
+
+    // Reject traversal attempts before checking or reading files.
+    if (!isInsideProject(resolvedCandidate)) {
+      continue;
+    }
+
     try {
-      if (fs.existsSync(candidate)) {
-        const stat = fs.statSync(candidate);
-        if (stat.isFile()) {
-          filePathToServe = candidate;
+      if (!fs.existsSync(resolvedCandidate)) {
+        continue;
+      }
+
+      const stat = fs.statSync(resolvedCandidate);
+      if (stat.isFile()) {
+        filePathToServe = resolvedCandidate;
+        break;
+      }
+
+      if (stat.isDirectory()) {
+        const indexHtml = path.resolve(resolvedCandidate, 'index.html');
+        if (isInsideProject(indexHtml) && fs.existsSync(indexHtml) && fs.statSync(indexHtml).isFile()) {
+          filePathToServe = indexHtml;
           break;
-        } else if (stat.isDirectory()) {
-          const indexHtml = path.join(candidate, 'index.html');
-          if (fs.existsSync(indexHtml)) {
-            filePathToServe = indexHtml;
-            break;
-          }
         }
       }
     } catch {
-      // Continue to next candidate
+      // Continue searching the remaining known frontend locations.
     }
   }
 
-  if (filePathToServe) {
-    const ext = path.extname(filePathToServe).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-    fs.readFile(filePathToServe, (err, data) => {
-      if (err) {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end('500 Internal Server Error');
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(data);
-    });
-  } else {
-    // 404 Not Found fallback
+  if (!filePathToServe) {
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(`<!DOCTYPE html>
-<html>
-<head><title>404 Not Found</title></head>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>404 Not Found</title></head>
 <body style="font-family:sans-serif;text-align:center;padding:50px;">
   <h2>404 - Page Not Found</h2>
+  <p>The requested page could not be found.</p>
   <p><a href="/ears-system/frontend/admin/index.html">Go to EARS Admin Panel</a></p>
 </body>
 </html>`);
+    return;
   }
+
+  const ext = path.extname(filePathToServe).toLowerCase();
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+  fs.readFile(filePathToServe, (err, data) => {
+    if (err) {
+      res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
+      res.end('500 Internal Server Error');
+      return;
+    }
+
+    res.writeHead(200, { 'Content-Type': contentType, 'X-Content-Type-Options': 'nosniff' });
+    res.end(data);
+  });
 });
 
 server.listen(PORT, HOST, () => {
