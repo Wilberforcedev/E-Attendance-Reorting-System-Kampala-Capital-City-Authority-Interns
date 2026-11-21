@@ -2,10 +2,12 @@
 
 // Global variables
 let currentSection = 'dashboard';
+let currentAdminUserId = null;
 let users = [];
 let divisions = [];
 let departments = [];
 let auditLogs = [];
+let visibleAuditLogs = [];
 let systemSettings = {};
 
 // Theme Management (Light / Dark Mode with LocalStorage persistence)
@@ -159,6 +161,7 @@ window.calculatePasswordStrength = calculatePasswordStrength;
 document.addEventListener('DOMContentLoaded', async function() {
     const user = await window.EARSAuth?.requireRole('admin');
     if (!user) return;
+    currentAdminUserId = Number(user.id);
     initializeTheme();
     initializeAdminPanel();
     loadDashboardData();
@@ -620,102 +623,65 @@ function loadRecentActivity() {
 }
 
 // User Management functions
-function loadUsers() {
-    // Simulate API call to get users
-    users = [
-        {
-            id: 1,
-            firstname: 'Aron',
-            lastname: 'L',
-            email: 'aron.L@kcca.go.ug',
-            phone: '+256 701 234 567',
-            role: 'admin',
-            department: 'IT',
-            status: 'active',
-            lastLogin: '2024-01-15 10:30:00'
-        },
-        {
-            id: 2,
-            firstname: 'Arafat',
-            lastname: 'K',
-            email: 'arafat.k@kcca.go.ug',
-            phone: '+256 702 345 678',
-            role: 'intern',
-            department: 'Legal',
-            status: 'active',
-            lastLogin: '2024-01-15 09:15:00'
-        },
-        {
-            id: 3,
-            firstname: 'Benjamin',
-            lastname: 'N',
-            email: 'benjamin.n@kcca.go.ug',
-            phone: '+256 703 456 789',
-            role: 'supervisor',
-            department: 'Finance',
-            status: 'active',
-            lastLogin: '2024-01-15 08:45:00'
-        },
-        {
-            id: 3,
-            firstname: 'Calvin',
-            lastname: 'M',
-            email: 'calvin.m@kcca.go.ug',
-            phone: '+256 703 456 789',
-            role: 'supervisor',
-            department: 'Revenue',
-            status: 'active',
-            lastLogin: '2024-01-15 08:45:00'
-        },
-        {
-            id: 3,
-            firstname: 'Norman',
-            lastname: 'D',
-            email: 'norman.d@kcca.go.ug',
-            phone: '+256 703 456 789',
-            role: 'supervisor',
-            department: 'IT',
-            status: 'active',
-            lastLogin: '2024-01-15 08:45:00'
-        }
-    ];
-    
-    renderUsersTable();
+async function loadUsers() {
+    try {
+        const result = await adminApiRequest('/backend/api/users.php');
+        users = (result.users || []).map(user => {
+            const parts = String(user.full_name || '').trim().split(/\s+/);
+            return {
+                id: Number(user.id),
+                firstname: parts.shift() || '',
+                lastname: parts.join(' '),
+                email: user.email,
+                role: user.role,
+                department: user.department || '',
+                departmentId: user.department_id || '',
+                status: user.status,
+                createdAt: user.created_at,
+                lastLogin: user.last_login,
+                supervisorId: user.supervisor_id,
+            };
+        });
+        renderUsersTable();
+        await loadDepartmentOptions();
+    } catch (error) {
+        showAlert(`Could not load users: ${error.message}`, 'danger');
+    }
+}
+
+async function loadDepartmentOptions() {
+    try {
+        const result = await adminApiRequest('/backend/api/departments.php');
+        departments = result.departments || [];
+        const selectors = [document.getElementById('user-department'), document.getElementById('department-filter')];
+        selectors.forEach((select, index) => {
+            if (!select) return;
+            const firstOption = index === 0 ? 'Select Department (optional)' : 'All Departments';
+            select.innerHTML = `<option value="">${firstOption}</option>` + departments.map(department =>
+                `<option value="${index === 0 ? Number(department.id) : escapeAdminHtml(department.name)}">${escapeAdminHtml(department.name)}</option>`
+            ).join('');
+        });
+    } catch (error) {
+        showAlert(`Could not load departments: ${error.message}`, 'danger');
+    }
 }
 
 function createUserRowElement(user) {
-    const isChecked = selectedUserIds.has(user.id);
     const row = document.createElement('tr');
     row.id = `user-row-${user.id}`;
-    if (isChecked) {
-        row.classList.add('user-row-selected');
-    }
-    
+    const fullName = `${user.firstname} ${user.lastname}`.trim();
     row.innerHTML = `
-        <td class="text-center">
-            <input type="checkbox" class="form-check-input user-select-checkbox" 
-                   id="user-check-${user.id}" 
-                   value="${user.id}" 
-                   ${isChecked ? 'checked' : ''} 
-                   onchange="onUserCheckboxChange(${user.id}, this.checked)" 
-                   aria-label="Select user ${user.firstname} ${user.lastname}">
-        </td>
-        <td class="fw-semibold">${user.firstname} ${user.lastname}</td>
-        <td>${user.email}</td>
-        <td><span class="badge bg-${getRoleBadgeColor(user.role)}">${user.role}</span></td>
-        <td>${user.department || '-'}</td>
-        <td><span class="badge bg-${getStatusBadgeColor(user.status)}">${user.status}</span></td>
-        <td>${formatDateTime(user.lastLogin)}</td>
-        <td>
-            <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser(${user.id})" title="Edit user">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-warning me-1" onclick="resetPassword(${user.id})" title="Reset password">
-                <i class="fas fa-key"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id})" title="Delete user">
-                <i class="fas fa-trash"></i>
-            </button>
+        <td class="text-muted">${user.id}</td>
+        <td class="fw-semibold">${escapeAdminHtml(fullName)}</td>
+        <td>${escapeAdminHtml(user.email)}</td>
+        <td><span class="badge bg-${getRoleBadgeColor(user.role)}">${escapeAdminHtml(user.role)}</span></td>
+        <td>${escapeAdminHtml(user.department || '-')}</td>
+        <td><span class="badge bg-${getStatusBadgeColor(user.status)}">${escapeAdminHtml(user.status)}</span></td>
+        <td>${formatDateTime(user.createdAt)}</td>
+        <td>${user.status === 'active' && user.id !== currentAdminUserId ? `
+            <button class="btn btn-sm btn-outline-danger" onclick="deactivateUser(${user.id})" title="Deactivate account">
+                <i class="fas fa-user-slash"></i> Deactivate
+            </button>` : '<span class="text-muted small">—</span>'}
         </td>
     `;
     return row;
@@ -761,6 +727,21 @@ function getStatusBadgeColor(status) {
         'suspended': 'danger'
     };
     return colors[status] || 'secondary';
+}
+
+async function adminApiRequest(url, options = {}) {
+    const response = await window.EARSAuth.request(url, options);
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload.status !== 'success') {
+        throw new Error(payload.message || 'The request could not be completed.');
+    }
+    return payload;
+}
+
+function escapeAdminHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
 }
 
 function filterUsers() {
@@ -1003,6 +984,7 @@ function bulkResetPasswords() {
 
 // Modal functions
 function showAddUserModal() {
+    loadDepartmentOptions();
     const form = document.getElementById('add-user-form');
     if (form) form.reset();
     updatePasswordStrengthUI('user', '');
@@ -1042,37 +1024,46 @@ function showAssignSupervisorModal() {
 }
 
 // User CRUD operations
-function addUser() {
+async function addUser() {
     const form = document.getElementById('add-user-form');
-    const formData = new FormData(form);
-    
-    // Validate form
-    if (!validateUserForm(formData)) {
+    if (!form.reportValidity()) return;
+    const firstName = document.getElementById('user-firstname').value.trim();
+    const lastName = document.getElementById('user-lastname').value.trim();
+    const password = document.getElementById('user-password').value;
+    const confirmPassword = document.getElementById('user-confirm-password').value;
+    if (password.length < 12) {
+        showAlert('Passwords must contain at least 12 characters.', 'warning');
         return;
     }
-    
-    // Simulate API call
-    const newUser = {
-        id: users.length + 1,
-        firstname: formData.get('firstname'),
-        lastname: formData.get('lastname'),
-        email: formData.get('email'),
-        phone: formData.get('phone'),
-        role: formData.get('role'),
-        department: formData.get('department'),
-        status: 'active',
-        lastLogin: null
-    };
-    
-    users.push(newUser);
-    renderUsersTable();
-    
-    // Close modal and show success message
-    bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
-    showAlert('User added successfully!', 'success');
-    
-    // Log the action
-    logAuditAction('create', 'user', `Added user: ${newUser.firstname} ${newUser.lastname}`);
+    if (password !== confirmPassword) {
+        showAlert('The passwords do not match.', 'warning');
+        return;
+    }
+
+    const button = document.querySelector('#addUserModal .modal-footer .btn-primary');
+    if (button) button.disabled = true;
+    try {
+        await adminApiRequest('/backend/api/users.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                full_name: `${firstName} ${lastName}`.trim(),
+                email: document.getElementById('user-email').value.trim(),
+                password,
+                role: document.getElementById('user-role').value,
+                department_id: document.getElementById('user-department').value || null,
+            }),
+        });
+        bootstrap.Modal.getInstance(document.getElementById('addUserModal'))?.hide();
+        form.reset();
+        await loadUsers();
+        showAlert('User account created.', 'success');
+        loadAuditLogs();
+    } catch (error) {
+        showAlert(`Could not create account: ${error.message}`, 'danger');
+    } finally {
+        if (button) button.disabled = false;
+    }
 }
 
 function updateUser() {
@@ -1106,23 +1097,18 @@ function updateUser() {
     logAuditAction('update', 'user', `Updated user: ${user.firstname} ${user.lastname}`);
 }
 
-function deleteUser(userId) {
-    if (!confirm('Are you sure you want to delete this user?')) {
-        return;
+async function deactivateUser(userId) {
+    const user = users.find(item => item.id === Number(userId));
+    if (!user || !confirm(`Deactivate ${user.firstname} ${user.lastname}? They will no longer be able to sign in.`)) return;
+    try {
+        await adminApiRequest(`/backend/api/users.php?id=${encodeURIComponent(user.id)}`, { method: 'DELETE' });
+        selectedUserIds.delete(user.id);
+        await loadUsers();
+        showAlert('User account deactivated.', 'success');
+        loadAuditLogs();
+    } catch (error) {
+        showAlert(`Could not deactivate account: ${error.message}`, 'danger');
     }
-    
-    const user = users.find(u => u.id === userId);
-    if (!user) return;
-    
-    // Remove user from array and selection
-    users = users.filter(u => u.id !== userId);
-    selectedUserIds.delete(userId);
-    renderUsersTable();
-    
-    showAlert('User deleted successfully!', 'success');
-    
-    // Log the action
-    logAuditAction('delete', 'user', `Deleted user: ${user.firstname} ${user.lastname}`);
 }
 
 function resetPassword(userId) {
@@ -1324,61 +1310,27 @@ function assignSupervisor() {
 }
 
 // Audit Logs functions
-function loadAuditLogs() {
-    // Simulate API call to get audit logs
-    auditLogs = [
-        {
-            id: 1,
-            timestamp: '2024-01-15 10:30:00',
-            user: 'Tendo',
-            action: 'create',
-            details: 'Added new user: Taliq',
-            ipAddress: '192.168.1.100'
-        },
-        {
-            id: 2,
-            timestamp: '2024-01-15 10:25:00',
-            user: 'Wilber',
-            action: 'login',
-            details: 'User logged in successfully',
-            ipAddress: '192.168.1.101'
-        },
-        {
-            id: 3,
-            timestamp: '2024-01-15 10:20:00',
-            user: 'Tendo',
-            action: 'update',
-            details: 'Updated system settings',
-            ipAddress: '192.168.1.100'
-        },
-        {
-            id: 4,
-            timestamp: '2024-01-15 10:15:00',
-            user: 'Wilber',
-            action: 'logout',
-            details: 'User logged out',
-            ipAddress: '192.168.1.102'
+async function loadAuditLogs() {
+    try {
+        const result = await adminApiRequest('/backend/api/audit_logs.php');
+        auditLogs = result.logs || [];
+        const userSelect = document.getElementById('log-user-filter');
+        if (userSelect) {
+            const currentValue = userSelect.value;
+            const names = [...new Set(auditLogs.map(log => log.user).filter(Boolean))];
+            userSelect.innerHTML = '<option value="">All Users</option>' + names.map(name =>
+                `<option value="${escapeAdminHtml(name)}">${escapeAdminHtml(name)}</option>`
+            ).join('');
+            userSelect.value = names.includes(currentValue) ? currentValue : '';
         }
-    ];
-    
-    renderAuditLogs();
+        renderAuditLogs();
+    } catch (error) {
+        showAlert(`Could not load audit events: ${error.message}`, 'danger');
+    }
 }
 
 function renderAuditLogs() {
-    const tbody = document.getElementById('audit-logs-table-body');
-    tbody.innerHTML = '';
-    
-    auditLogs.forEach(log => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${formatDateTime(log.timestamp)}</td>
-            <td>${log.user}</td>
-            <td><span class="badge bg-${getActionBadgeColor(log.action)}">${log.action}</span></td>
-            <td>${log.details}</td>
-            <td>${log.ipAddress}</td>
-        `;
-        tbody.appendChild(row);
-    });
+    renderFilteredAuditLogs(auditLogs);
 }
 
 function getActionBadgeColor(action) {
@@ -1387,6 +1339,7 @@ function getActionBadgeColor(action) {
         'logout': 'secondary',
         'create': 'primary',
         'update': 'info',
+        'deactivate': 'warning',
         'delete': 'danger'
     };
     return colors[action] || 'secondary';
@@ -1402,7 +1355,7 @@ function filterAuditLogs() {
         const matchesAction = !actionFilter || log.action === actionFilter;
         const matchesUser = !userFilter || log.user === userFilter;
         const matchesDateFrom = !dateFrom || log.timestamp >= dateFrom;
-        const matchesDateTo = !dateTo || log.timestamp <= dateTo;
+        const matchesDateTo = !dateTo || String(log.timestamp).slice(0, 10) <= dateTo;
         
         return matchesAction && matchesUser && matchesDateFrom && matchesDateTo;
     });
@@ -1411,36 +1364,45 @@ function filterAuditLogs() {
 }
 
 function renderFilteredAuditLogs(filteredLogs) {
+    visibleAuditLogs = [...filteredLogs];
     const tbody = document.getElementById('audit-logs-table-body');
+    if (!tbody) return;
     tbody.innerHTML = '';
-    
+    if (!filteredLogs.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No audit events found.</td></tr>';
+        return;
+    }
     filteredLogs.forEach(log => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${formatDateTime(log.timestamp)}</td>
-            <td>${log.user}</td>
-            <td><span class="badge bg-${getActionBadgeColor(log.action)}">${log.action}</span></td>
-            <td>${log.details}</td>
-            <td>${log.ipAddress}</td>
+            <td>${escapeAdminHtml(formatDateTime(log.timestamp))}</td>
+            <td>${escapeAdminHtml(log.user)}</td>
+            <td><span class="badge bg-${getActionBadgeColor(log.action)}">${escapeAdminHtml(log.action)}</span></td>
+            <td>${escapeAdminHtml(log.details)}</td>
+            <td>${escapeAdminHtml(log.ipAddress || '—')}</td>
         `;
         tbody.appendChild(row);
     });
 }
 
 function exportAuditLogs() {
-    // In real implementation, generate and download CSV/Excel file
-    console.log('Exporting audit logs...');
-    showAlert('Audit logs exported successfully!', 'success');
+    const escapeCsv = value => {
+        let text = String(value ?? '');
+        if (/^[\s\u0000-\u001f]*[=+@-]/.test(text)) text = `'${text}`;
+        return `"${text.replace(/"/g, '""')}"`;
+    };
+    const headers = ['Timestamp', 'User', 'Action', 'Details', 'IP Address'];
+    const rows = visibleAuditLogs.map(log => [log.timestamp, log.user, log.action, log.details, log.ipAddress].map(escapeCsv).join(','));
+    const blob = new Blob(['\uFEFF' + [headers.map(escapeCsv).join(','), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'ears-audit-events.csv';
+    link.click();
+    URL.revokeObjectURL(link.href);
 }
 
 function clearAuditLogs() {
-    if (!confirm('Are you sure you want to clear all audit logs? This action cannot be undone.')) {
-        return;
-    }
-    
-    auditLogs = [];
-    renderAuditLogs();
-    showAlert('Audit logs cleared successfully!', 'success');
+    showAlert('Audit events are retained as an accountability record and cannot be cleared from this interface.', 'info');
 }
 
 // System Settings functions
@@ -1515,7 +1477,8 @@ function saveSystemSettings() {
 // Utility functions
 function formatDateTime(dateTimeString) {
     if (!dateTimeString) return '-';
-    const date = new Date(dateTimeString);
+    const normalized = String(dateTimeString).includes('T') ? String(dateTimeString) : `${String(dateTimeString).replace(' ', 'T')}Z`;
+    const date = new Date(normalized);
     return date.toLocaleString();
 }
 
@@ -1531,39 +1494,21 @@ function generatePassword() {
 function showAlert(message, type) {
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-    alertDiv.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    
-    // Insert at the top of main content
+    alertDiv.append(document.createTextNode(String(message)));
+    const dismiss = document.createElement('button');
+    dismiss.type = 'button';
+    dismiss.className = 'btn-close';
+    dismiss.setAttribute('data-bs-dismiss', 'alert');
+    dismiss.setAttribute('aria-label', 'Close');
+    alertDiv.appendChild(dismiss);
     const main = document.querySelector('main');
+    if (!main) return;
     main.insertBefore(alertDiv, main.firstChild);
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.remove();
-        }
-    }, 5000);
+    setTimeout(() => alertDiv.remove(), 5000);
 }
 
-function logAuditAction(action, resource, details) {
-    const logEntry = {
-        id: auditLogs.length + 1,
-        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-        user: 'Admin', // In real implementation, get current user
-        action: action,
-        details: details,
-        ipAddress: '192.168.1.100' // In real implementation, get actual IP
-    };
-    
-    auditLogs.unshift(logEntry);
-    
-    // Update audit logs table if currently visible
-    if (currentSection === 'audit-logs') {
-        renderAuditLogs();
-    }
+function logAuditAction() {
+    // Only server-side operations write to the official audit log.
 }
 
 // ============================================================================
@@ -1587,7 +1532,7 @@ function calculatePasswordStrength(password) {
     }
 
     const criteria = {
-        length: password.length >= 8,
+        length: password.length >= 12,
         upper: /[A-Z]/.test(password),
         number: /[0-9]/.test(password),
         special: /[^A-Za-z0-9]/.test(password)
@@ -1663,7 +1608,7 @@ function updatePasswordStrengthUI(targetId, password) {
         badge.className = 'badge bg-secondary-subtle text-secondary border';
 
         [
-            { el: hintLength, text: '8+ chars' },
+            { el: hintLength, text: '12+ characters' },
             { el: hintUpper, text: 'Uppercase' },
             { el: hintNumber, text: 'Number' },
             { el: hintSpecial, text: 'Special char' }
@@ -1693,7 +1638,7 @@ function updatePasswordStrengthUI(targetId, password) {
         }
     }
 
-    updateHint(hintLength, strength.criteria.length, '8+ chars');
+    updateHint(hintLength, strength.criteria.length, '12+ characters');
     updateHint(hintUpper, strength.criteria.upper, 'Uppercase');
     updateHint(hintNumber, strength.criteria.number, 'Number');
     updateHint(hintSpecial, strength.criteria.special, 'Special char');

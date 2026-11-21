@@ -158,3 +158,14 @@ CREATE TABLE attendance_sessions (
     UNIQUE KEY uq_attendance_intern_work_date (intern_id, work_date),
     INDEX idx_attendance_work_date (work_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Hashed identifiers only; old rows are deleted opportunistically after 30 days.
+CREATE TABLE login_attempts (
+    attempt_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    identifier_hash CHAR(64) NOT NULL,
+    ip_hash CHAR(64) NOT NULL,
+    attempted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_login_attempt_identifier_time (identifier_hash, attempted_at),
+    INDEX idx_login_attempt_ip_time (ip_hash, attempted_at),
+    INDEX idx_login_attempt_time (attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

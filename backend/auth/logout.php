@@ -20,6 +20,26 @@ if (!is_string($csrfCookie) || !is_string($csrfHeader) || $csrfCookie === '' || 
     exit;
 }
 
+try {
+    require_once __DIR__ . '/../config/db.php';
+    require_once __DIR__ . '/../utils/auth.php';
+    $db = (new Database())->getConnection();
+    $auth = new Auth($db);
+    $user = $auth->validateToken($auth->getBearerToken());
+    if ($user) {
+        $audit = $db->prepare(
+            "INSERT INTO audit_logs (user_id, action, description, ip_address)
+             VALUES (:user_id, 'logout', 'Signed out.', :ip_address)"
+        );
+        $audit->execute([
+            ':user_id' => $user['id'],
+            ':ip_address' => substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45),
+        ]);
+    }
+} catch (Throwable $error) {
+    error_log('Logout audit event could not be recorded: ' . $error->getMessage());
+}
+
 $secureCookies = strtolower((string) (getenv('COOKIE_SECURE') ?: 'true')) !== 'false';
 $expired = [
     'expires' => time() - 3600,
