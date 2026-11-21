@@ -1,11 +1,8 @@
 <?php
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, GET, DELETE");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-require_once __DIR__ . '/../../config/db.php';
-require_once __DIR__ . '/../../utils/auth.php';
+require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../utils/auth.php';
 
 $database = new Database();
 $db = $database->getConnection();
@@ -33,13 +30,16 @@ try {
         $permissionQuery = "SELECT report_id FROM reports 
                            WHERE report_id = :report_id 
                            AND (intern_id = :user_id 
-                               OR supervisor_id = :user_id 
-                               OR :is_hr = 1)";
+                               OR supervisor_id = :supervisor_id
+                               OR :is_hr = 1
+                               OR :is_admin = 1)";
         $stmt = $db->prepare($permissionQuery);
         $stmt->execute([
             ':report_id' => $data['report_id'],
             ':user_id' => $userData['id'],
-            ':is_hr' => ($userData['role'] === 'hr') ? 1 : 0
+            ':supervisor_id' => $userData['id'],
+            ':is_hr' => ($userData['role'] === 'hr') ? 1 : 0,
+            ':is_admin' => ($userData['role'] === 'admin') ? 1 : 0
         ]);
         
         if (!$stmt->fetch()) {
@@ -95,6 +95,24 @@ try {
             throw new Exception("Report ID is required");
         }
 
+        $permissionQuery = "SELECT report_id FROM reports
+                           WHERE report_id = :report_id
+                           AND (intern_id = :user_id
+                               OR supervisor_id = :supervisor_id
+                               OR :is_hr = 1
+                               OR :is_admin = 1)";
+        $permissionStmt = $db->prepare($permissionQuery);
+        $permissionStmt->execute([
+            ':report_id' => $_GET['report_id'],
+            ':user_id' => $userData['id'],
+            ':supervisor_id' => $userData['id'],
+            ':is_hr' => ($userData['role'] === 'hr') ? 1 : 0,
+            ':is_admin' => ($userData['role'] === 'admin') ? 1 : 0
+        ]);
+        if (!$permissionStmt->fetch()) {
+            throw new Exception("You don't have permission to view these comments");
+        }
+
         $commentsQuery = "SELECT c.*, u.full_name, u.role 
                          FROM comments c
                          JOIN users u ON c.user_id = u.id
@@ -110,6 +128,10 @@ try {
         ]);
     }
 
+} catch (PDOException $e) {
+    error_log('Comments API database error: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => 'Request could not be completed']);
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);

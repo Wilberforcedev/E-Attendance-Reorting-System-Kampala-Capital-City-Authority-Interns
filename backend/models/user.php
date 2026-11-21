@@ -8,6 +8,7 @@ class User {
     public $email;
     public $password;
     public $role;
+    public $is_active;
     public $division_id;
     public $directorate_id;
     public $department_id;
@@ -20,7 +21,7 @@ class User {
     }
 
     function emailExists() {
-        $query = "SELECT id, full_name, email, password, role
+        $query = "SELECT id, full_name, email, password, role, is_active
                   FROM " . $this->table_name . "
                   WHERE email = ?
                   LIMIT 0,1";
@@ -38,6 +39,7 @@ class User {
             $this->email = $row['email'];
             $this->password = $row['password'];
             $this->role = $row['role'];
+            $this->is_active = (bool) $row['is_active'];
             return true;
         }
         return false;

@@ -1,21 +1,33 @@
 <?php
-class Database {
-    private $host = "localhost";
-    private $db_name = "ears_db";
-    private $username = "root";
-    private $password = "";
-    public $conn;
+declare(strict_types=1);
 
-    public function getConnection() {
-        $this->conn = null;
-        
-        try {
-            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
-            $this->conn->exec("set names utf8");
-        } catch(PDOException $exception) {
-            echo "Connection error: " . $exception->getMessage();
+final class Database
+{
+    private ?PDO $connection = null;
+
+    public function getConnection(): PDO
+    {
+        if ($this->connection instanceof PDO) {
+            return $this->connection;
         }
-        
-        return $this->conn;
+
+        $host = getenv('DB_HOST') ?: '127.0.0.1';
+        $port = getenv('DB_PORT') ?: '3306';
+        $name = getenv('DB_NAME') ?: '';
+        $username = getenv('DB_USER') ?: '';
+        $password = getenv('DB_PASSWORD');
+
+        if ($name === '' || $username === '' || $password === false) {
+            throw new RuntimeException('Database configuration is incomplete.');
+        }
+
+        $dsn = sprintf('mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4', $host, $port, $name);
+        $this->connection = new PDO($dsn, $username, $password, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+
+        return $this->connection;
     }
 }

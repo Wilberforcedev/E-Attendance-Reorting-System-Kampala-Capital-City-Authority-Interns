@@ -1,10 +1,6 @@
 <?php
 // Set response headers first to prevent any output issues
-header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Max-Age: 3600");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 // Error reporting for development (remove in production)
 error_reporting(E_ALL);
@@ -25,8 +21,7 @@ if (!file_exists($autoloadPath)) {
     die(json_encode([
         "success" => false,
         "message" => "System configuration error",
-        "error" => "Composer dependencies not installed",
-        "solution" => "Run 'composer install' in the project root directory"
+        "error" => "Server dependencies are not installed"
     ]));
 }
 require_once $autoloadPath;
@@ -99,7 +94,7 @@ try {
     $user->email = $email;
 
     // Check if user exists
-    if (!$user->emailExists()) {
+    if (!$user->emailExists() || !$user->is_active) {
         throw new Exception("Invalid credentials", 401);
     }
 

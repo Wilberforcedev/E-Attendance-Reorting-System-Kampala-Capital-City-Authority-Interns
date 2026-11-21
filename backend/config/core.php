@@ -1,16 +1,33 @@
 <?php
-require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
-header("Access-Control-Max-Age: 3600");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+declare(strict_types=1);
+
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
+$autoloadPath = dirname(__DIR__, 2) . '/vendor/autoload.php';
+if (!is_file($autoloadPath)) {
+    throw new RuntimeException('Server dependencies are not installed.');
+}
+require_once $autoloadPath;
+
+if (!headers_sent()) {
+    header('Content-Type: application/json; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+    header('Cache-Control: no-store');
+}
+
+$jwtSecret = getenv('JWT_SECRET');
+if (!is_string($jwtSecret) || strlen($jwtSecret) < 32) {
+    throw new RuntimeException('JWT_SECRET must be configured with at least 32 characters.');
+}
+if (!defined('SECRET_KEY')) {
+    define('SECRET_KEY', $jwtSecret);
+}
 
 // Auto-load classes
 spl_autoload_register(function ($class_name) {
-    include '../models/' . $class_name . '.php';
+    $modelPath = __DIR__ . '/../models/' . basename($class_name) . '.php';
+    if (is_file($modelPath)) {
+        require_once $modelPath;
+    }
 });
-
-// JWT secret key
-define('SECRET_KEY', 'your-secret-key-here');
-?>

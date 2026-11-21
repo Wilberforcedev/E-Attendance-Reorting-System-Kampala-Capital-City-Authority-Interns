@@ -1,123 +1,141 @@
 import http from 'node:http';
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const projectRoot = path.dirname(fileURLToPath(import.meta.url));
+const publicRoot = path.join(projectRoot, 'dist');
+const port = Number.parseInt(process.env.PORT ?? '3000', 10);
+const host = process.env.HOST ?? '0.0.0.0';
 
-const PORT = 3000;
-const HOST = '0.0.0.0';
+const mimeTypes = new Map([
+  ['.html', 'text/html; charset=utf-8'],
+  ['.css', 'text/css; charset=utf-8'],
+  ['.js', 'text/javascript; charset=utf-8'],
+  ['.json', 'application/json; charset=utf-8'],
+  ['.png', 'image/png'],
+  ['.jpg', 'image/jpeg'],
+  ['.jpeg', 'image/jpeg'],
+  ['.gif', 'image/gif'],
+  ['.svg', 'image/svg+xml'],
+  ['.ico', 'image/x-icon'],
+  ['.woff', 'font/woff'],
+  ['.woff2', 'font/woff2'],
+  ['.ttf', 'font/ttf'],
+]);
 
-const MIME_TYPES = {
-  '.html': 'text/html; charset=utf-8',
-  '.css': 'text/css; charset=utf-8',
-  '.js': 'application/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg',
-  '.gif': 'image/gif',
-  '.svg': 'image/svg+xml',
-  '.ico': 'image/x-icon',
-  '.woff': 'font/woff',
-  '.woff2': 'font/woff2',
-  '.ttf': 'font/ttf',
-  '.eot': 'application/vnd.ms-fontobject'
-};
+function send(res, status, body, contentType = 'text/plain; charset=utf-8') {
+  res.writeHead(status, {
+    'Content-Type': contentType,
+    'Content-Length': Buffer.byteLength(body),
+    'Cache-Control': 'no-store',
+  });
+  res.end(body);
+}
 
-const server = http.createServer((req, res) => {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+function addSecurityHeaders(res) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=()');
+}
 
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
-    res.end();
-    return;
+async function resolvePublicFile(pathname) {
+  const relativePath = pathname.replace(/^\/+/, '');
+  const candidate = path.resolve(publicRoot, relativePath || 'index.html');
+  const resolvedRoot = await fs.realpath(publicRoot).catch(() => null);
+
+  if (candidate !== publicRoot && !candidate.startsWith(`${publicRoot}${path.sep}`)) {
+    return null;
+  }
+  if (!resolvedRoot) {
+    return null;
   }
 
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  let pathname = decodeURIComponent(parsedUrl.pathname);
-
-  // Root and section redirects
-  if (pathname === '/' || pathname === '/admin' || pathname === '/admin/') {
-    res.writeHead(302, { 'Location': '/ears-system/frontend/admin/index.html' });
-    res.end();
-    return;
-  }
-
-  if (pathname === '/client' || pathname === '/client/' || pathname === '/intern' || pathname === '/intern/' || pathname === '/portal' || pathname === '/portal/') {
-    res.writeHead(302, { 'Location': '/ears-system/frontend/client/index.html' });
-    res.end();
-    return;
-  }
-
-  // Handle mock API endpoints if client requests PHP endpoints
-  if (pathname.includes('/api/') || pathname.endsWith('.php')) {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: 'success', message: 'OK', data: [] }));
-    return;
-  }
-
-  // Potential local file locations to check
-  const candidatePaths = [
-    path.join(__dirname, pathname),
-    path.join(__dirname, 'ears-system/frontend/client', pathname),
-    path.join(__dirname, 'ears-system/frontend/admin', pathname),
-    path.join(__dirname, 'ears-system/frontend', pathname),
-    path.join(__dirname, 'frontend', pathname)
-  ];
-
-  let filePathToServe = null;
-  for (const candidate of candidatePaths) {
-    try {
-      if (fs.existsSync(candidate)) {
-        const stat = fs.statSync(candidate);
-        if (stat.isFile()) {
-          filePathToServe = candidate;
-          break;
-        } else if (stat.isDirectory()) {
-          const indexHtml = path.join(candidate, 'index.html');
-          if (fs.existsSync(indexHtml)) {
-            filePathToServe = indexHtml;
-            break;
-          }
-        }
-      }
-    } catch {
-      // Continue to next candidate
+  try {
+    const resolvedFile = await fs.realpath(candidate);
+    if (resolvedFile !== resolvedRoot && !resolvedFile.startsWith(`${resolvedRoot}${path.sep}`)) {
+      return null;
     }
+    const stat = await fs.stat(resolvedFile);
+    if (stat.isDirectory()) {
+      return resolvePublicFile(path.join(pathname, 'index.html'));
+    }
+    return stat.isFile() ? resolvedFile : null;
+  } catch {
+    return null;
+  }
+}
+
+const server = http.createServer(async (req, res) => {
+  addSecurityHeaders(res);
+
+  if (!['GET', 'HEAD'].includes(req.method ?? '')) {
+    res.setHeader('Allow', 'GET, HEAD');
+    send(res, 405, 'Method Not Allowed');
+    return;
   }
 
-  if (filePathToServe) {
-    const ext = path.extname(filePathToServe).toLowerCase();
-    const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  let url;
+  try {
+    url = new URL(req.url ?? '/', 'http://localhost');
+    decodeURIComponent(url.pathname);
+  } catch {
+    send(res, 400, 'Bad Request');
+    return;
+  }
 
-    fs.readFile(filePathToServe, (err, data) => {
-      if (err) {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end('500 Internal Server Error');
-        return;
-      }
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(data);
+  const pathname = url.pathname;
+
+  if (pathname === '/healthz') {
+    send(res, 200, 'ok');
+    return;
+  }
+
+  if (pathname === '/' || ['/admin', '/admin/', '/client', '/client/', '/intern', '/intern/', '/portal', '/portal/'].includes(pathname)) {
+    res.writeHead(302, { Location: '/ears-system/frontend/client/index.html', 'Cache-Control': 'no-store' });
+    res.end();
+    return;
+  }
+
+  if (pathname.startsWith('/api/') || pathname.endsWith('.php')) {
+    send(res, 404, JSON.stringify({ status: 'error', message: 'API is not served by the static web application.' }), 'application/json; charset=utf-8');
+    return;
+  }
+
+  const decodedPath = decodeURIComponent(pathname);
+  if (decodedPath.split('/').some((part) => part.startsWith('.') || part === '..')) {
+    send(res, 404, 'Not Found');
+    return;
+  }
+
+  const filePath = await resolvePublicFile(decodedPath);
+  if (!filePath) {
+    send(res, 404, 'Not Found');
+    return;
+  }
+
+  try {
+    const body = req.method === 'HEAD' ? null : await fs.readFile(filePath);
+    const stat = await fs.stat(filePath);
+    const ext = path.extname(filePath).toLowerCase();
+    res.writeHead(200, {
+      'Content-Type': mimeTypes.get(ext) ?? 'application/octet-stream',
+      'Content-Length': stat.size,
+      'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=3600',
     });
-  } else {
-    // 404 Not Found fallback
-    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(`<!DOCTYPE html>
-<html>
-<head><title>404 Not Found</title></head>
-<body style="font-family:sans-serif;text-align:center;padding:50px;">
-  <h2>404 - Page Not Found</h2>
-  <p><a href="/ears-system/frontend/admin/index.html">Go to EARS Admin Panel</a></p>
-</body>
-</html>`);
+    res.end(body);
+  } catch {
+    send(res, 500, 'Internal Server Error');
   }
 });
 
-server.listen(PORT, HOST, () => {
-  console.log(`EARS server listening on http://${HOST}:${PORT}`);
+server.listen(port, host, () => {
+  console.log(`EARS static web server listening on ${host}:${port}`);
 });
+
+for (const signal of ['SIGINT', 'SIGTERM']) {
+  process.on(signal, () => {
+    server.close(() => process.exit(0));
+  });
+}

@@ -1,116 +1,131 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
-header("Access-Control-Allow-Headers: Content-Type");
+declare(strict_types=1);
 
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../utils/auth.php';
 
-$database = new Database();
-$db = $database->getConnection();
+header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store');
+header('X-Content-Type-Options: nosniff');
 
-$method = $_SERVER['REQUEST_METHOD'];
-
-// In your PHP backend
-if (!empty($data['supervisor_id'])) {
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE id = ? AND role = 'supervisor'");
-    $stmt->execute([$data['supervisor_id']]);
-    if (!$stmt->fetch()) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid supervisor ID']);
-        exit;
-    }
+function respond(int $status, array $payload): never
+{
+    http_response_code($status);
+    echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+    exit;
 }
-switch ($method) {
-    case 'GET':
-        // Get all users
-        $stmt = $db->query("SELECT * FROM users");
-        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        echo json_encode([
-            'status' => 'success',
-            'count' => count($users),
-            'users' => $users
-        ]);
-        break;
-        
-    case 'POST':
-    // Add new user
-    try {
-        $data = json_decode(file_get_contents("php://input"), true);
-        
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Invalid JSON input");
+
+$authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+if ($authorization === '' && function_exists('getallheaders')) {
+    $headers = getallheaders();
+    $authorization = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+}
+
+if (!preg_match('/^Bearer\s+(.+)$/i', $authorization, $matches)) {
+    respond(401, ['status' => 'error', 'message' => 'Authentication required.']);
+}
+
+try {
+    $db = (new Database())->getConnection();
+    $actor = (new Auth($db))->validateToken(trim($matches[1]));
+} catch (Throwable $error) {
+    error_log('Users API authentication failed: ' . $error->getMessage());
+    respond(500, ['status' => 'error', 'message' => 'Request could not be completed.']);
+}
+
+if (!$actor) {
+    respond(401, ['status' => 'error', 'message' => 'Authentication required.']);
+}
+if ($actor['role'] !== 'admin') {
+    respond(403, ['status' => 'error', 'message' => 'Administrator access required.']);
+}
+
+$method = $_SERVER['REQUEST_METHOD'] ?? '';
+if (!in_array($method, ['GET', 'POST', 'DELETE'], true)) {
+    header('Allow: GET, POST, DELETE');
+    respond(405, ['status' => 'error', 'message' => 'Method not allowed.']);
+}
+
+try {
+    if ($method === 'GET') {
+        $stmt = $db->query(
+            'SELECT id, full_name, email, role, division_id, directorate_id,
+                    department_id, supervisor_id, is_active, created_at
+             FROM users ORDER BY created_at DESC'
+        );
+        $users = $stmt->fetchAll();
+        respond(200, ['status' => 'success', 'count' => count($users), 'users' => $users]);
+    }
+
+    if ($method === 'POST') {
+        $data = json_decode(file_get_contents('php://input') ?: '', true);
+        if (!is_array($data) || json_last_error() !== JSON_ERROR_NONE) {
+            respond(400, ['status' => 'error', 'message' => 'A valid JSON object is required.']);
         }
-        
-        if (empty($data['full_name']) || empty($data['email']) || empty($data['password'])) {
-            throw new Exception("Missing required fields");
+
+        $fullName = trim((string) ($data['full_name'] ?? ''));
+        $email = trim((string) ($data['email'] ?? ''));
+        $password = (string) ($data['password'] ?? '');
+        $role = (string) ($data['role'] ?? '');
+        $allowedRoles = ['intern', 'supervisor', 'hr', 'admin'];
+
+        if ($fullName === '' || strlen($fullName) > 100 || !filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 100) {
+            respond(400, ['status' => 'error', 'message' => 'Provide a valid name and email address.']);
         }
-        
-        $hashed_password = password_hash($data['password'], PASSWORD_DEFAULT);
-        
-        $query = "INSERT INTO users (full_name, email, password, role, division_id, directorate_id, department_id, supervisor_id) 
-                  VALUES (:full_name, :email, :password, :role, :division_id, :directorate_id, :department_id, :supervisor_id)";
-        
-        $stmt = $db->prepare($query);
-        
-        $params = [
-            ':full_name' => $data['full_name'],
-            ':email' => $data['email'],
-            ':password' => $hashed_password,
-            ':role' => $data['role'] ?? null,
+        if (strlen($password) < 12) {
+            respond(400, ['status' => 'error', 'message' => 'Password must be at least 12 characters.']);
+        }
+        if (!in_array($role, $allowedRoles, true)) {
+            respond(400, ['status' => 'error', 'message' => 'Select a valid user role.']);
+        }
+
+        $supervisorId = $data['supervisor_id'] ?? null;
+        if ($supervisorId !== null) {
+            if (!filter_var($supervisorId, FILTER_VALIDATE_INT)) {
+                respond(400, ['status' => 'error', 'message' => 'Supervisor ID must be a valid integer.']);
+            }
+            $supervisorCheck = $db->prepare("SELECT id FROM users WHERE id = :id AND role = 'supervisor'");
+            $supervisorCheck->execute([':id' => $supervisorId]);
+            if (!$supervisorCheck->fetchColumn()) {
+                respond(400, ['status' => 'error', 'message' => 'Supervisor ID is invalid.']);
+            }
+        }
+
+        $insert = $db->prepare(
+            'INSERT INTO users
+                (full_name, email, password, role, division_id, directorate_id, department_id, supervisor_id)
+             VALUES
+                (:full_name, :email, :password, :role, :division_id, :directorate_id, :department_id, :supervisor_id)'
+        );
+        $insert->execute([
+            ':full_name' => $fullName,
+            ':email' => $email,
+            ':password' => password_hash($password, PASSWORD_DEFAULT),
+            ':role' => $role,
             ':division_id' => $data['division_id'] ?? null,
             ':directorate_id' => $data['directorate_id'] ?? null,
             ':department_id' => $data['department_id'] ?? null,
-            ':supervisor_id' => $data['supervisor_id'] ?? null
-        ];
-        
-        
-        if ($stmt->execute($params)) {
-            http_response_code(201);
-            echo json_encode([
-                'status' => 'success', 
-                'message' => 'User created successfully',
-                'user_id' => $db->lastInsertId()
-            ]);
-        } else {
-            throw new Exception("Failed to create user: " . implode(" ", $stmt->errorInfo()));
-        }
-    } catch (Exception $e) {
-        http_response_code(400);
-        echo json_encode([
-            'status' => 'error',
-            'message' => $e->getMessage()
+            ':supervisor_id' => $supervisorId,
         ]);
+
+        respond(201, ['status' => 'success', 'message' => 'User created successfully.', 'user_id' => (int) $db->lastInsertId()]);
     }
-    break;
-    case 'DELETE':
-        // Delete user
-        $id = isset($_GET['id']) ? $_GET['id'] : null;
-        
-        if ($id) {
-            $query = "DELETE FROM users WHERE id = :id";
-            $stmt = $db->prepare($query);
-            $stmt->bindParam(':id', $id);
-            
-            if ($stmt->execute()) {
-                echo json_encode(['status' => 'success', 'message' => 'User deleted successfully']);
-            } else {
-                http_response_code(500);
-                echo json_encode(['status' => 'error', 'message' => 'Failed to delete user']);
-            }
-        } else {
-            http_response_code(400);
-            echo json_encode(['status' => 'error', 'message' => 'User ID is required']);
-        }
-        break;
-        
-    default:
-        http_response_code(405);
-        echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
-        break;
+
+    $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if (!$id) {
+        respond(400, ['status' => 'error', 'message' => 'A valid user ID is required.']);
+    }
+    if ((string) $id === (string) $actor['id']) {
+        respond(400, ['status' => 'error', 'message' => 'You cannot delete your own account.']);
+    }
+
+    $delete = $db->prepare('UPDATE users SET is_active = 0 WHERE id = :id AND is_active = 1');
+    $delete->execute([':id' => $id]);
+    if ($delete->rowCount() === 0) {
+        respond(404, ['status' => 'error', 'message' => 'User not found.']);
+    }
+    respond(200, ['status' => 'success', 'message' => 'User account deactivated successfully.']);
+} catch (Throwable $error) {
+    error_log('Users API request failed: ' . $error->getMessage());
+    respond(500, ['status' => 'error', 'message' => 'Request could not be completed.']);
 }

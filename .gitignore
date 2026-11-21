@@ -1,25 +1,21 @@
-# CakePHP 3
+# Runtime and build output
+node_modules/
+dist/
+vendor/
+coverage/
 
-/vendor/*
-/config/app.php
+# Local secrets and environment files
+.env
+.env.*
+!.env.example
 
-/tmp/cache/models/*
-!/tmp/cache/models/empty
-/tmp/cache/persistent/*
-!/tmp/cache/persistent/empty
-/tmp/cache/views/*
-!/tmp/cache/views/empty
-/tmp/sessions/*
-!/tmp/sessions/empty
-/tmp/tests/*
-!/tmp/tests/empty
+# User-generated data and local logs
+uploads/
+*.log
+backend/auth/logs
+backend/includes/debug
 
-/logs/*
-!/logs/empty
-
-# CakePHP 2
-
-/app/tmp/*
-/app/Config/core.php
-/app/Config/database.php
-/vendors/*
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.idea/

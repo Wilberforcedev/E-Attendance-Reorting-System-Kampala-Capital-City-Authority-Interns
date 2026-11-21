@@ -1,18 +1,28 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
 
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../utils/auth.php';
 
 try {
     $database = new Database();
     $db = $database->getConnection();
 
     $method = $_SERVER['REQUEST_METHOD'];
+    $auth = new Auth($db);
+    $userData = $auth->validateToken($auth->getBearerToken());
+    if (!$userData) {
+        http_response_code(401);
+        echo json_encode(['status' => 'error', 'message' => 'Authentication required']);
+        exit;
+    }
+    if ($method === 'POST' && $userData['role'] !== 'admin') {
+        http_response_code(403);
+        echo json_encode(['status' => 'error', 'message' => 'Administrator access required']);
+        exit;
+    }
 
     if ($method === 'GET') {
         // Check for division_id filter
@@ -73,10 +83,10 @@ try {
         ]);
     }
 } catch (PDOException $e) {
+    error_log('Directorates API database error: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode([
         'status' => 'error',
-        'message' => 'Database error',
-        'error' => $e->getMessage()
+        'message' => 'Request could not be completed'
     ]);
 }
