@@ -392,6 +392,10 @@
 
                     <div class="client-card p-4">
                         <form id="weekly-report-form">
+                            <div class="alert alert-warning d-none d-flex justify-content-between align-items-start gap-2" id="resubmission-notice" role="status">
+                                <span id="resubmission-notice-text"></span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary flex-shrink-0" onclick="cancelReportResubmission()">Cancel edit</button>
+                            </div>
                             <!-- Report Metadata Row -->
                             <div class="row g-3 mb-4 pb-3 border-bottom">
                                 <div class="col-12 col-md-4">

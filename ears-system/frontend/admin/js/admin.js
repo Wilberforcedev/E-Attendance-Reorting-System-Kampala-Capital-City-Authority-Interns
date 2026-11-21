@@ -1340,6 +1340,11 @@ function getActionBadgeColor(action) {
         'create': 'primary',
         'update': 'info',
         'deactivate': 'warning',
+        'report_submitted': 'primary',
+        'report_resubmitted': 'primary',
+        'report_approved': 'success',
+        'report_rejected': 'danger',
+        'report_forwarded_to_hr': 'success',
         'delete': 'danger'
     };
     return colors[action] || 'secondary';

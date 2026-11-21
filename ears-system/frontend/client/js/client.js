@@ -10,6 +10,7 @@ let clientNotifications = [];
 let activeClockSession = null;
 let sessionTimerInterval = null;
 let chartsInitialized = false;
+let editingReportId = null;
 
 // DOM Initialization
 document.addEventListener('DOMContentLoaded', async () => {
@@ -408,6 +409,7 @@ function renderReportsTable() {
                     <button class="btn btn-sm btn-outline-primary py-1 px-2" onclick="viewReportDetails('${rep.id}')" title="View Report">
                         <i class="fas fa-eye me-1"></i>View
                     </button>
+                    ${rep.status === 'Revision' ? `<button class="btn btn-sm btn-outline-success py-1 px-2 ms-1" onclick="editRejectedReport('${rep.id}')" title="Edit and resubmit this report">Edit &amp; Resubmit</button>` : ''}
                     <button class="btn btn-sm btn-outline-secondary py-1 px-2 ms-1" onclick="printReport('${rep.id}')" title="Print/Export">
                         <i class="fas fa-print"></i>
                     </button>
@@ -466,6 +468,43 @@ function printReport(reportId) {
     window.print();
 }
 
+function editRejectedReport(reportId) {
+    const report = clientReports.find(item => String(item.id) === String(reportId));
+    if (!report || report.status !== 'Revision') return;
+    const weekInput = document.getElementById('report-week-start');
+    const notice = document.getElementById('resubmission-notice');
+    const submitButton = document.querySelector('#weekly-report-form [type="submit"]');
+    const dayIds = { Monday: 'mon', Tuesday: 'tue', Wednesday: 'wed', Thursday: 'thu', Friday: 'fri' };
+    editingReportId = Number(report.id);
+    if (weekInput) {
+        weekInput.value = report.weekStartDate || '';
+        weekInput.disabled = true;
+        weekInput.dispatchEvent(new Event('change'));
+    }
+    (report.tasks || []).forEach(task => {
+        const field = document.getElementById(`task-${dayIds[task.day]}`);
+        if (field) field.value = task.task || '';
+    });
+    if (notice) {
+        document.getElementById('resubmission-notice-text').textContent = `Update the report and resubmit it. Supervisor feedback: ${report.feedback || 'Please review the report details.'}`;
+        notice.classList.remove('d-none');
+    }
+    const buttonLabel = submitButton?.querySelector('span');
+    if (buttonLabel) buttonLabel.textContent = 'Resubmit to Supervisor';
+    showClientSection('submit-report-section');
+}
+
+function cancelReportResubmission() {
+    editingReportId = null;
+    const form = document.getElementById('weekly-report-form');
+    form?.reset();
+    document.getElementById('report-week-start').disabled = false;
+    document.getElementById('resubmission-notice')?.classList.add('d-none');
+    const buttonLabel = form?.querySelector('[type="submit"] span');
+    if (buttonLabel) buttonLabel.textContent = 'Submit to Supervisor';
+    setupReportDatePicker();
+}
+
 // Submit Weekly Report Handler
 async function submitWeeklyReport(event) {
     event.preventDefault();
@@ -480,14 +519,22 @@ async function submitWeeklyReport(event) {
     const button = form.querySelector('[type="submit"]');
     button.disabled = true;
     try {
+        const body = { week_start_date: weekStart, days };
+        if (editingReportId) body.report_id = editingReportId;
         const response = await window.EARSAuth.request('/backend/api/reports.php', {
             method: 'POST',
-            body: JSON.stringify({ week_start_date: weekStart, days })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
         });
         const payload = await response.json();
         if (!response.ok || payload.status !== 'success') throw new Error(payload.message || 'Report could not be submitted.');
         await loadReportsData();
         form.reset();
+        editingReportId = null;
+        document.getElementById('report-week-start').disabled = false;
+        document.getElementById('resubmission-notice')?.classList.add('d-none');
+        const buttonLabel = button.querySelector('span');
+        if (buttonLabel) buttonLabel.textContent = 'Submit to Supervisor';
         setupReportDatePicker();
         renderReportsTable();
         updateSummaryStats();
