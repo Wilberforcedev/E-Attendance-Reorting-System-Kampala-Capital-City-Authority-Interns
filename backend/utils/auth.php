@@ -46,21 +46,32 @@ final class Auth
         }
 
         $claims = verifyToken($token);
-        if (!$claims || empty($claims->id)) {
+        if (!$claims || empty($claims->id) || !isset($claims->jti)
+            || !is_string($claims->jti) || preg_match('/^[a-f0-9]{64}$/D', $claims->jti) !== 1
+            || !isset($claims->session_version) || !is_numeric($claims->session_version)) {
             return false;
         }
 
         $stmt = $this->db->prepare(
-            'SELECT id, full_name, email, role, supervisor_id
-             FROM users WHERE id = :id AND is_active = 1 LIMIT 1'
+            'SELECT u.id, u.full_name, u.email, u.role, u.supervisor_id, u.session_version
+             FROM users u
+             INNER JOIN auth_sessions s ON s.user_id = u.id
+             WHERE u.id = :id AND u.is_active = 1 AND u.session_version = :session_version
+               AND s.token_id = :token_id AND s.revoked_at IS NULL AND s.expires_at > UTC_TIMESTAMP()
+             LIMIT 1'
         );
-        $stmt->execute([':id' => $claims->id]);
+        $stmt->execute([
+            ':id' => $claims->id,
+            ':session_version' => (int) $claims->session_version,
+            ':token_id' => $claims->jti,
+        ]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$user || $user['role'] !== ($claims->role ?? null)) {
             return false;
         }
 
+        $user['token_id'] = $claims->jti;
         return $user;
     }
 }

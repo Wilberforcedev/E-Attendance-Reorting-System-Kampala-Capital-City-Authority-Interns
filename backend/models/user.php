@@ -14,13 +14,14 @@ class User {
     public $department_id;
     public $supervisor_id;
     public $created_at;
+    public $session_version;
 
     public function __construct($db) {
         $this->conn = $db;
     }
 
     function emailExists() {
-        $query = "SELECT id, full_name, email, password, role, is_active
+        $query = "SELECT id, full_name, email, password, role, is_active, session_version
                   FROM " . $this->table_name . "
                   WHERE email = ?
                   LIMIT 0,1";
@@ -39,6 +40,7 @@ class User {
             $this->password = $row['password'];
             $this->role = $row['role'];
             $this->is_active = (bool) $row['is_active'];
+            $this->session_version = (int) $row['session_version'];
             return true;
         }
         return false;

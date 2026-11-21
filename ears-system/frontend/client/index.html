@@ -423,6 +423,12 @@
                             <div class="mb-3 p-3 rounded border"><label for="task-thu" class="form-label fw-bold">Thursday</label><textarea class="form-control" id="task-thu" rows="3" maxlength="5000" placeholder="Describe work completed on Thursday" required></textarea></div>
                             <div class="mb-4 p-3 rounded border"><label for="task-fri" class="form-label fw-bold">Friday</label><textarea class="form-control" id="task-fri" rows="3" maxlength="5000" placeholder="Describe work completed on Friday" required></textarea></div>
 
+                            <div class="mb-4 p-3 rounded border">
+                                <label for="weekly-report-attachment" class="form-label fw-bold">Supporting attachment (optional)</label>
+                                <input class="form-control" id="weekly-report-attachment" type="file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small class="text-muted">PDF, JPG, PNG, DOC, or DOCX; maximum 5 MiB per file. Up to 10 attachments per report.</small>
+                            </div>
+
                             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 p-3 rounded bg-light-subtle border">
                                 <div><span class="small text-muted d-block">Attendance hours</span><span id="report-form-total-badge" class="small text-muted">Hours are calculated from saved attendance sessions.</span></div>
                                 <button type="submit" class="btn btn-success d-flex align-items-center gap-2"><i class="fas fa-paper-plane"></i><span>Submit to Supervisor</span></button>

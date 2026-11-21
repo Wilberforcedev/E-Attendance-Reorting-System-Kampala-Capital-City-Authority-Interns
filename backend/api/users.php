@@ -185,8 +185,10 @@ try {
             usersResponse(409, ['status' => 'error', 'message' => 'The final active administrator cannot be deactivated.']);
         }
     }
-    $deactivate = $db->prepare('UPDATE users SET is_active = 0 WHERE id = :id');
+    $deactivate = $db->prepare('UPDATE users SET is_active = 0, session_version = session_version + 1 WHERE id = :id');
     $deactivate->execute([':id' => $id]);
+    $revokeSessions = $db->prepare('UPDATE auth_sessions SET revoked_at = UTC_TIMESTAMP() WHERE user_id = :id AND revoked_at IS NULL');
+    $revokeSessions->execute([':id' => $id]);
     usersLogAction($db, (int) $actor['id'], 'deactivate', 'Deactivated account #' . $id . ' (' . $user['email'] . ').');
     $db->commit();
     usersResponse(200, ['status' => 'success', 'message' => 'User account deactivated.']);

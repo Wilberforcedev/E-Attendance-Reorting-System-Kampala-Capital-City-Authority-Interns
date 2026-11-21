@@ -27,6 +27,12 @@ try {
     $auth = new Auth($db);
     $user = $auth->validateToken($auth->getBearerToken());
     if ($user) {
+        $db->beginTransaction();
+        $revoke = $db->prepare(
+            'UPDATE auth_sessions SET revoked_at = UTC_TIMESTAMP()
+             WHERE token_id = :token_id AND user_id = :user_id AND revoked_at IS NULL'
+        );
+        $revoke->execute([':token_id' => $user['token_id'], ':user_id' => $user['id']]);
         $audit = $db->prepare(
             "INSERT INTO audit_logs (user_id, action, description, ip_address)
              VALUES (:user_id, 'logout', 'Signed out.', :ip_address)"
@@ -35,8 +41,12 @@ try {
             ':user_id' => $user['id'],
             ':ip_address' => substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45),
         ]);
+        $db->commit();
     }
 } catch (Throwable $error) {
+    if (isset($db) && $db->inTransaction()) {
+        $db->rollBack();
+    }
     error_log('Logout audit event could not be recorded: ' . $error->getMessage());
 }
 

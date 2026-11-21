@@ -69,6 +69,7 @@
         const report = data.report || {};
         const entries = data.daily_entries || [];
         const summary = data.weekly_summary || {};
+        const attachments = data.attachments || [];
         const days = entries.map(entry => `
             <tr>
                 <td>${escapeHtml(entry.day_of_week)}<div class="small text-secondary">${escapeHtml(entry.entry_date)}</div></td>
@@ -90,7 +91,9 @@
                 <dt class="col-sm-3">Key achievements</dt><dd class="col-sm-9 text-break">${escapeHtml(summary.key_achievements || '—')}</dd>
                 <dt class="col-sm-3">Major challenges</dt><dd class="col-sm-9 text-break">${escapeHtml(summary.major_challenges || '—')}</dd>
                 <dt class="col-sm-3">Plans for next week</dt><dd class="col-sm-9 text-break">${escapeHtml(summary.plans_next_week || '—')}</dd>
-            </dl>`;
+            </dl>
+            <h3 class="h6 mt-4">Supporting attachments</h3>
+            ${attachments.length ? `<ul>${attachments.map(file => `<li><a href="/backend/api/download_attachment.php?id=${Number(file.id)}" target="_blank" rel="noopener">${escapeHtml(file.file_name)}</a></li>`).join('')}</ul>` : '<p class="text-secondary small">No attachments.</p>'}`;
     }
 
     async function openReport(reportId) {

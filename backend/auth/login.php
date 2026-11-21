@@ -52,6 +52,7 @@ try {
 
     if (random_int(1, 100) === 1) {
         $db->exec('DELETE FROM login_attempts WHERE attempted_at < UTC_TIMESTAMP() - INTERVAL 30 DAY');
+        $db->exec('DELETE FROM auth_sessions WHERE expires_at < UTC_TIMESTAMP() - INTERVAL 30 DAY');
     }
 
     $emailAttempts = $db->prepare(
@@ -79,6 +80,18 @@ try {
         loginResponse(401, ['success' => false, 'message' => 'Invalid email or password.']);
     }
 
+    $tokenId = bin2hex(random_bytes(32));
+    $expiresAt = time() + 3600;
+    $token = generateToken([
+        'id' => $user->id,
+        'full_name' => $user->full_name,
+        'email' => $user->email,
+        'role' => $user->role,
+        'session_version' => $user->session_version,
+        'jti' => $tokenId,
+    ], $expiresAt);
+
+    $db->beginTransaction();
     $audit = $db->prepare(
         "INSERT INTO audit_logs (user_id, action, description, ip_address)
          VALUES (:user_id, 'login', 'Successful sign-in.', :ip_address)"
@@ -87,17 +100,21 @@ try {
         ':user_id' => $user->id,
         ':ip_address' => substr($ip, 0, 45),
     ]);
-
-    $token = generateToken([
-        'id' => $user->id,
-        'full_name' => $user->full_name,
-        'email' => $user->email,
-        'role' => $user->role,
+    $session = $db->prepare(
+        'INSERT INTO auth_sessions (token_id, user_id, expires_at)
+         VALUES (:token_id, :user_id, :expires_at)'
+    );
+    $session->execute([
+        ':token_id' => $tokenId,
+        ':user_id' => $user->id,
+        ':expires_at' => gmdate('Y-m-d H:i:s', $expiresAt),
     ]);
+    $db->commit();
+
     $csrfToken = bin2hex(random_bytes(32));
     $secureCookies = strtolower((string) (getenv('COOKIE_SECURE') ?: 'true')) !== 'false';
     $cookieOptions = [
-        'expires' => time() + 3600,
+        'expires' => $expiresAt,
         'path' => '/',
         'secure' => $secureCookies,
         'httponly' => true,
@@ -117,9 +134,15 @@ try {
         ],
     ]);
 } catch (PDOException $error) {
+    if (isset($db) && $db->inTransaction()) {
+        $db->rollBack();
+    }
     error_log('Login database error: ' . $error->getMessage());
     loginResponse(500, ['success' => false, 'message' => 'Sign-in is temporarily unavailable.']);
 } catch (Throwable $error) {
+    if (isset($db) && $db->inTransaction()) {
+        $db->rollBack();
+    }
     error_log('Login request failed: ' . $error->getMessage());
     loginResponse(500, ['success' => false, 'message' => 'Sign-in is temporarily unavailable.']);
 }

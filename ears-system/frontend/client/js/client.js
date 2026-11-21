@@ -410,6 +410,7 @@ function renderReportsTable() {
                         <i class="fas fa-eye me-1"></i>View
                     </button>
                     ${rep.status === 'Revision' ? `<button class="btn btn-sm btn-outline-success py-1 px-2 ms-1" onclick="editRejectedReport('${rep.id}')" title="Edit and resubmit this report">Edit &amp; Resubmit</button>` : ''}
+                    ${['Pending', 'Revision'].includes(rep.status) ? `<button class="btn btn-sm btn-outline-secondary py-1 px-2 ms-1" onclick="uploadAttachmentForReport('${rep.id}')" title="Add a supporting file">Add file</button>` : ''}
                     <button class="btn btn-sm btn-outline-secondary py-1 px-2 ms-1" onclick="printReport('${rep.id}')" title="Print/Export">
                         <i class="fas fa-print"></i>
                     </button>
@@ -439,6 +440,10 @@ function viewReportDetails(reportId) {
             <p class="mb-0 small text-muted">${escapeHtml(t.task)}</p>
         </div>
     `).join('');
+    const attachmentsHtml = (report.attachments || []).map(file => `
+        <li><a href="/backend/api/download_attachment.php?id=${Number(file.id)}" target="_blank" rel="noopener">${escapeHtml(file.file_name)}</a>
+            <small class="text-muted ms-1">(${(Number(file.file_size || 0) / 1024).toFixed(0)} KB)</small></li>
+    `).join('');
 
     modalBody.innerHTML = `
         <div class="mb-3 d-flex justify-content-between align-items-center pb-2 border-bottom">
@@ -451,6 +456,10 @@ function viewReportDetails(reportId) {
 
         <h6 class="fw-bold text-uppercase small text-muted mb-2">Daily Tasks & Activities</h6>
         ${tasksHtml}
+
+        <div class="mt-3"><h6 class="fw-bold text-uppercase small text-muted mb-2">Supporting Attachments</h6>
+            ${attachmentsHtml ? `<ul class="mb-0">${attachmentsHtml}</ul>` : '<p class="small text-muted">No attachments.</p>'}
+        </div>
 
         <div class="mt-4 p-3 rounded border bg-light-subtle">
             <h6 class="fw-bold text-success mb-1"><i class="fas fa-comment-dots me-1"></i>Supervisor Feedback</h6>
@@ -505,10 +514,37 @@ function cancelReportResubmission() {
     setupReportDatePicker();
 }
 
+function uploadAttachmentForReport(reportId) {
+    const report = clientReports.find(item => String(item.id) === String(reportId));
+    if (!report || !['Pending', 'Revision'].includes(report.status)) return;
+    const picker = document.createElement('input');
+    picker.type = 'file';
+    picker.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
+    picker.addEventListener('change', async () => {
+        const file = picker.files?.[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.set('report_id', String(report.id));
+        formData.set('attachment', file);
+        try {
+            const response = await window.EARSAuth.request('/backend/api/upload.php', { method: 'POST', body: formData });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok || payload.status !== 'success') throw new Error(payload.message || 'The attachment could not be uploaded.');
+            await loadReportsData();
+            renderReportsTable();
+            showToast('Attachment added', 'The file is now available in the report details.', 'success');
+        } catch (error) {
+            showToast('Attachment not added', error.message, 'danger');
+        }
+    }, { once: true });
+    picker.click();
+}
+
 // Submit Weekly Report Handler
 async function submitWeeklyReport(event) {
     event.preventDefault();
     const form = document.getElementById('weekly-report-form');
+    const wasResubmission = Boolean(editingReportId);
     const weekStart = document.getElementById('report-week-start').value;
     const dayIds = ['mon', 'tue', 'wed', 'thu', 'fri'];
     const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -517,6 +553,7 @@ async function submitWeeklyReport(event) {
         days[day] = { activities: document.getElementById(`task-${dayIds[index]}`).value.trim() };
     });
     const button = form.querySelector('[type="submit"]');
+    const attachment = document.getElementById('weekly-report-attachment')?.files?.[0] || null;
     button.disabled = true;
     try {
         const body = { week_start_date: weekStart, days };
@@ -528,6 +565,24 @@ async function submitWeeklyReport(event) {
         });
         const payload = await response.json();
         if (!response.ok || payload.status !== 'success') throw new Error(payload.message || 'Report could not be submitted.');
+        let attachmentFailure = '';
+        if (attachment) {
+            const formData = new FormData();
+            formData.set('report_id', String(payload.report_id));
+            formData.set('attachment', attachment);
+            try {
+                const uploadResponse = await window.EARSAuth.request('/backend/api/upload.php', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const uploadPayload = await uploadResponse.json().catch(() => ({}));
+                if (!uploadResponse.ok || uploadPayload.status !== 'success') {
+                    attachmentFailure = uploadPayload.message || 'The report was saved but the attachment could not be uploaded. Use Add file from the report actions to retry.';
+                }
+            } catch {
+                attachmentFailure = 'The report was saved, but the attachment upload failed. Use Add file from the report actions to retry.';
+            }
+        }
         await loadReportsData();
         form.reset();
         editingReportId = null;
@@ -538,7 +593,11 @@ async function submitWeeklyReport(event) {
         setupReportDatePicker();
         renderReportsTable();
         updateSummaryStats();
-            showToast('Report submitted', 'Your weekly report was saved.', 'success');
+        if (attachmentFailure) {
+            showToast('Report saved; attachment not uploaded', attachmentFailure, 'warning');
+        } else {
+            showToast(wasResubmission ? 'Report resubmitted' : 'Report submitted', wasResubmission ? 'Your revised report was resubmitted.' : 'Your weekly report was saved.', 'success');
+        }
         showClientSection('reports-section');
     } catch (error) {
         showToast('Report not submitted', error.message, 'danger');

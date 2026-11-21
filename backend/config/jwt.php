@@ -4,18 +4,21 @@ require_once __DIR__ . '/core.php';
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-function generateToken($userData) {
+function generateToken($userData, ?int $expirationTime = null) {
     $issuedAt = time();
-    $expirationTime = $issuedAt + 3600; // Token valid for 1 hour
+    $expirationTime = $expirationTime ?? ($issuedAt + 3600);
     
     $payload = array(
         'iat' => $issuedAt,
         'exp' => $expirationTime,
+        'jti' => $userData['jti'],
         'data' => array(
             'id' => $userData['id'],
             'full_name' => $userData['full_name'],
             'email' => $userData['email'],
-            'role' => $userData['role']
+            'role' => $userData['role'],
+            'jti' => $userData['jti'],
+            'session_version' => (int) $userData['session_version']
         )
     );
     

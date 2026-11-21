@@ -50,12 +50,10 @@ try {
             'SELECT r.report_id, r.week_number, r.month, r.year, r.status,
                     r.supervisor_comment, r.created_at,
                     s.full_name AS supervisor_name,
-                    MIN(d.entry_date) AS week_start, MAX(d.entry_date) AS week_end,
-                    ws.key_achievements, ws.major_challenges, ws.plans_next_week
+                    MIN(d.entry_date) AS week_start, MAX(d.entry_date) AS week_end
              FROM reports r
              LEFT JOIN daily_entries d ON d.report_id = r.report_id
              LEFT JOIN users s ON s.id = r.supervisor_id
-             LEFT JOIN weekly_summaries ws ON ws.report_id = r.report_id
              WHERE r.intern_id = :intern_id
              GROUP BY r.report_id
              ORDER BY r.year DESC, r.week_number DESC
@@ -68,9 +66,28 @@ try {
              FROM daily_entries WHERE report_id = :report_id
              ORDER BY entry_date ASC'
         );
+        $attachmentStmt = $db->prepare(
+            'SELECT attachment_id, file_name, file_type, file_size, created_at
+             FROM report_attachments WHERE report_id = :report_id
+             ORDER BY created_at ASC, attachment_id ASC'
+        );
+        $summaryStmt = $db->prepare(
+            'SELECT key_achievements, major_challenges, plans_next_week
+             FROM weekly_summaries WHERE report_id = :report_id LIMIT 1'
+        );
         foreach ($reportStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
             $entryStmt->execute([':report_id' => $row['report_id']]);
             $entries = $entryStmt->fetchAll(PDO::FETCH_ASSOC);
+            $attachmentStmt->execute([':report_id' => $row['report_id']]);
+            $attachments = array_map(static fn(array $attachment): array => [
+                'id' => (int) $attachment['attachment_id'],
+                'file_name' => $attachment['file_name'],
+                'file_type' => $attachment['file_type'],
+                'file_size' => (int) $attachment['file_size'],
+                'created_at' => $attachment['created_at'],
+            ], $attachmentStmt->fetchAll(PDO::FETCH_ASSOC));
+            $summaryStmt->execute([':report_id' => $row['report_id']]);
+            $weeklySummary = $summaryStmt->fetch(PDO::FETCH_ASSOC) ?: [];
             $totalSeconds = 0;
             $tasks = [];
             foreach ($entries as $entry) {
@@ -103,10 +120,11 @@ try {
                 'supervisor' => $row['supervisor_name'] ?? 'Not assigned',
                 'feedback' => $row['supervisor_comment'] ?? '',
                 'summary' => [
-                    'key_achievements' => $row['key_achievements'],
-                    'major_challenges' => $row['major_challenges'],
-                    'plans_next_week' => $row['plans_next_week'],
+                    'key_achievements' => $weeklySummary['key_achievements'] ?? null,
+                    'major_challenges' => $weeklySummary['major_challenges'] ?? null,
+                    'plans_next_week' => $weeklySummary['plans_next_week'] ?? null,
                 ],
+                'attachments' => $attachments,
                 'tasks' => $tasks,
             ];
         }

@@ -1345,6 +1345,8 @@ function getActionBadgeColor(action) {
         'report_approved': 'success',
         'report_rejected': 'danger',
         'report_forwarded_to_hr': 'success',
+        'attachment_uploaded': 'primary',
+        'attachment_downloaded': 'secondary',
         'delete': 'danger'
     };
     return colors[action] || 'secondary';

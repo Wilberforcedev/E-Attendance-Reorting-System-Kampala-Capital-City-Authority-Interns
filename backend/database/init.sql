@@ -40,6 +40,7 @@ CREATE TABLE users (
     directorate_id INT UNSIGNED NULL,
     department_id INT UNSIGNED NULL,
     supervisor_id INT UNSIGNED NULL,
+    session_version INT UNSIGNED NOT NULL DEFAULT 0,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -144,6 +145,18 @@ CREATE TABLE audit_logs (
     INDEX idx_audit_logs_user_created (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE auth_sessions (
+    token_id CHAR(64) NOT NULL PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    expires_at DATETIME NOT NULL,
+    revoked_at DATETIME NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_auth_sessions_user FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    INDEX idx_auth_sessions_user_active (user_id, revoked_at, expires_at),
+    INDEX idx_auth_sessions_expiry (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- One server-timestamped attendance session per intern per Kampala work date.
 -- This table does not prove physical work location or replace a KCCA-approved verification method.
 CREATE TABLE attendance_sessions (
@@ -168,4 +181,14 @@ CREATE TABLE login_attempts (
     INDEX idx_login_attempt_identifier_time (identifier_hash, attempted_at),
     INDEX idx_login_attempt_ip_time (ip_hash, attempted_at),
     INDEX idx_login_attempt_time (attempted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE upload_events (
+    event_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    file_size BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_upload_events_user FOREIGN KEY (user_id) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    INDEX idx_upload_events_user_time (user_id, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
