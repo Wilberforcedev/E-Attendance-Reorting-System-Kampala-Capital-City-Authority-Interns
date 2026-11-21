@@ -79,6 +79,8 @@
                     window.location.replace('/client/');
                 } else if (result.user.role === 'admin') {
                     window.location.replace('/admin/');
+                } else if (result.user.role === 'supervisor' || result.user.role === 'hr') {
+                    window.location.replace('/review/');
                 } else {
                     errorBox.textContent = 'The portal for this account role is not available yet. Contact the system administrator.';
                     errorBox.classList.remove('d-none');

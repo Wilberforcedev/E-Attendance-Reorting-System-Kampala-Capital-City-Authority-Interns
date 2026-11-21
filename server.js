@@ -105,6 +105,8 @@ const server = http.createServer(async (req, res) => {
     ['/intern/', '/ears-system/frontend/client/index.html'],
     ['/portal', '/ears-system/frontend/client/index.html'],
     ['/portal/', '/ears-system/frontend/client/index.html'],
+    ['/review', '/ears-system/frontend/review/index.html'],
+    ['/review/', '/ears-system/frontend/review/index.html'],
   ]);
   const redirectTarget = redirectPaths.get(pathname);
   if (redirectTarget) {
