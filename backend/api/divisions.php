@@ -21,6 +21,11 @@ try {
         echo json_encode(['success' => false, 'message' => 'Administrator access required']);
         exit;
     }
+    if (!$auth->hasValidCsrfToken()) {
+        http_response_code(403);
+        echo json_encode(['success' => false, 'message' => 'Request verification failed']);
+        exit;
+    }
 
     if ($method === 'GET') {
         $stmt = $db->query("SELECT * FROM divisions");

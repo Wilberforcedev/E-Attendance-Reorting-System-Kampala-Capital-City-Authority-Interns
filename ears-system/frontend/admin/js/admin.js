@@ -156,7 +156,9 @@ window.updatePasswordStrengthUI = updatePasswordStrengthUI;
 window.calculatePasswordStrength = calculatePasswordStrength;
 
 // Initialize the admin panel
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    const user = await window.EARSAuth?.requireRole('admin');
+    if (!user) return;
     initializeTheme();
     initializeAdminPanel();
     loadDashboardData();
@@ -1842,8 +1844,7 @@ function changePassword() {
 
 function logout() {
     if (confirm('Are you sure you want to logout?')) {
-        // In real implementation, clear session and redirect to login
-        window.location.href = 'login.html';
+        window.EARSAuth.logout();
     }
 }
 
@@ -1923,4 +1924,4 @@ function removeAssignment(internName) {
         // In real implementation, remove assignment
         alert(`Remove assignment for ${internName} - to be implemented`);
     }
-} 
+}

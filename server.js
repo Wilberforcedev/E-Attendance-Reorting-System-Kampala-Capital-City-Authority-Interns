@@ -92,8 +92,23 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (pathname === '/' || ['/admin', '/admin/', '/client', '/client/', '/intern', '/intern/', '/portal', '/portal/'].includes(pathname)) {
-    res.writeHead(302, { Location: '/ears-system/frontend/client/index.html', 'Cache-Control': 'no-store' });
+  const redirectPaths = new Map([
+    ['/', '/ears-system/frontend/login.html'],
+    ['/login', '/ears-system/frontend/login.html'],
+    ['/login/', '/ears-system/frontend/login.html'],
+    ['/frontend/login.html', '/ears-system/frontend/login.html'],
+    ['/admin', '/ears-system/frontend/admin/index.html'],
+    ['/admin/', '/ears-system/frontend/admin/index.html'],
+    ['/client', '/ears-system/frontend/client/index.html'],
+    ['/client/', '/ears-system/frontend/client/index.html'],
+    ['/intern', '/ears-system/frontend/client/index.html'],
+    ['/intern/', '/ears-system/frontend/client/index.html'],
+    ['/portal', '/ears-system/frontend/client/index.html'],
+    ['/portal/', '/ears-system/frontend/client/index.html'],
+  ]);
+  const redirectTarget = redirectPaths.get(pathname);
+  if (redirectTarget) {
+    res.writeHead(302, { Location: redirectTarget, 'Cache-Control': 'no-store' });
     res.end();
     return;
   }

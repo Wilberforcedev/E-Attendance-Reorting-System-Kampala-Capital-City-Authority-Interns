@@ -13,7 +13,6 @@ class User {
     public $directorate_id;
     public $department_id;
     public $supervisor_id;
-    public $is_active;
     public $created_at;
 
     public function __construct($db) {

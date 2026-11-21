@@ -16,6 +16,11 @@ if (!$userData) {
     echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
     exit;
 }
+if (!$auth->hasValidCsrfToken()) {
+    http_response_code(403);
+    echo json_encode(['status' => 'error', 'message' => 'Request verification failed']);
+    exit;
+}
 
 try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

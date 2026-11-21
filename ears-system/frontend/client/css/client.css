@@ -369,3 +369,6 @@ body {
 .radial-indicator-completed {
     animation: ringPulse 2.5s infinite ease-in-out;
 }
+html.auth-checking body {
+    visibility: hidden;
+}

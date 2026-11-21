@@ -17,11 +17,26 @@ final class Auth
             $authorization = $headers['Authorization'] ?? $headers['authorization'] ?? '';
         }
 
-        if (!preg_match('/^Bearer\s+(.+)$/i', $authorization, $matches)) {
-            return null;
+        if (preg_match('/^Bearer\s+(.+)$/i', $authorization, $matches)) {
+            return trim($matches[1]);
         }
 
-        return trim($matches[1]);
+        $cookieToken = $_COOKIE['ears_token'] ?? null;
+        return is_string($cookieToken) && $cookieToken !== '' ? $cookieToken : null;
+    }
+
+    public function hasValidCsrfToken(): bool
+    {
+        if (in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'HEAD', 'OPTIONS'], true)) {
+            return true;
+        }
+
+        $cookieToken = $_COOKIE['ears_csrf'] ?? '';
+        $headerToken = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+        return is_string($cookieToken)
+            && is_string($headerToken)
+            && $cookieToken !== ''
+            && hash_equals($cookieToken, $headerToken);
     }
 
     public function validateToken(?string $token): array|false

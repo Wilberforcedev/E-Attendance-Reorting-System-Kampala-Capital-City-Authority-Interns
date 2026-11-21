@@ -73,6 +73,7 @@ CREATE TABLE reports (
         ON UPDATE CASCADE ON DELETE SET NULL,
     CONSTRAINT chk_reports_month CHECK (month BETWEEN 1 AND 12),
     CONSTRAINT chk_reports_week CHECK (week_number BETWEEN 1 AND 53),
+    UNIQUE KEY uq_reports_intern_iso_week (intern_id, year, week_number),
     INDEX idx_reports_intern_period (intern_id, year, month, week_number),
     INDEX idx_reports_supervisor_status (supervisor_id, status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -141,4 +142,19 @@ CREATE TABLE audit_logs (
     CONSTRAINT fk_audit_logs_user FOREIGN KEY (user_id) REFERENCES users(id)
         ON UPDATE CASCADE ON DELETE RESTRICT,
     INDEX idx_audit_logs_user_created (user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- One server-timestamped attendance session per intern per Kampala work date.
+-- This table does not prove physical work location or replace a KCCA-approved verification method.
+CREATE TABLE attendance_sessions (
+    session_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    intern_id INT UNSIGNED NOT NULL,
+    work_date DATE NOT NULL,
+    clock_in_utc DATETIME(3) NOT NULL,
+    clock_out_utc DATETIME(3) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_attendance_sessions_intern FOREIGN KEY (intern_id) REFERENCES users(id)
+        ON UPDATE CASCADE ON DELETE RESTRICT,
+    UNIQUE KEY uq_attendance_intern_work_date (intern_id, work_date),
+    INDEX idx_attendance_work_date (work_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

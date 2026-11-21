@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>document.documentElement.classList.add('auth-checking');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EARS Admin Panel - Kampala Capital City Authority (KCCA)</title>
@@ -37,7 +38,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
         <div class="container-fluid">
             <a class="navbar-brand d-flex align-items-center gap-2 py-1" href="#" style="text-decoration: none;">
-                <img src="/assets/Logo.png" alt="KCCA Crest Logo" class="kcca-brand-logo" style="height: 38px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));" onerror="this.src='https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png';">
+                <img src="/assets/Logo.png" alt="KCCA Crest Logo" class="kcca-brand-logo" style="height: 38px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));" onerror="this.hidden=true;">
                 <div class="d-flex flex-column lh-1">
                     <div class="d-flex align-items-center gap-2">
                         <span class="fw-bold text-white fs-5" style="letter-spacing: 0.5px;">EARS</span>
@@ -81,7 +82,7 @@
                 <!-- Admin Dropdown -->
                 <div class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-user-circle"></i> Admin
+                        <i class="fas fa-user-circle"></i> <span data-ears-user-name>Admin</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#" onclick="showProfile()">Profile</a></li>
@@ -105,7 +106,7 @@
             <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
                 <div class="position-sticky pt-3">
                     <div class="sidebar-kcca-header p-2 mb-3 border-bottom border-secondary d-flex align-items-center gap-2">
-                        <img src="/assets/Logo.png" alt="KCCA Logo" style="height: 36px; width: auto;" onerror="this.src='https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png';">
+                        <img src="/assets/Logo.png" alt="KCCA Logo" style="height: 36px; width: auto;" onerror="this.hidden=true;">
                         <div class="overflow-hidden">
                             <div class="fw-bold text-white lh-sm text-truncate" style="font-size: 0.85rem;">KCCA Portal</div>
                             <small class="text-warning lh-sm d-block" style="font-size: 0.7rem; font-weight: 500;">For a Better City</small>
@@ -725,7 +726,7 @@
                         <!-- Col 1: KCCA Brand & Mission -->
                         <div class="col-12 col-md-5 col-lg-4">
                             <div class="d-flex align-items-center gap-3 mb-3">
-                                <img src="/assets/Logo.png" alt="KCCA Official Logo" class="img-fluid" style="height: 52px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.25));" onerror="this.src='https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png';">
+                                <img src="/assets/Logo.png" alt="KCCA Official Logo" class="img-fluid" style="height: 52px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.25));" onerror="this.hidden=true;">
                                 <div>
                                     <h6 class="mb-0 fw-bold text-uppercase" style="color: var(--theme-text-primary); font-size: 0.92rem; letter-spacing: 0.3px;">Kampala Capital City Authority</h6>
                                     <small class="text-success fw-semibold" style="font-size: 0.78rem;">For a Better City</small>
@@ -819,7 +820,7 @@
                         <div class="col-12 col-md-6 text-center text-md-end">
                             <span class="d-inline-flex align-items-center gap-2 flex-wrap justify-content-center justify-content-md-end">
                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
-                                    <i class="fas fa-shield-alt me-1"></i>Official Government System
+                                    <i class="fas fa-shield-alt me-1"></i>Demonstration Interface
                                 </span>
                                 <a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-muted small ms-1">
                                     www.kcca.go.ug
@@ -1103,6 +1104,7 @@
     <script src="js/vendor/react-dom.min.js"></script>
     <script src="js/vendor/recharts.min.js"></script>
     
+    <script src="../auth.js"></script>
     <script src="js/admin.js"></script>
 </body>
 </html>

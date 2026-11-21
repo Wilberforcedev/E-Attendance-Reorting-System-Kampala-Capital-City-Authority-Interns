@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
+    <script>document.documentElement.classList.add('auth-checking');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EARS Client Portal - Kampala Capital City Authority (KCCA)</title>
@@ -18,14 +19,14 @@
 </head>
 <body>
     <div class="alert alert-warning rounded-0 mb-0 text-center small" role="status">
-        <strong>DEMO MODE:</strong> This screen uses sample records saved in this browser. Attendance and reports are not submitted to KCCA.
+        <strong>LIMITED RELEASE:</strong> Intern attendance and weekly reports use the configured API. This application is not approved for official use; admin actions, approvals, profile data, notifications, and analytics are not fully implemented.
     </div>
     <!-- Top Navigation Bar -->
     <header class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm px-3 py-2">
         <div class="container-fluid px-0">
             <!-- Brand & KCCA Logo -->
             <a class="navbar-brand d-flex align-items-center gap-2 py-0" href="#" onclick="showClientSection('dashboard-section')">
-                <img src="/assets/Logo.png" alt="KCCA Crest Logo" style="height: 38px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));" onerror="this.src='https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png';">
+                <img src="/assets/Logo.png" alt="KCCA Crest Logo" style="height: 38px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));" onerror="this.hidden=true;">
                 <div class="d-flex flex-column lh-1">
                     <div class="d-flex align-items-center gap-2">
                         <span class="fw-bold text-white fs-5" style="letter-spacing: 0.5px;">EARS</span>
@@ -81,7 +82,7 @@
                                 <!-- Dynamic notifications -->
                             </ul>
                             <div class="p-2 text-center border-top bg-light-subtle">
-                                <small class="text-muted">Stay updated on report approvals & KCCA notices</small>
+                                <small class="text-muted">Notifications are not configured</small>
                             </div>
                         </div>
                     </div>
@@ -90,21 +91,21 @@
                     <div class="dropdown">
                         <button class="btn btn-sm btn-dark d-flex align-items-center gap-2 border border-secondary" type="button" id="userProfileBtn" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 28px; height: 28px; background-color: #008540; font-size: 0.75rem;">
-                                CO
+                                <i class="fas fa-user"></i>
                             </div>
-                            <span class="d-none d-md-inline small fw-semibold text-white">Calvin Opio</span>
+                            <span class="d-none d-md-inline small fw-semibold text-white" data-ears-user-name>Intern</span>
                             <i class="fas fa-chevron-down small text-white-50" style="font-size: 0.65rem;"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userProfileBtn">
                             <li class="px-3 py-2 border-bottom">
-                                <div class="fw-bold">Calvin Opio</div>
-                                <small class="text-muted d-block">Intern &bull; ICT Directorate</small>
-                                <span class="badge bg-success-subtle text-success border border-success-subtle mt-1" style="font-size: 0.7rem;">ID: KCCA-INT-2026-084</span>
+                                <div class="fw-bold" data-ears-user-name>Intern</div>
+                                <small class="text-muted d-block">Intern account</small>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle mt-1" style="font-size: 0.7rem;">Intern account</span>
                             </li>
                             <li><a class="dropdown-item small" href="#" onclick="showClientSection('profile-section')"><i class="fas fa-user-circle me-2 text-primary"></i>My Profile</a></li>
                             <li><a class="dropdown-item small" href="#" onclick="showClientSection('reports-section')"><i class="fas fa-file-alt me-2 text-success"></i>My Reports</a></li>
                             <li><hr class="dropdown-divider my-1"></li>
-                            <li><a class="dropdown-item small text-danger" href="/frontend/login.html"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</a></li>
+                            <li><a class="dropdown-item small text-danger" href="/ears-system/frontend/login.html" data-ears-logout><i class="fas fa-sign-out-alt me-2"></i>Sign Out</a></li>
                         </ul>
                     </div>
                 </div>
@@ -119,10 +120,10 @@
             <nav class="col-12 col-md-3 col-lg-2 client-sidebar p-3 d-flex flex-column">
                 <!-- User Placement Quick Card -->
                 <div class="p-2 mb-3 rounded border border-secondary-subtle d-flex align-items-center gap-2" style="background-color: rgba(255, 255, 255, 0.04);">
-                    <img src="/assets/Logo.png" alt="KCCA" style="height: 32px; width: auto;" onerror="this.src='https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png';">
+                    <img src="/assets/Logo.png" alt="KCCA" style="height: 32px; width: auto;" onerror="this.hidden=true;">
                     <div class="overflow-hidden">
-                        <div class="fw-bold text-white small text-truncate">City Hall &bull; ICT</div>
-                        <small class="text-warning d-block lh-1" style="font-size: 0.7rem;">Active Placement</small>
+                        <div class="fw-bold text-white small text-truncate">Intern portal</div>
+                        <small class="text-warning d-block lh-1" style="font-size: 0.7rem;">Attendance and reports</small>
                     </div>
                 </div>
 
@@ -169,7 +170,7 @@
                 <!-- Bottom Quick Info -->
                 <div class="mt-4 pt-3 border-top border-secondary text-center small text-white-50">
                     <div class="fw-bold text-white">EARS Version 2.4</div>
-                    <small>Official KCCA Portal</small>
+                    <small>Demonstration Interface</small>
                 </div>
             </nav>
 
@@ -181,7 +182,7 @@
                     <!-- Welcome Hero Header -->
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                         <div>
-                            <h4 class="fw-bold mb-1">Welcome back, Calvin Opio</h4>
+                            <h4 class="fw-bold mb-1">Welcome back, <span data-ears-user-name>Intern</span></h4>
                             <p class="text-muted mb-0 small">E-Attendance Reporting & Weekly Verification &bull; Kampala Capital City Authority</p>
                         </div>
                         <div class="d-flex gap-2">
@@ -196,238 +197,57 @@
                         </div>
                     </div>
 
-                    <!-- Shift Status, Daily Hours Goal & Summary Metrics -->
+                    <!-- Current server-backed records and metrics -->
                     <div class="row g-3 mb-4">
-                        <!-- Daily Hours Goal Radial Progress Ring Widget -->
                         <div class="col-12 col-md-6 col-xl-4">
-                            <div class="daily-goal-card h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-success-subtle text-success" style="width: 32px; height: 32px;">
-                                            <i class="fas fa-bullseye"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="fw-bold mb-0">Daily Hours Goal</h6>
-                                            <small class="text-muted" style="font-size: 0.72rem;">8-Hour Standard Shift</small>
-                                        </div>
-                                    </div>
-                                    <span id="daily-goal-top-badge" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
-                                        <i class="fas fa-check-circle me-1"></i>Goal Target: 8.0h
-                                    </span>
-                                </div>
-
-                                <!-- Radial Progress Ring SVG -->
-                                <div class="radial-ring-container my-2">
-                                    <svg class="radial-progress-svg" width="160" height="160" viewBox="0 0 160 160">
-                                        <defs>
-                                            <linearGradient id="kccaProgressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                <stop offset="0%" stop-color="#FFD100" />
-                                                <stop offset="60%" stop-color="#10b981" />
-                                                <stop offset="100%" stop-color="#008540" />
-                                            </linearGradient>
-                                        </defs>
-                                        <!-- Background Track (Radius: 66, Circumference: 414.69) -->
-                                        <circle class="radial-track-bg" cx="80" cy="80" r="66" stroke-width="12" fill="transparent" />
-                                        <!-- Dynamic Indicator Circle -->
-                                        <circle id="daily-goal-radial-circle" class="radial-indicator-bar" cx="80" cy="80" r="66" stroke-width="12" stroke-linecap="round" fill="transparent" stroke="url(#kccaProgressGradient)" stroke-dasharray="414.69" stroke-dashoffset="414.69" />
-                                    </svg>
-                                    <div class="radial-center-details">
-                                        <span id="daily-goal-percent-display" class="radial-percent-value">0%</span>
-                                        <span id="daily-goal-hours-display" class="radial-hours-label">0.0 / 8.0 hrs</span>
-                                        <span id="daily-goal-status-badge" class="radial-status-badge bg-secondary-subtle text-secondary border">
-                                            <i class="fas fa-circle-notch"></i> Pending Shift
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Remaining Time & Shift Stats Banner -->
-                                <div>
-                                    <div class="radial-remaining-banner mb-2">
-                                        <span class="remaining-label"><i class="fas fa-clock text-warning me-1"></i>To 8h Goal:</span>
-                                        <span id="daily-goal-remaining-display" class="remaining-val text-success">8 hrs 00 mins left</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center small text-muted px-1">
-                                        <span>Today's Logged: <strong id="daily-goal-logged-subtext" class="text-primary">0.0 hrs</strong></span>
-                                        <div class="dropdown">
-                                            <button class="btn btn-sm btn-link p-0 text-decoration-none text-muted" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Preview goal progress stages">
-                                                <i class="fas fa-sliders-h me-1 text-primary"></i><span style="font-size: 0.72rem;">Preview Goal</span>
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size: 0.78rem;">
-                                                <li class="dropdown-header py-1 text-uppercase text-muted" style="font-size: 0.68rem;">Test Ring Progress</li>
-                                                <li><a class="dropdown-item py-1" href="#" onclick="updateDailyGoalProgress(null); return false;"><i class="fas fa-sync text-primary me-2"></i>Live Clock Sync</a></li>
-                                                <li><a class="dropdown-item py-1" href="#" onclick="updateDailyGoalProgress(2.0); return false;"><i class="fas fa-circle text-warning me-2"></i>2.0 hrs (25% - Starting)</a></li>
-                                                <li><a class="dropdown-item py-1" href="#" onclick="updateDailyGoalProgress(4.0); return false;"><i class="fas fa-circle text-info me-2"></i>4.0 hrs (50% - Halfway)</a></li>
-                                                <li><a class="dropdown-item py-1" href="#" onclick="updateDailyGoalProgress(6.5); return false;"><i class="fas fa-circle text-success me-2"></i>6.5 hrs (81% - Near Goal)</a></li>
-                                                <li><a class="dropdown-item py-1" href="#" onclick="updateDailyGoalProgress(8.0); return false;"><i class="fas fa-check-circle text-success me-2"></i>8.0 hrs (100% - Fulfilled 🎉)</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="client-card p-4 h-100">
+                                <h6 class="fw-bold">Today's recorded time</h6>
+                                <p class="small text-muted">Server-clock duration; no daily target is configured.</p>
+                                <div class="display-6 fw-bold" id="daily-goal-hours-display">0.0 hrs</div>
+                                <span id="daily-goal-status-badge" class="badge bg-secondary-subtle text-secondary">Recorded time only</span>
+                                <span id="daily-goal-percent-display" class="d-none">—</span>
+                                <span id="daily-goal-remaining-display" class="d-none">No daily target configured</span>
+                                <span id="daily-goal-logged-subtext" class="d-none">0.0 hrs</span>
+                                <span id="daily-goal-top-badge" class="d-none">Recorded time only</span>
+                                <span id="daily-goal-radial-circle" class="d-none"></span>
                             </div>
                         </div>
-
-                        <!-- Shift Status Widget -->
                         <div class="col-12 col-md-6 col-xl-4">
-                            <div class="client-card p-3 h-100 d-flex flex-column justify-content-between">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <span class="text-uppercase small fw-bold text-muted">Today's Shift Status</span>
-                                        <h5 class="fw-bold mb-0 mt-1">Daily Attendance</h5>
-                                    </div>
-                                    <span id="clock-status-badge" class="badge bg-secondary-subtle text-secondary border px-3 py-2 fs-6">
-                                        <i class="fas fa-circle text-muted me-1"></i> Not Clocked In
-                                    </span>
+                            <div class="client-card p-4 h-100">
+                                <h6 class="fw-bold">Today's shift status</h6>
+                                <p class="small text-muted">Clock times are recorded by the server.</p>
+                                <span id="clock-status-badge" class="badge bg-secondary-subtle text-secondary">Not clocked in</span>
+                                <div id="active-session-timer-container" class="mt-3">
+                                    <span id="session-stopwatch" class="fw-bold">00:00:00</span>
                                 </div>
-                                <div class="my-2 p-3 rounded bg-light-subtle border text-center">
-                                    <small class="text-muted d-block mb-1">Live Active Stopwatch</small>
-                                    <div id="session-stopwatch" class="clock-display session-timer-badge text-success">00:00:00</div>
-                                    <div id="active-session-timer-container" class="d-none mt-2">
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle">
-                                            <i class="fas fa-map-pin me-1"></i>City Hall - ICT Lab 2
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <button class="btn btn-sm btn-outline-success flex-grow-1 py-2 d-flex align-items-center justify-content-center gap-1" onclick="showClientSection('punch-section')">
-                                        <i class="fas fa-clock"></i>
-                                        <span>Punch Console</span>
-                                    </button>
-                                    <button id="btn-quick-punch-toggle" class="btn btn-sm btn-success py-2 px-3 d-flex align-items-center gap-1" onclick="handlePunchAction()" title="Quick Clock In / Clock Out">
-                                        <i class="fas fa-fingerprint"></i>
-                                        <span id="quick-punch-text">Clock In</span>
-                                    </button>
-                                </div>
+                                <button id="btn-quick-punch-toggle" class="btn btn-success mt-3" onclick="handlePunchAction()">
+                                    <i class="fas fa-fingerprint"></i> <span id="quick-punch-text">Clock In</span>
+                                </button>
                             </div>
                         </div>
-
-                        <!-- 4 Stat Widgets & Weekly Target -->
                         <div class="col-12 col-xl-4">
-                            <div class="d-flex flex-column gap-3 h-100 justify-content-between">
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <div class="stat-widget p-2">
-                                            <div class="stat-icon-wrapper bg-primary-subtle text-primary" style="width: 38px; height: 38px; font-size: 1.1rem;">
-                                                <i class="fas fa-file-lines"></i>
-                                            </div>
-                                            <div>
-                                                <small class="text-muted d-block" style="font-size: 0.72rem;">Reports</small>
-                                                <h5 id="stat-total-reports" class="fw-bold mb-0">3</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="stat-widget p-2">
-                                            <div class="stat-icon-wrapper bg-success-subtle text-success" style="width: 38px; height: 38px; font-size: 1.1rem;">
-                                                <i class="fas fa-circle-check"></i>
-                                            </div>
-                                            <div>
-                                                <small class="text-muted d-block" style="font-size: 0.72rem;">Approved</small>
-                                                <h5 id="stat-approved-reports" class="fw-bold mb-0">3</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="stat-widget p-2">
-                                            <div class="stat-icon-wrapper bg-warning-subtle text-warning" style="width: 38px; height: 38px; font-size: 1.1rem;">
-                                                <i class="fas fa-business-time"></i>
-                                            </div>
-                                            <div>
-                                                <small class="text-muted d-block" style="font-size: 0.72rem;">Total Logged</small>
-                                                <h5 id="stat-total-hours" class="fw-bold mb-0">119.7 hrs</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="stat-widget p-2">
-                                            <div class="stat-icon-wrapper bg-info-subtle text-info" style="width: 38px; height: 38px; font-size: 1.1rem;">
-                                                <i class="fas fa-award"></i>
-                                            </div>
-                                            <div>
-                                                <small class="text-muted d-block" style="font-size: 0.72rem;">Punctuality</small>
-                                                <h5 id="stat-punctuality-rate" class="fw-bold mb-0">98.5%</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Weekly Target Progress Card -->
-                                <div class="client-card p-3 flex-grow-1 d-flex flex-column justify-content-center">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-bold small text-uppercase text-muted" style="font-size: 0.75rem;">Weekly Hours Target</span>
-                                        <span class="badge bg-success-subtle text-success fw-bold">40.2 / 40.0 hrs</span>
-                                    </div>
-                                    <div class="progress my-1" style="height: 8px;">
-                                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center small text-muted" style="font-size: 0.72rem;">
-                                        <span>Mon - Fri Core</span>
-                                        <span>Sup: <strong>Sarah Smith</strong></span>
-                                    </div>
-                                </div>
+                            <div class="client-card p-4 h-100">
+                                <h6 class="fw-bold">Account summary</h6>
+                                <div class="d-flex justify-content-between"><span>Weekly reports</span><strong id="stat-total-reports">0</strong></div>
+                                <div class="d-flex justify-content-between"><span>Approved reports</span><strong id="stat-approved-reports">0</strong></div>
+                                <div class="d-flex justify-content-between"><span>Hours in submitted reports</span><strong id="stat-total-hours">0.0 hrs</strong></div>
+                                <div class="d-flex justify-content-between"><span>Punctuality</span><strong id="stat-punctuality-rate">Not available</strong></div>
+                                <p class="small text-muted mt-3 mb-0">Attendance standards and placement details require administrator configuration.</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Recharts Visualization & Recent Attendance Section -->
                     <div class="row g-4 mb-4">
-                        <div class="col-12 col-lg-6">
-                            <div class="client-card p-3 h-100">
+                        <div class="col-12">
+                            <div class="client-card p-3">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <h6 class="fw-bold mb-0">Weekly Hours Logged</h6>
-                                        <small class="text-muted">Daily distribution vs Standard 8h target</small>
-                                    </div>
-                                    <span class="badge bg-success">Week 4 Active</span>
-                                </div>
-                                <div id="client-weekly-hours-chart" style="min-height: 260px;">
-                                    <div class="text-center py-5 text-muted"><i class="fas fa-spinner fa-spin me-2"></i>Loading visualization...</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-lg-6">
-                            <div class="client-card p-3 h-100">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div>
-                                        <h6 class="fw-bold mb-0">Recent Attendance Punches</h6>
-                                        <small class="text-muted">Latest clock-in & clock-out records</small>
-                                    </div>
-                                    <button class="btn btn-sm btn-link text-success p-0 text-decoration-none" onclick="showClientSection('punch-section')">View All</button>
+                                    <div><h6 class="fw-bold mb-0">Recent attendance</h6><small class="text-muted">Latest server-recorded clock-in and clock-out times</small></div>
+                                    <button class="btn btn-sm btn-link text-success p-0 text-decoration-none" onclick="showClientSection('punch-section')">View all</button>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table table-sm table-hover align-middle mb-0">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Time In</th>
-                                                <th>Time Out</th>
-                                                <th>Hours</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td class="fw-bold">19 Sep 2026</td>
-                                                <td><span class="badge bg-success-subtle text-success">08:02 AM</span></td>
-                                                <td><span class="badge bg-danger-subtle text-danger">05:04 PM</span></td>
-                                                <td class="fw-bold">8.0 hrs</td>
-                                                <td><span class="badge bg-success">Verified</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-bold">18 Sep 2026</td>
-                                                <td><span class="badge bg-success-subtle text-success">08:14 AM</span></td>
-                                                <td><span class="badge bg-danger-subtle text-danger">05:00 PM</span></td>
-                                                <td class="fw-bold">7.8 hrs</td>
-                                                <td><span class="badge bg-success">Verified</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td class="fw-bold">17 Sep 2026</td>
-                                                <td><span class="badge bg-success-subtle text-success">07:55 AM</span></td>
-                                                <td><span class="badge bg-danger-subtle text-danger">05:15 PM</span></td>
-                                                <td class="fw-bold">8.3 hrs</td>
-                                                <td><span class="badge bg-success">Verified</span></td>
-                                            </tr>
-                                        </tbody>
+                                        <thead class="table-light"><tr><th>Date</th><th>Time in</th><th>Time out</th><th>Duration</th><th>Status</th></tr></thead>
+                                        <tbody id="dashboard-attendance-tbody"><tr><td colspan="5" class="text-center text-muted py-3">Loading attendance records…</td></tr></tbody>
                                     </table>
                                 </div>
                             </div>
@@ -440,7 +260,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
                             <h4 class="fw-bold mb-1">Daily Attendance Registration</h4>
-                            <p class="text-muted mb-0 small">KCCA Biometric & Location-verified Punch Console</p>
+                            <p class="text-muted mb-0 small">Server-recorded attendance session</p>
                         </div>
                         <button class="btn btn-sm btn-outline-secondary" onclick="showClientSection('dashboard-section')">
                             <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
@@ -453,41 +273,26 @@
                             <div class="client-card p-4 text-center">
                                 <div class="mb-3">
                                     <span class="badge bg-success-subtle text-success px-3 py-1 fw-bold text-uppercase" style="letter-spacing: 0.5px;">
-                                        <i class="fas fa-shield-alt me-1"></i>KCCA EARS Biometric Terminal
+                                        <i class="fas fa-clock me-1"></i>Attendance Record
                                     </span>
                                 </div>
 
                                 <div class="p-3 my-3 rounded bg-light-subtle border">
-                                    <small class="text-muted d-block text-uppercase fw-semibold mb-1">Official East Africa Time</small>
+                                    <small class="text-muted d-block text-uppercase fw-semibold mb-1">East Africa Time</small>
                                     <div class="clock-display text-primary mb-1" id="punch-terminal-clock">
                                         08:30:00 AM
                                     </div>
                                     <small class="text-muted" id="punch-terminal-date">Friday, 19 September 2026</small>
                                 </div>
 
-                                <div class="mb-3 text-start">
-                                    <label class="form-label small fw-bold text-muted">Duty Location / Urban Division</label>
-                                    <select class="form-select" id="punch-location-select">
-                                        <option value="City Hall - ICT Lab 2" selected>City Hall &bull; Directorate of ICT & Software</option>
-                                        <option value="Nakawa Division Field Office">Nakawa Division &bull; Urban Planning & Field</option>
-                                        <option value="Kawempe Division Office">Kawempe Division &bull; Operations Unit</option>
-                                        <option value="Makindye Division Office">Makindye Division &bull; Engineering</option>
-                                        <option value="Rubaga Division Office">Rubaga Division &bull; Public Health Inspection</option>
-                                        <option value="Remote / ICT Approved Project">Authorized Remote Development / Server Maintenance</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-4 text-start">
-                                    <label class="form-label small fw-bold text-muted">Shift Notes / Tasks for Today (Optional)</label>
-                                    <input type="text" class="form-control" id="punch-notes-input" placeholder="e.g. Database index optimization, API review">
-                                </div>
+                                <p class="small text-muted mb-4">The API records timestamps using its server clock. This version does not verify physical work location.</p>
 
                                 <button id="btn-punch-action" class="btn btn-clock-in btn-lg w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2">
                                     <i class="fas fa-fingerprint fs-4"></i>
                                     <span>Clock In (Start Shift)</span>
                                 </button>
                                 <small class="text-muted d-block mt-2" style="font-size: 0.75rem;">
-                                    <i class="fas fa-lock me-1"></i>Logged securely with supervisor audit trace
+                                    <i class="fas fa-lock me-1"></i>Stored with your attendance record
                                 </small>
                             </div>
                         </div>
@@ -497,27 +302,27 @@
                             <div class="client-card p-4 h-100">
                                 <div class="p-3 mb-3 rounded bg-light-subtle border d-flex justify-content-between align-items-center">
                                     <div>
-                                        <span class="text-uppercase small fw-bold text-muted d-block" style="font-size: 0.72rem;">Daily Requirement Tracker</span>
-                                        <span class="fw-bold fs-6"><i class="fas fa-bullseye text-success me-1"></i>8.0 Working Hours Daily Goal</span>
+                                        <span class="text-uppercase small fw-bold text-muted d-block" style="font-size: 0.72rem;">Attendance duration</span>
+                                        <span class="fw-bold fs-6"><i class="fas fa-clock text-success me-1"></i>Recorded clock-in and clock-out</span>
                                     </div>
                                     <div class="text-end">
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Standard: 8.0h Shift</span>
-                                        <div class="small text-muted mt-1" style="font-size: 0.72rem;">Mon - Fri &bull; 8:00 AM - 5:00 PM</div>
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">No target configured</span>
+                                        <div class="small text-muted mt-1" style="font-size: 0.72rem;">Work-hour rules require administrator configuration.</div>
                                     </div>
                                 </div>
                                 <h5 class="fw-bold mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Attendance Policies & Guidelines</h5>
                                 <ul class="list-group list-group-flush mb-4 small">
                                     <li class="list-group-item bg-transparent px-0 py-2">
-                                        <strong>Standard Hours:</strong> Interns and staff are required to maintain a minimum of 8.0 working hours per business day (Mon - Fri: 8:00 AM - 5:00 PM EAT).
+                                        <strong>Working hours:</strong> Attendance duration is calculated from server-recorded clock-in and clock-out times.
                                     </li>
                                     <li class="list-group-item bg-transparent px-0 py-2">
-                                        <strong>Punctuality:</strong> Clock-in timestamps after 08:30 AM will be tagged as late arrivals and flagged on supervisor dashboards.
+                                        <strong>Attendance rules:</strong> Thresholds and late-arrival rules must be set by the system administrator.
                                     </li>
                                     <li class="list-group-item bg-transparent px-0 py-2">
-                                        <strong>Field Work:</strong> If reporting from a Division field station (e.g. Nakawa or Rubaga), select the appropriate location prior to punching in.
+                                        <strong>Location:</strong> This version does not verify GPS, office, or field-station location.
                                     </li>
                                     <li class="list-group-item bg-transparent px-0 py-2">
-                                        <strong>Report Synchronization:</strong> Daily punched hours are automatically populated into the weekly report generator for supervisor signing.
+                                        <strong>Weekly reports:</strong> Completed attendance times are included when available for the reported dates.
                                     </li>
                                 </ul>
 
@@ -527,8 +332,7 @@
                                         <span>Assigned Direct Supervisor</span>
                                     </div>
                                     <div class="small text-muted">
-                                        <strong>Sarah Smith</strong> &bull; Senior IT Systems Analyst<br>
-                                        Email: <a href="mailto:sarah.smith@kcca.go.ug" class="text-success text-decoration-none">sarah.smith@kcca.go.ug</a> &bull; Extension: 4102
+                                        Your assigned supervisor is managed by the administrator.
                                     </div>
                                 </div>
                             </div>
@@ -540,7 +344,7 @@
                         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
                             <div>
                                 <h5 class="fw-bold mb-0">Attendance Punch Logs</h5>
-                                <small class="text-muted">Complete records of verified timestamps</small>
+                                                <small class="text-muted">Recent server-recorded timestamps</small>
                             </div>
                             <div class="d-flex align-items-center gap-2">
                                 <button id="btn-export-punch-csv" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1 shadow-sm" title="Export attendance history to CSV format">
@@ -590,23 +394,17 @@
                         <form id="weekly-report-form">
                             <!-- Report Metadata Row -->
                             <div class="row g-3 mb-4 pb-3 border-bottom">
-                                <div class="col-12 col-md-3">
-                                    <label class="form-label fw-bold small text-muted">Select Week</label>
-                                    <select class="form-select" id="report-week-select" required>
-                                        <option value="5">Week 5 (Current Week)</option>
-                                        <option value="4">Week 4 (Past Week)</option>
-                                        <option value="3">Week 3</option>
-                                        <option value="2">Week 2</option>
-                                        <option value="1">Week 1</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-md-5">
-                                    <label class="form-label fw-bold small text-muted">Reporting Date Range</label>
-                                    <input type="text" class="form-control" id="report-range-input" value="22 Sep 2026 - 26 Sep 2026" required>
+                                <div class="col-12 col-md-4">
+                                    <label for="report-week-start" class="form-label fw-bold small text-muted">Week commencing (Monday)</label>
+                                    <input type="date" class="form-control" id="report-week-start" required>
                                 </div>
                                 <div class="col-12 col-md-4">
-                                    <label class="form-label fw-bold small text-muted">Assigned Supervisor</label>
-                                    <input type="text" class="form-control" value="Sarah Smith (Senior IT Systems Analyst)" readonly>
+                                    <label class="form-label fw-bold small text-muted">Reporting date range</label>
+                                    <input type="text" class="form-control" id="report-range-input" readonly>
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label fw-bold small text-muted">Assigned supervisor</label>
+                                    <input type="text" class="form-control" value="Managed by the administrator" readonly>
                                 </div>
                             </div>
 
@@ -614,82 +412,16 @@
                             <h6 class="fw-bold text-uppercase small text-success mb-3">
                                 <i class="fas fa-calendar-week me-1"></i>Daily Tasks & Accomplishments
                             </h6>
+                            <p class="small text-muted">Enter the work completed each weekday. Hours are derived from recorded attendance sessions when available.</p>
+                            <div class="mb-3 p-3 rounded border"><label for="task-mon" class="form-label fw-bold">Monday</label><textarea class="form-control" id="task-mon" rows="3" maxlength="5000" placeholder="Describe work completed on Monday" required></textarea></div>
+                            <div class="mb-3 p-3 rounded border"><label for="task-tue" class="form-label fw-bold">Tuesday</label><textarea class="form-control" id="task-tue" rows="3" maxlength="5000" placeholder="Describe work completed on Tuesday" required></textarea></div>
+                            <div class="mb-3 p-3 rounded border"><label for="task-wed" class="form-label fw-bold">Wednesday</label><textarea class="form-control" id="task-wed" rows="3" maxlength="5000" placeholder="Describe work completed on Wednesday" required></textarea></div>
+                            <div class="mb-3 p-3 rounded border"><label for="task-thu" class="form-label fw-bold">Thursday</label><textarea class="form-control" id="task-thu" rows="3" maxlength="5000" placeholder="Describe work completed on Thursday" required></textarea></div>
+                            <div class="mb-4 p-3 rounded border"><label for="task-fri" class="form-label fw-bold">Friday</label><textarea class="form-control" id="task-fri" rows="3" maxlength="5000" placeholder="Describe work completed on Friday" required></textarea></div>
 
-                            <!-- Monday -->
-                            <div class="mb-3 p-3 rounded border" style="background-color: var(--theme-card-bg);">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-primary"><i class="fas fa-calendar-day me-1"></i>Monday</span>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <label class="small text-muted mb-0">Hours:</label>
-                                        <input type="number" step="0.5" min="1" max="12" class="form-control form-control-sm text-center" style="width: 80px;" id="hours-mon" value="8.0" required>
-                                    </div>
-                                </div>
-                                <textarea class="form-control" id="task-mon" rows="2" placeholder="Detail tasks completed on Monday (e.g. system setup, bug fixes, documentation)..." required>Conducted unit testing on the EARS client portal and verified real-time password strength validation rules.</textarea>
-                            </div>
-
-                            <!-- Tuesday -->
-                            <div class="mb-3 p-3 rounded border" style="background-color: var(--theme-card-bg);">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-primary"><i class="fas fa-calendar-day me-1"></i>Tuesday</span>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <label class="small text-muted mb-0">Hours:</label>
-                                        <input type="number" step="0.5" min="1" max="12" class="form-control form-control-sm text-center" style="width: 80px;" id="hours-tue" value="8.0" required>
-                                    </div>
-                                </div>
-                                <textarea class="form-control" id="task-tue" rows="2" placeholder="Detail tasks completed on Tuesday..." required>Participated in code review session with ICT supervisor regarding KCCA division directory API endpoints.</textarea>
-                            </div>
-
-                            <!-- Wednesday -->
-                            <div class="mb-3 p-3 rounded border" style="background-color: var(--theme-card-bg);">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-primary"><i class="fas fa-calendar-day me-1"></i>Wednesday</span>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <label class="small text-muted mb-0">Hours:</label>
-                                        <input type="number" step="0.5" min="1" max="12" class="form-control form-control-sm text-center" style="width: 80px;" id="hours-wed" value="8.0" required>
-                                    </div>
-                                </div>
-                                <textarea class="form-control" id="task-wed" rows="2" placeholder="Detail tasks completed on Wednesday..." required>Resolved biometric terminal synchronization latency across City Hall 2nd Floor network switches.</textarea>
-                            </div>
-
-                            <!-- Thursday -->
-                            <div class="mb-3 p-3 rounded border" style="background-color: var(--theme-card-bg);">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-primary"><i class="fas fa-calendar-day me-1"></i>Thursday</span>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <label class="small text-muted mb-0">Hours:</label>
-                                        <input type="number" step="0.5" min="1" max="12" class="form-control form-control-sm text-center" style="width: 80px;" id="hours-thu" value="8.0" required>
-                                    </div>
-                                </div>
-                                <textarea class="form-control" id="task-thu" rows="2" placeholder="Detail tasks completed on Thursday..." required>Drafted technical documentation for intern attendance submission and verified supervisor feedback notifications.</textarea>
-                            </div>
-
-                            <!-- Friday -->
-                            <div class="mb-4 p-3 rounded border" style="background-color: var(--theme-card-bg);">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-primary"><i class="fas fa-calendar-day me-1"></i>Friday</span>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <label class="small text-muted mb-0">Hours:</label>
-                                        <input type="number" step="0.5" min="1" max="12" class="form-control form-control-sm text-center" style="width: 80px;" id="hours-fri" value="8.0" required>
-                                    </div>
-                                </div>
-                                <textarea class="form-control" id="task-fri" rows="2" placeholder="Detail tasks completed on Friday..." required>Summarized week deliverables, verified total hours with attendance punch table, and compiled audit package.</textarea>
-                            </div>
-
-                            <!-- Total Hours & Actions Bar -->
                             <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 p-3 rounded bg-light-subtle border">
-                                <div>
-                                    <span class="small text-muted d-block">Calculated Total Weekly Hours:</span>
-                                    <span id="report-form-total-badge" class="badge bg-success fs-6">40.0 hrs / 40.0 hrs</span>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    <button type="button" class="btn btn-outline-secondary" onclick="showToast('Draft Saved', 'Your progress has been preserved in local storage.', 'info')">
-                                        <i class="fas fa-floppy-disk me-1"></i> Save Draft
-                                    </button>
-                                    <button type="submit" class="btn btn-success d-flex align-items-center gap-2">
-                                        <i class="fas fa-paper-plane"></i>
-                                        <span>Submit to Supervisor</span>
-                                    </button>
-                                </div>
+                                <div><span class="small text-muted d-block">Attendance hours</span><span id="report-form-total-badge" class="small text-muted">Hours are calculated from saved attendance sessions.</span></div>
+                                <button type="submit" class="btn btn-success d-flex align-items-center gap-2"><i class="fas fa-paper-plane"></i><span>Submit to Supervisor</span></button>
                             </div>
                         </form>
                     </div>
@@ -742,59 +474,9 @@
                         </button>
                     </div>
 
-                    <div class="row g-4 mb-4">
-                        <div class="col-12 col-lg-6">
-                            <div class="client-card p-4">
-                                <h6 class="fw-bold mb-1">Punctuality Trend & Total Hours by Week</h6>
-                                <p class="small text-muted mb-3">Recharts interactive trend lines over the last 4 weeks</p>
-                                <div id="client-attendance-trend-chart" style="min-height: 260px;"></div>
-                            </div>
-                        </div>
-
-                        <div class="col-12 col-lg-6">
-                            <div class="client-card p-4">
-                                <h6 class="fw-bold mb-1">Compliance & Duty Completion</h6>
-                                <p class="small text-muted mb-3">Overall internship performance metrics</p>
-                                
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between small fw-bold mb-1">
-                                        <span>On-Time Arrival Rate</span>
-                                        <span class="text-success">98.5% (Target: 95%)</span>
-                                    </div>
-                                    <div class="progress" style="height: 8px;">
-                                        <div class="progress-bar bg-success" style="width: 98.5%"></div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between small fw-bold mb-1">
-                                        <span>Weekly Report Submission Promptness</span>
-                                        <span class="text-success">100% (All on Friday)</span>
-                                    </div>
-                                    <div class="progress" style="height: 8px;">
-                                        <div class="progress-bar bg-success" style="width: 100%"></div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between small fw-bold mb-1">
-                                        <span>Core Hours Fulfillment</span>
-                                        <span class="text-primary">100.2% (159.7 / 160.0h)</span>
-                                    </div>
-                                    <div class="progress" style="height: 8px;">
-                                        <div class="progress-bar bg-primary" style="width: 100%"></div>
-                                    </div>
-                                </div>
-
-                                <div class="p-3 rounded bg-success-subtle border border-success-subtle mt-4">
-                                    <div class="d-flex align-items-center gap-2 text-success fw-bold small">
-                                        <i class="fas fa-medal"></i>
-                                        <span>KCCA Internship Status: Exemplary Standing</span>
-                                    </div>
-                                    <small class="text-muted">Eligible for end-of-program institutional recommendation certificate.</small>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="client-card p-4">
+                        <h5 class="fw-bold">Analytics are not configured</h5>
+                        <p class="text-muted mb-0">Attendance records and submitted reports are available in their respective sections. Punctuality, compliance, and target metrics require approved organizational rules before they can be calculated.</p>
                     </div>
                 </div>
 
@@ -810,216 +492,15 @@
                         </button>
                     </div>
 
-                    <div class="row g-4 mb-4">
-                        <!-- Personal Details Card -->
-                        <div class="col-12 col-lg-6">
-                            <div class="client-card p-4">
-                                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold fs-3" style="width: 64px; height: 64px; background-color: #008540;">
-                                        CO
-                                    </div>
-                                    <div>
-                                        <h5 class="fw-bold mb-0">Calvin Opio</h5>
-                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1">Intern Personnel</span>
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
-                                        <div class="small text-muted mt-1">Personnel ID: <strong>KCCA-INT-2026-084</strong></div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3 small">
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Official Email:</span>
-                                        <strong>calvin.opio@kcca.go.ug</strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Personal Phone:</span>
-                                        <strong>+256 772 458 912</strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Institution / University:</span>
-                                        <strong>Makerere University (CoCIS)</strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Degree Program:</span>
-                                        <strong>BSc Software Engineering</strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Assigned Directorate:</span>
-                                        <strong>ICT & Software Systems</strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Primary Duty Station:</span>
-                                        <strong>City Hall (Plot 1-3 Apollo Kaggwa Rd)</strong>
-                                    </div>
-                                    <div class="col-12">
-                                        <span class="text-muted d-block">Placement Period:</span>
-                                        <strong>01 September 2026 &mdash; 30 November 2026 (3 Months)</strong>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Supervisor Card -->
-                        <div class="col-12 col-lg-6">
-                            <div class="client-card p-4">
-                                <h6 class="fw-bold text-uppercase small text-muted mb-3">
-                                    <i class="fas fa-user-tie text-success me-1"></i>Assigned Supervisor Information
-                                </h6>
-                                <div class="d-flex align-items-center gap-3 mb-3 p-3 rounded bg-light-subtle border">
-                                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold fs-4" style="width: 52px; height: 52px; background-color: #E30613;">
-                                        SS
-                                    </div>
-                                    <div>
-                                        <h6 class="fw-bold mb-0">Sarah Smith</h6>
-                                        <small class="text-muted">Senior IT Systems Analyst &bull; Directorate of ICT</small>
-                                        <div class="mt-1">
-                                            <span class="badge bg-warning text-dark"><i class="fas fa-star me-1"></i>Primary Evaluator</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row g-3 small mb-3">
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Supervisor Email:</span>
-                                        <a href="mailto:sarah.smith@kcca.go.ug" class="text-success text-decoration-none fw-bold">sarah.smith@kcca.go.ug</a>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Office Extension:</span>
-                                        <strong>Ext. 4102</strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Office Location:</span>
-                                        <strong>City Hall, 2nd Floor, Wing B</strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="text-muted d-block">Consultation Hours:</span>
-                                        <strong>Mon &amp; Thu: 2:00 PM - 4:00 PM</strong>
-                                    </div>
-                                </div>
-
-                                <div class="p-3 rounded border bg-light-subtle">
-                                    <h6 class="fw-bold small mb-1">Direct Contact or Inquiries</h6>
-                                    <p class="small text-muted mb-2">Reach out to your supervisor for schedule adjustments, official duty leaves, or special project approvals.</p>
-                                    <a href="mailto:sarah.smith@kcca.go.ug?subject=EARS%20Intern%20Inquiry%20-%20Calvin%20Opio" class="btn btn-sm btn-outline-success">
-                                        <i class="fas fa-envelope me-1"></i> Send Email to Supervisor
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="client-card p-4">
+                        <h5 class="fw-bold" data-ears-user-name>Intern</h5>
+                        <p class="text-muted mb-1">Role: Intern</p>
+                        <p class="text-muted mb-0">Placement and supervisor details are managed by the system administrator.</p>
                     </div>
                 </div>
 
-                <!-- KCCA Official Footer -->
-                <footer class="kcca-official-footer mt-5 mb-4" id="kcca-client-footer">
-                    <!-- National & KCCA Identity Accent Stripe -->
-                    <div class="kcca-stripe mb-4"></div>
-
-                    <div class="row g-4">
-                        <!-- Col 1: KCCA Brand & Mission -->
-                        <div class="col-12 col-md-5 col-lg-4">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <img src="/assets/Logo.png" alt="KCCA Official Logo" class="img-fluid" style="height: 52px; width: auto; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.25));" onerror="this.src='https://saketgroupltd.com/wp-content/uploads/2023/09/4-300x300.png';">
-                                <div>
-                                    <h6 class="mb-0 fw-bold text-uppercase" style="color: var(--theme-text-primary); font-size: 0.92rem; letter-spacing: 0.3px;">Kampala Capital City Authority</h6>
-                                    <small class="text-success fw-semibold" style="font-size: 0.78rem;">For a Better City</small>
-                                </div>
-                            </div>
-                            <p class="small text-muted mb-3" style="line-height: 1.55; font-size: 0.82rem;">
-                                The E-Attendance Report System (EARS) provides centralized attendance reporting, intern verification, and supervisor coordination across all urban divisions and directorates.
-                            </p>
-                            <a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer" class="kcca-portal-btn" title="Open official KCCA portal in new tab">
-                                <i class="fas fa-globe"></i>
-                                <span>Visit www.kcca.go.ug</span>
-                                <i class="fas fa-external-link-alt ms-1" style="font-size: 0.7rem;"></i>
-                            </a>
-                        </div>
-
-                        <!-- Col 2: Headquarters & Location -->
-                        <div class="col-12 col-sm-6 col-md-3 col-lg-3">
-                            <h6 class="kcca-footer-heading">
-                                <i class="fas fa-landmark text-success"></i>
-                                <span>Headquarters</span>
-                            </h6>
-                            <div class="kcca-footer-contact-item">
-                                <i class="fas fa-map-marker-alt text-danger"></i>
-                                <span>
-                                    <strong>City Hall</strong><br>
-                                    Plot 1-3, Apollo Kaggwa Road<br>
-                                    P.O. Box 7010, Kampala - Uganda
-                                </span>
-                            </div>
-                            <div class="kcca-footer-contact-item">
-                                <i class="fas fa-clock text-warning"></i>
-                                <span>
-                                    <strong>Working Hours:</strong><br>
-                                    Mon - Fri: 8:00 AM - 5:00 PM (EAT)
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Col 3: Direct Helplines & Contacts -->
-                        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-                            <h6 class="kcca-footer-heading">
-                                <i class="fas fa-headset text-primary"></i>
-                                <span>Helplines & Inquiries</span>
-                            </h6>
-                            <div class="kcca-footer-contact-item">
-                                <i class="fas fa-phone-volume text-success"></i>
-                                <span>
-                                    <strong>Toll-Free Helpline:</strong><br>
-                                    <a href="tel:0800199000" class="fw-bold text-success">0800 199 000</a> / <a href="tel:0800990000">0800 990 000</a>
-                                </span>
-                            </div>
-                            <div class="kcca-footer-contact-item">
-                                <i class="fas fa-phone text-secondary"></i>
-                                <span>
-                                    <strong>General Telephone:</strong><br>
-                                    <a href="tel:0417900100">+256 417 900 100</a>
-                                </span>
-                            </div>
-                            <div class="kcca-footer-contact-item">
-                                <i class="fas fa-envelope text-warning"></i>
-                                <span>
-                                    <strong>Email Inquiries:</strong><br>
-                                    <a href="mailto:info@kcca.go.ug">info@kcca.go.ug</a>
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Col 4: Urban Divisions & Links -->
-                        <div class="col-12 col-md-12 col-lg-2">
-                            <h6 class="kcca-footer-heading">
-                                <i class="fas fa-sitemap text-info"></i>
-                                <span>Urban Divisions</span>
-                            </h6>
-                            <ul class="kcca-footer-links">
-                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Central Division</a></li>
-                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Nakawa Division</a></li>
-                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Kawempe Division</a></li>
-                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Makindye Division</a></li>
-                                <li><a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer"><i class="fas fa-chevron-right me-1" style="font-size: 0.65rem;"></i>Rubaga Division</a></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <hr class="kcca-footer-divider">
-
-                    <!-- Bottom Legal & Certification Bar -->
-                    <div class="row align-items-center kcca-footer-bottom gy-2">
-                        <div class="col-12 col-md-6 text-center text-md-start">
-                            <span>&copy; <span id="kcca-footer-year">2026</span> <strong>Kampala Capital City Authority (KCCA)</strong>. All Rights Reserved.</span>
-                        </div>
-                        <div class="col-12 col-md-6 text-center text-md-end">
-                            <span class="d-inline-flex align-items-center gap-2 flex-wrap justify-content-center justify-content-md-end">
-                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.72rem;">
-                                    <i class="fas fa-shield-alt me-1"></i>Official Government System
-                                </span>
-                                <a href="https://www.kcca.go.ug/" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-muted small ms-1">
-                                    www.kcca.go.ug
-                                </a>
-                            </span>
-                        </div>
-                    </div>
+                <footer class="text-center text-muted small py-4 border-top">
+                    EARS demonstration interface. This application is not approved for official attendance administration.
                 </footer>
             </main>
         </div>
@@ -1052,13 +533,8 @@
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- React & Recharts Dependencies for Analytics -->
-    <script src="js/vendor/react.min.js"></script>
-    <script src="js/vendor/prop-types.min.js"></script>
-    <script src="js/vendor/react-dom.min.js"></script>
-    <script src="js/vendor/recharts.min.js"></script>
-
     <!-- Custom Client Application Script -->
+    <script src="../auth.js"></script>
     <script src="js/client.js"></script>
 </body>
 </html>

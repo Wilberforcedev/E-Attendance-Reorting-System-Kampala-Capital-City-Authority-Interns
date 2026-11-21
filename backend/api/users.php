@@ -15,19 +15,10 @@ function respond(int $status, array $payload): never
     exit;
 }
 
-$authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-if ($authorization === '' && function_exists('getallheaders')) {
-    $headers = getallheaders();
-    $authorization = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-}
-
-if (!preg_match('/^Bearer\s+(.+)$/i', $authorization, $matches)) {
-    respond(401, ['status' => 'error', 'message' => 'Authentication required.']);
-}
-
 try {
     $db = (new Database())->getConnection();
-    $actor = (new Auth($db))->validateToken(trim($matches[1]));
+    $auth = new Auth($db);
+    $actor = $auth->validateToken($auth->getBearerToken());
 } catch (Throwable $error) {
     error_log('Users API authentication failed: ' . $error->getMessage());
     respond(500, ['status' => 'error', 'message' => 'Request could not be completed.']);
@@ -44,6 +35,9 @@ $method = $_SERVER['REQUEST_METHOD'] ?? '';
 if (!in_array($method, ['GET', 'POST', 'DELETE'], true)) {
     header('Allow: GET, POST, DELETE');
     respond(405, ['status' => 'error', 'message' => 'Method not allowed.']);
+}
+if (!$auth->hasValidCsrfToken()) {
+    respond(403, ['status' => 'error', 'message' => 'Request verification failed. Refresh and try again.']);
 }
 
 try {

@@ -3,98 +3,30 @@
  * Core interactive client logic for Interns & Staff
  */
 
-// Initial Default State
-const DEFAULT_ATTENDANCE_LOGS = [
-    { id: 'att-1', date: '2026-09-19', day: 'Friday', timeIn: '08:02 AM', timeOut: '05:04 PM', hours: '8.0 hrs', status: 'Completed', location: 'City Hall - ICT Lab 2' },
-    { id: 'att-2', date: '2026-09-18', day: 'Thursday', timeIn: '08:14 AM', timeOut: '05:00 PM', hours: '7.8 hrs', status: 'Completed', location: 'City Hall - Software Wing' },
-    { id: 'att-3', date: '2026-09-17', day: 'Wednesday', timeIn: '07:55 AM', timeOut: '05:15 PM', hours: '8.3 hrs', status: 'Completed', location: 'Nakawa Division Field Office' },
-    { id: 'att-4', date: '2026-09-16', day: 'Tuesday', timeIn: '08:00 AM', timeOut: '05:05 PM', hours: '8.1 hrs', status: 'Completed', location: 'City Hall - Main Boardroom' },
-    { id: 'att-5', date: '2026-09-15', day: 'Monday', timeIn: '08:05 AM', timeOut: '05:00 PM', hours: '8.0 hrs', status: 'Completed', location: 'City Hall - ICT Lab 2' }
-];
-
-const DEFAULT_REPORTS = [
-    {
-        id: 'rep-4',
-        weekNumber: 4,
-        weekRange: '15 Sep 2026 - 19 Sep 2026',
-        submittedDate: '19 Sep 2026',
-        hoursLogged: 40.2,
-        status: 'Approved',
-        supervisor: 'Sarah Smith (Senior IT Systems Analyst)',
-        feedback: 'Excellent work on the biometric integration module and UI responsiveness testing. Keep up the high standards!',
-        tasks: [
-            { day: 'Monday', hours: 8, task: 'Configured local database schemas and verified migration script integrity for the new attendance records.' },
-            { day: 'Tuesday', hours: 8.5, task: 'Developed responsive client-side UI layouts and tested cross-browser compatibility on mobile viewports.' },
-            { day: 'Wednesday', hours: 8, task: 'Integrated KCCA division directory endpoints and conducted validation on staff login tokens.' },
-            { day: 'Thursday', hours: 7.8, task: 'Tested supervisor report approval workflows and fixed real-time form validation errors.' },
-            { day: 'Friday', hours: 8, task: 'Compiled weekly deliverables, prepared attendance audit logs, and documented API endpoints.' }
-        ]
-    },
-    {
-        id: 'rep-3',
-        weekNumber: 3,
-        weekRange: '08 Sep 2026 - 12 Sep 2026',
-        submittedDate: '12 Sep 2026',
-        hoursLogged: 39.5,
-        status: 'Approved',
-        supervisor: 'Sarah Smith (Senior IT Systems Analyst)',
-        feedback: 'Weekly progress met all requirements. Well-documented challenges and solutions.',
-        tasks: [
-            { day: 'Monday', hours: 8, task: 'Attended KCCA ICT orientation and setup development environments on Linux workstations.' },
-            { day: 'Tuesday', hours: 8, task: 'Reviewed EARS architecture and analyzed supervisor pending approvals module.' },
-            { day: 'Wednesday', hours: 8, task: 'Assisted in resolving user role permission mismatches for HR officers.' },
-            { day: 'Thursday', hours: 7.5, task: 'Shadowed senior engineers during server maintenance and network switch upgrades.' },
-            { day: 'Friday', hours: 8, task: 'Conducted unit tests on attendance punch endpoints and submitted week 3 summary.' }
-        ]
-    },
-    {
-        id: 'rep-2',
-        weekNumber: 2,
-        weekRange: '01 Sep 2026 - 05 Sep 2026',
-        submittedDate: '05 Sep 2026',
-        hoursLogged: 40.0,
-        status: 'Approved',
-        supervisor: 'Michael Brown (Infrastructure Lead)',
-        feedback: 'Satisfactory completion of network configuration and hardware logging tasks.',
-        tasks: [
-            { day: 'Monday', hours: 8, task: 'Hardware inventory inspection at City Hall 2nd Floor offices.' },
-            { day: 'Tuesday', hours: 8, task: 'Diagnosed biometric terminal connectivity glitches in Nakawa Division.' },
-            { day: 'Wednesday', hours: 8, task: 'Configured static IP assignments for attendance logging terminals.' },
-            { day: 'Thursday', hours: 8, task: 'Participated in cybersecurity awareness training conducted for interns.' },
-            { day: 'Friday', hours: 8, task: 'Drafted report on equipment status and presented to supervisor.' }
-        ]
-    }
-];
-
-const DEFAULT_NOTIFICATIONS = [
-    { id: 'notif-1', title: 'Weekly Report #4 Approved', message: 'Supervisor Sarah Smith approved your Week 4 submission with commendation.', time: '2 hours ago', unread: true, type: 'success' },
-    { id: 'notif-2', title: 'System Notice: Punctuality Commendation', message: 'You have maintained 100% on-time clock-in this week.', time: '5 hours ago', unread: true, type: 'info' },
-    { id: 'notif-3', title: 'Reminder: Friday Report Submission', message: 'Please ensure your weekly summary is submitted before 5:00 PM.', time: '1 day ago', unread: false, type: 'warning' },
-    { id: 'notif-4', title: 'KCCA ICT Directorate Meeting', message: 'All intern staff are invited to the bi-weekly tech talk on Tuesday.', time: '3 days ago', unread: false, type: 'primary' }
-];
-
-// App State Management
-let clientAttendanceLogs = JSON.parse(localStorage.getItem('ears_client_attendance')) || DEFAULT_ATTENDANCE_LOGS;
-let clientReports = JSON.parse(localStorage.getItem('ears_client_reports')) || DEFAULT_REPORTS;
-let clientNotifications = JSON.parse(localStorage.getItem('ears_client_notifications')) || DEFAULT_NOTIFICATIONS;
-
-// Active Session Timer state
-let activeClockSession = JSON.parse(localStorage.getItem('ears_active_clock_session')) || null;
+// Server-backed portal state. No fabricated attendance or report history is shown.
+let clientAttendanceLogs = [];
+let clientReports = [];
+let clientNotifications = [];
+let activeClockSession = null;
 let sessionTimerInterval = null;
 let chartsInitialized = false;
 
 // DOM Initialization
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    const user = await window.EARSAuth?.requireRole('intern');
+    if (!user) return;
+    await Promise.all([loadAttendanceData(), loadReportsData()]);
     initTheme();
     initClock();
     checkActiveSession();
     renderAttendanceTable();
+    renderDashboardAttendance();
     renderReportsTable();
     renderNotifications();
     updateSummaryStats();
     updateDailyGoalProgress();
     setupEventListeners();
-    setTimeout(renderClientCharts, 250);
+    setupReportDatePicker();
 });
 
 // Theme Management
@@ -113,7 +45,6 @@ function toggleTheme() {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     applyTheme(newTheme);
     localStorage.setItem('ears_theme', newTheme);
-    renderClientCharts();
 }
 
 function applyTheme(theme) {
@@ -142,14 +73,22 @@ function applyTheme(theme) {
 function initClock() {
     const clockEl = document.getElementById('live-digital-clock');
     const dateEl = document.getElementById('live-digital-date');
+    const punchClockEl = document.getElementById('punch-terminal-clock');
+    const punchDateEl = document.getElementById('punch-terminal-date');
 
     function updateTime() {
         const now = new Date();
         if (clockEl) {
-            clockEl.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            clockEl.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'Africa/Kampala' });
         }
         if (dateEl) {
-            dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+            dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Africa/Kampala' });
+        }
+        if (punchClockEl) {
+            punchClockEl.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'Africa/Kampala' });
+        }
+        if (punchDateEl) {
+            punchDateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Kampala' });
         }
     }
 
@@ -165,7 +104,7 @@ function checkActiveSession() {
     const quickPunchText = document.getElementById('quick-punch-text');
     const quickPunchBtn = document.getElementById('btn-quick-punch-toggle');
 
-    if (activeClockSession && activeClockSession.inProgress) {
+    if (activeClockSession && activeClockSession.status === 'in_progress') {
         if (punchBtn) {
             punchBtn.textContent = 'Clock Out Now';
             punchBtn.className = 'btn btn-clock-out btn-lg w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2';
@@ -182,7 +121,7 @@ function checkActiveSession() {
         if (timerContainer) {
             timerContainer.classList.remove('d-none');
         }
-        startSessionTimer(new Date(activeClockSession.startTime));
+        startSessionTimer(new Date(activeClockSession.clock_in_utc));
     } else {
         if (punchBtn) {
             punchBtn.className = 'btn btn-clock-in btn-lg w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2';
@@ -204,54 +143,77 @@ function checkActiveSession() {
     updateDailyGoalProgress();
 }
 
-function handlePunchAction() {
-    const locationInput = document.getElementById('punch-location-select');
-    const notesInput = document.getElementById('punch-notes-input');
-    const location = locationInput ? locationInput.value : 'City Hall - ICT Lab 2';
-    const notes = notesInput ? notesInput.value.trim() : '';
+async function loadAttendanceData() {
+    try {
+        const response = await window.EARSAuth.request('/backend/api/attendance.php');
+        const payload = await response.json();
+        if (!response.ok || !payload.success) throw new Error(payload.message || 'Could not load attendance.');
+        clientAttendanceLogs = (payload.sessions || []).map(session => {
+            const start = new Date(session.clock_in_utc);
+            const end = session.clock_out_utc ? new Date(session.clock_out_utc) : null;
+            const day = new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: 'Africa/Kampala' }).format(start);
+            return {
+                id: session.id,
+                date: session.work_date,
+                day,
+                timeIn: formatKampalaTime(start),
+                timeOut: end ? formatKampalaTime(end) : 'In progress',
+                hours: `${(session.duration_seconds / 3600).toFixed(1)} hrs`,
+                status: session.status === 'completed' ? 'Completed' : 'In progress',
+                location: 'Not collected'
+            };
+        });
+        activeClockSession = payload.active_session || null;
+    } catch (error) {
+        showToast('Attendance unavailable', error.message, 'danger');
+    }
+}
 
-    if (!activeClockSession || !activeClockSession.inProgress) {
-        // Clock In
-        const startTime = new Date();
-        activeClockSession = {
-            inProgress: true,
-            startTime: startTime.toISOString(),
-            location: location,
-            notes: notes
-        };
-        localStorage.setItem('ears_active_clock_session', JSON.stringify(activeClockSession));
-        showToast('Shift Started', `Successfully clocked in at ${startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}. Have a productive day!`, 'success');
-        checkActiveSession();
-    } else {
-        // Clock Out
-        const startTime = new Date(activeClockSession.startTime);
-        const endTime = new Date();
-        const diffMs = endTime - startTime;
-        const hours = (diffMs / (1000 * 60 * 60)).toFixed(1);
+async function loadReportsData() {
+    try {
+        const response = await window.EARSAuth.request('/backend/api/reports.php');
+        const payload = await response.json();
+        if (!response.ok || payload.status !== 'success') throw new Error(payload.message || 'Could not load reports.');
+        clientReports = payload.reports || [];
+    } catch (error) {
+        showToast('Reports unavailable', error.message, 'danger');
+    }
+}
 
-        const newLog = {
-            id: 'att-' + Date.now(),
-            date: endTime.toISOString().split('T')[0],
-            day: endTime.toLocaleDateString('en-GB', { weekday: 'long' }),
-            timeIn: startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
-            timeOut: endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
-            hours: `${Math.max(0.1, hours)} hrs`,
-            status: 'Completed',
-            location: activeClockSession.location
-        };
+function formatKampalaTime(date) {
+    return new Intl.DateTimeFormat('en-GB', {
+        hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Africa/Kampala'
+    }).format(date);
+}
 
-        clientAttendanceLogs.unshift(newLog);
-        localStorage.setItem('ears_client_attendance', JSON.stringify(clientAttendanceLogs));
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
+}
 
-        activeClockSession = null;
-        localStorage.removeItem('ears_active_clock_session');
-
-        showToast('Shift Concluded', `Successfully clocked out at ${endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}. Total session: ${newLog.hours}.`, 'info');
+async function handlePunchAction() {
+    const buttons = [document.getElementById('btn-punch-action'), document.getElementById('btn-quick-punch-toggle')].filter(Boolean);
+    buttons.forEach(button => button.disabled = true);
+    try {
+        const action = activeClockSession ? 'clock_out' : 'clock_in';
+        const response = await window.EARSAuth.request('/backend/api/attendance.php', {
+            method: 'POST',
+            body: JSON.stringify({ action })
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.success) throw new Error(payload.message || 'Attendance could not be recorded.');
+        await loadAttendanceData();
         checkActiveSession();
         renderAttendanceTable();
+        renderDashboardAttendance();
         updateSummaryStats();
         updateDailyGoalProgress();
-        renderClientCharts();
+            showToast(action === 'clock_in' ? 'Clocked in' : 'Clocked out', 'The attendance record was saved using the server time.', 'success');
+    } catch (error) {
+        showToast('Attendance not recorded', error.message, 'danger');
+    } finally {
+        buttons.forEach(button => button.disabled = false);
     }
 }
 
@@ -274,34 +236,23 @@ function startSessionTimer(startTime) {
     sessionTimerInterval = setInterval(update, 1000);
 }
 
-// Daily Hours Goal Radial Progress Ring Calculation
+// Display observed attendance duration without assuming an approved target.
 function getTodayHoursData() {
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Kampala' }).format(new Date());
     let completedHours = 0;
-    let foundTodayLog = false;
-
-    // Sum completed hours for today from logs
     if (Array.isArray(clientAttendanceLogs)) {
         clientAttendanceLogs.forEach(log => {
-            if (log.date === todayStr) {
-                foundTodayLog = true;
+            if (log.date === todayStr && log.status === 'Completed') {
                 const parsed = parseFloat(log.hours);
                 if (!isNaN(parsed)) completedHours += parsed;
             }
         });
-
-        // If today has no log yet and user hasn't clocked in, default to latest logged day or 6.0h baseline
-        if (!foundTodayLog && clientAttendanceLogs.length > 0) {
-            const firstLog = clientAttendanceLogs[0];
-            const parsed = parseFloat(firstLog.hours);
-            completedHours = !isNaN(parsed) ? Math.min(8.0, parsed) : 6.0;
-        }
     }
 
     // Add active ongoing clock session hours
     let activeSessionHours = 0;
-    if (activeClockSession && activeClockSession.inProgress && activeClockSession.startTime) {
-        const start = new Date(activeClockSession.startTime).getTime();
+    if (activeClockSession && activeClockSession.clock_in_utc) {
+        const start = new Date(activeClockSession.clock_in_utc).getTime();
         const diffMs = Math.max(0, Date.now() - start);
         activeSessionHours = diffMs / (1000 * 60 * 60);
     }
@@ -311,136 +262,28 @@ function getTodayHoursData() {
         completedHours,
         activeSessionHours,
         totalHours,
-        goalTarget: 8.0
     };
 }
 
-function updateDailyGoalProgress(forcedHours = null) {
-    const hoursData = getTodayHoursData();
-    const currentHours = (forcedHours !== null) ? forcedHours : hoursData.totalHours;
-    const goalTarget = 8.0;
-
-    const percent = Math.min(125, Math.round((currentHours / goalTarget) * 100));
-    const clampedPercent = Math.min(100, Math.max(0, percent));
-
-    // Circumference for r=66 is ~414.69
-    const circumference = 414.69;
-    const offset = Math.max(0, circumference - (clampedPercent / 100) * circumference);
-
-    const circleEl = document.getElementById('daily-goal-radial-circle');
-    const percentEl = document.getElementById('daily-goal-percent-display');
-    const hoursEl = document.getElementById('daily-goal-hours-display');
-    const statusBadge = document.getElementById('daily-goal-status-badge');
-    const remainingEl = document.getElementById('daily-goal-remaining-display');
-    const loggedSubtext = document.getElementById('daily-goal-logged-subtext');
-    const topBadge = document.getElementById('daily-goal-top-badge');
-
-    if (circleEl) {
-        circleEl.style.strokeDashoffset = offset.toFixed(2);
+function updateDailyGoalProgress() {
+    const currentHours = getTodayHoursData().totalHours;
+    const circle = document.getElementById('daily-goal-radial-circle');
+    const percent = document.getElementById('daily-goal-percent-display');
+    const hours = document.getElementById('daily-goal-hours-display');
+    const status = document.getElementById('daily-goal-status-badge');
+    const remaining = document.getElementById('daily-goal-remaining-display');
+    const logged = document.getElementById('daily-goal-logged-subtext');
+    const badge = document.getElementById('daily-goal-top-badge');
+    if (circle) circle.style.strokeDashoffset = '414.69';
+    if (percent) percent.textContent = '—';
+    if (hours) hours.textContent = `${currentHours.toFixed(1)} hrs`;
+    if (logged) logged.textContent = `${currentHours.toFixed(1)} hrs`;
+    if (status) {
+        status.className = 'radial-status-badge bg-secondary-subtle text-secondary border';
+        status.innerHTML = activeClockSession ? '<i class="fas fa-play"></i> In progress' : '<i class="fas fa-clock"></i> Recorded';
     }
-
-    if (percentEl) {
-        percentEl.textContent = `${percent}%`;
-    }
-
-    if (hoursEl) {
-        hoursEl.textContent = `${currentHours.toFixed(1)} / ${goalTarget.toFixed(1)} hrs`;
-    }
-
-    if (loggedSubtext) {
-        loggedSubtext.textContent = `${currentHours.toFixed(1)} hrs`;
-    }
-
-    // Remaining hours & minutes to 8h goal
-    const remainingHours = Math.max(0, goalTarget - currentHours);
-    const remHrsInt = Math.floor(remainingHours);
-    const remMinsInt = Math.round((remainingHours - remHrsInt) * 60);
-
-    if (currentHours >= goalTarget) {
-        // Goal Fulfilled (100%+)
-        if (circleEl) {
-            circleEl.classList.add('radial-indicator-completed');
-            circleEl.style.stroke = '#008540';
-        }
-        if (statusBadge) {
-            statusBadge.className = 'radial-status-badge bg-success text-white shadow-sm';
-            statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> Goal Achieved! 🎉';
-        }
-        if (remainingEl) {
-            remainingEl.className = 'remaining-val text-success fw-bold';
-            remainingEl.innerHTML = '<i class="fas fa-award text-success me-1"></i> 8.0h Requirement Fulfilled!';
-        }
-        if (topBadge) {
-            topBadge.className = 'badge bg-success text-white border border-success px-2 py-1';
-            topBadge.innerHTML = '<i class="fas fa-check-double me-1"></i> Goal Met (100%)';
-        }
-        if (percentEl) {
-            percentEl.style.color = '#008540';
-        }
-    } else if (percent >= 75) {
-        // Near Goal (75% - 99%)
-        if (circleEl) {
-            circleEl.classList.remove('radial-indicator-completed');
-            circleEl.style.stroke = 'url(#kccaProgressGradient)';
-        }
-        if (statusBadge) {
-            statusBadge.className = 'radial-status-badge bg-success-subtle text-success border border-success-subtle';
-            statusBadge.innerHTML = '<i class="fas fa-fire text-success"></i> Almost There';
-        }
-        if (remainingEl) {
-            remainingEl.className = 'remaining-val text-success fw-bold';
-            remainingEl.textContent = `${remHrsInt} hr ${remMinsInt} mins left`;
-        }
-        if (topBadge) {
-            topBadge.className = 'badge bg-success-subtle text-success border border-success-subtle px-2 py-1';
-            topBadge.innerHTML = '<i class="fas fa-clock me-1"></i> Goal Target: 8.0h';
-        }
-        if (percentEl) {
-            percentEl.style.color = 'var(--theme-text-primary)';
-        }
-    } else if (percent >= 40) {
-        // Mid-shift (40% - 74%)
-        if (circleEl) {
-            circleEl.classList.remove('radial-indicator-completed');
-            circleEl.style.stroke = 'url(#kccaProgressGradient)';
-        }
-        if (statusBadge) {
-            statusBadge.className = 'radial-status-badge bg-primary-subtle text-primary border border-primary-subtle';
-            statusBadge.innerHTML = '<i class="fas fa-hourglass-half text-primary"></i> On Track';
-        }
-        if (remainingEl) {
-            remainingEl.className = 'remaining-val text-primary fw-bold';
-            remainingEl.textContent = `${remHrsInt} hrs ${remMinsInt} mins left`;
-        }
-        if (topBadge) {
-            topBadge.className = 'badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1';
-            topBadge.innerHTML = '<i class="fas fa-clock me-1"></i> Goal Target: 8.0h';
-        }
-        if (percentEl) {
-            percentEl.style.color = 'var(--theme-text-primary)';
-        }
-    } else {
-        // Starting Shift (< 40%)
-        if (circleEl) {
-            circleEl.classList.remove('radial-indicator-completed');
-            circleEl.style.stroke = '#FFD100';
-        }
-        if (statusBadge) {
-            statusBadge.className = 'radial-status-badge bg-warning-subtle text-warning border border-warning-subtle';
-            statusBadge.innerHTML = '<i class="fas fa-play text-warning"></i> In Progress';
-        }
-        if (remainingEl) {
-            remainingEl.className = 'remaining-val text-warning fw-bold';
-            remainingEl.textContent = `${remHrsInt} hrs ${remMinsInt} mins left`;
-        }
-        if (topBadge) {
-            topBadge.className = 'badge bg-secondary-subtle text-secondary border px-2 py-1';
-            topBadge.innerHTML = '<i class="fas fa-clock me-1"></i> Goal Target: 8.0h';
-        }
-        if (percentEl) {
-            percentEl.style.color = 'var(--theme-text-primary)';
-        }
-    }
+    if (remaining) remaining.textContent = 'No daily target configured';
+    if (badge) badge.textContent = 'Recorded time only';
 }
 window.updateDailyGoalProgress = updateDailyGoalProgress;
 
@@ -459,17 +302,35 @@ function renderAttendanceTable() {
             <tr>
                 <td class="fw-semibold text-muted small">${index + 1}</td>
                 <td>
-                    <div class="fw-bold">${log.date}</div>
-                    <small class="text-muted">${log.day}</small>
+                    <div class="fw-bold">${escapeHtml(log.date)}</div>
+                    <small class="text-muted">${escapeHtml(log.day)}</small>
                 </td>
-                <td><span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fas fa-sign-in-alt me-1"></i>${log.timeIn}</span></td>
-                <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="fas fa-sign-out-alt me-1"></i>${log.timeOut}</span></td>
-                <td class="fw-bold text-success">${log.hours}</td>
-                <td><small><i class="fas fa-map-marker-alt text-danger me-1"></i>${log.location}</small></td>
-                <td><span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>${log.status}</span></td>
+                <td><span class="badge bg-success-subtle text-success border border-success-subtle"><i class="fas fa-sign-in-alt me-1"></i>${escapeHtml(log.timeIn)}</span></td>
+                <td><span class="badge bg-danger-subtle text-danger border border-danger-subtle"><i class="fas fa-sign-out-alt me-1"></i>${escapeHtml(log.timeOut)}</span></td>
+                <td class="fw-bold text-success">${escapeHtml(log.hours)}</td>
+                <td><small>${escapeHtml(log.location)}</small></td>
+                <td><span class="badge ${log.status === 'Completed' ? 'bg-secondary' : 'bg-primary'}">${escapeHtml(log.status)}</span></td>
             </tr>
         `;
     }).join('');
+}
+
+function renderDashboardAttendance() {
+    const tbody = document.getElementById('dashboard-attendance-tbody');
+    if (!tbody) return;
+    if (!clientAttendanceLogs.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">No attendance records yet.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = clientAttendanceLogs.slice(0, 3).map(log => `
+        <tr>
+            <td class="fw-bold">${escapeHtml(log.date)}</td>
+            <td><span class="badge bg-success-subtle text-success">${escapeHtml(log.timeIn)}</span></td>
+            <td><span class="badge bg-danger-subtle text-danger">${escapeHtml(log.timeOut)}</span></td>
+            <td class="fw-bold">${escapeHtml(log.hours)}</td>
+            <td><span class="badge ${log.status === 'Completed' ? 'bg-secondary' : 'bg-primary'}">${escapeHtml(log.status)}</span></td>
+        </tr>
+    `).join('');
 }
 
 // Export Attendance Punch Logs to CSV
@@ -480,7 +341,7 @@ function downloadAttendanceCSV() {
     }
 
     // CSV Headers
-    const headers = ['Record ID', 'Date', 'Day of Week', 'Time In', 'Time Out', 'Duration (Hours)', 'Duty Station', 'Status'];
+    const headers = ['Record ID', 'Date', 'Day of Week', 'Time In', 'Time Out', 'Duration (Hours)', 'Location (not verified)', 'Status'];
 
     // Map existing attendance punch logs
     const rows = clientAttendanceLogs.map(log => {
@@ -496,34 +357,15 @@ function downloadAttendanceCSV() {
         ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
     });
 
-    // Include active clock-in session if shift is currently ongoing
-    if (activeClockSession && activeClockSession.inProgress && activeClockSession.startTime) {
-        const start = new Date(activeClockSession.startTime);
-        const now = new Date();
-        const diffMs = Math.max(0, now - start);
-        const hours = (diffMs / (1000 * 60 * 60)).toFixed(1);
-        const activeRow = [
-            'active-shift',
-            now.toISOString().split('T')[0],
-            now.toLocaleDateString('en-GB', { weekday: 'long' }),
-            start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
-            'Ongoing Shift',
-            `${hours} hrs (active)`,
-            activeClockSession.location || 'City Hall - ICT Lab 2',
-            'In Progress'
-        ].map(val => `"${String(val).replace(/"/g, '""')}"`).join(',');
-        rows.unshift(activeRow);
-    }
-
     // Build CSV content with UTF-8 BOM for Excel/Sheets compatibility
     const csvContent = [headers.map(h => `"${h}"`).join(','), ...rows].join('\r\n');
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const downloadLink = document.createElement('a');
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
+    const dateStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Kampala' }).format(now);
     downloadLink.href = url;
-    downloadLink.setAttribute('download', `KCCA_Attendance_Punch_Logs_${dateStr}.csv`);
+    downloadLink.setAttribute('download', `EARS_Attendance_Punch_Logs_${dateStr}.csv`);
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
@@ -557,11 +399,11 @@ function renderReportsTable() {
         return `
             <tr>
                 <td class="fw-bold text-primary">Week #${rep.weekNumber}</td>
-                <td>${rep.weekRange}</td>
-                <td>${rep.submittedDate}</td>
-                <td class="fw-bold text-success">${rep.hoursLogged} hrs</td>
-                <td><span class="badge ${badgeClass}"><i class="fas ${icon} me-1"></i>${rep.status}</span></td>
-                <td><small class="text-muted">${rep.supervisor}</small></td>
+                <td>${escapeHtml(rep.weekRange)}</td>
+                <td>${escapeHtml(rep.submittedDate)}</td>
+                <td class="fw-bold text-success">${Number(rep.hoursLogged || 0).toFixed(1)} hrs</td>
+                <td><span class="badge ${badgeClass}"><i class="fas ${icon} me-1"></i>${escapeHtml(rep.status)}</span></td>
+                <td><small class="text-muted">${escapeHtml(rep.supervisor)}</small></td>
                 <td>
                     <button class="btn btn-sm btn-outline-primary py-1 px-2" onclick="viewReportDetails('${rep.id}')" title="View Report">
                         <i class="fas fa-eye me-1"></i>View
@@ -577,7 +419,7 @@ function renderReportsTable() {
 
 // View Detailed Report Modal
 function viewReportDetails(reportId) {
-    const report = clientReports.find(r => r.id === reportId);
+    const report = clientReports.find(r => String(r.id) === String(reportId));
     if (!report) return;
 
     const modalTitle = document.getElementById('reportDetailModalTitle');
@@ -589,20 +431,20 @@ function viewReportDetails(reportId) {
     let tasksHtml = (report.tasks || []).map(t => `
         <div class="mb-3 p-3 rounded border" style="background-color: var(--theme-card-bg);">
             <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="fw-bold text-success">${t.day}</span>
-                <span class="badge bg-secondary-subtle text-secondary">${t.hours} hrs</span>
+                <span class="fw-bold text-success">${escapeHtml(t.day)}</span>
+                <span class="badge bg-secondary-subtle text-secondary">${Number(t.hours || 0).toFixed(1)} hrs</span>
             </div>
-            <p class="mb-0 small text-muted">${t.task}</p>
+            <p class="mb-0 small text-muted">${escapeHtml(t.task)}</p>
         </div>
     `).join('');
 
     modalBody.innerHTML = `
         <div class="mb-3 d-flex justify-content-between align-items-center pb-2 border-bottom">
             <div>
-                <h6 class="mb-0 fw-bold">Period: ${report.weekRange}</h6>
-                <small class="text-muted">Submitted on ${report.submittedDate} &bull; Total Hours: <strong>${report.hoursLogged} hrs</strong></small>
+                <h6 class="mb-0 fw-bold">Period: ${escapeHtml(report.weekRange)}</h6>
+                <small class="text-muted">Submitted on ${escapeHtml(report.submittedDate)} &bull; Total Hours: <strong>${Number(report.hoursLogged || 0).toFixed(1)} hrs</strong></small>
             </div>
-            <span class="badge status-badge-approved fs-6 px-3 py-2">${report.status}</span>
+            <span class="badge status-badge-approved fs-6 px-3 py-2">${escapeHtml(report.status)}</span>
         </div>
 
         <h6 class="fw-bold text-uppercase small text-muted mb-2">Daily Tasks & Activities</h6>
@@ -610,7 +452,7 @@ function viewReportDetails(reportId) {
 
         <div class="mt-4 p-3 rounded border bg-light-subtle">
             <h6 class="fw-bold text-success mb-1"><i class="fas fa-comment-dots me-1"></i>Supervisor Feedback</h6>
-            <p class="mb-0 small text-muted"><strong>${report.supervisor}:</strong> "${report.feedback || 'Pending review'}"</p>
+            <p class="mb-0 small text-muted"><strong>${escapeHtml(report.supervisor)}:</strong> "${escapeHtml(report.feedback || 'Pending review')}"</p>
         </div>
     `;
 
@@ -619,102 +461,68 @@ function viewReportDetails(reportId) {
 }
 
 function printReport(reportId) {
-    const report = clientReports.find(r => r.id === reportId);
+    const report = clientReports.find(r => String(r.id) === String(reportId));
     if (!report) return;
     window.print();
 }
 
 // Submit Weekly Report Handler
-function submitWeeklyReport(event) {
+async function submitWeeklyReport(event) {
     event.preventDefault();
-
-    const weekNum = document.getElementById('report-week-select').value;
-    const weekRange = document.getElementById('report-range-input').value;
-    const mTask = document.getElementById('task-mon').value.trim();
-    const tTask = document.getElementById('task-tue').value.trim();
-    const wTask = document.getElementById('task-wed').value.trim();
-    const thTask = document.getElementById('task-thu').value.trim();
-    const fTask = document.getElementById('task-fri').value.trim();
-
-    const mHours = parseFloat(document.getElementById('hours-mon').value) || 0;
-    const tHours = parseFloat(document.getElementById('hours-tue').value) || 0;
-    const wHours = parseFloat(document.getElementById('hours-wed').value) || 0;
-    const thHours = parseFloat(document.getElementById('hours-thu').value) || 0;
-    const fHours = parseFloat(document.getElementById('hours-fri').value) || 0;
-
-    const totalHours = mHours + tHours + wHours + thHours + fHours;
-
-    if (!mTask || !tTask || !wTask || !thTask || !fTask) {
-        alert('Please provide task descriptions for all working days (Monday - Friday).');
-        return;
+    const form = document.getElementById('weekly-report-form');
+    const weekStart = document.getElementById('report-week-start').value;
+    const dayIds = ['mon', 'tue', 'wed', 'thu', 'fri'];
+    const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    const days = {};
+    dayNames.forEach((day, index) => {
+        days[day] = { activities: document.getElementById(`task-${dayIds[index]}`).value.trim() };
+    });
+    const button = form.querySelector('[type="submit"]');
+    button.disabled = true;
+    try {
+        const response = await window.EARSAuth.request('/backend/api/reports.php', {
+            method: 'POST',
+            body: JSON.stringify({ week_start_date: weekStart, days })
+        });
+        const payload = await response.json();
+        if (!response.ok || payload.status !== 'success') throw new Error(payload.message || 'Report could not be submitted.');
+        await loadReportsData();
+        form.reset();
+        setupReportDatePicker();
+        renderReportsTable();
+        updateSummaryStats();
+            showToast('Report submitted', 'Your weekly report was saved.', 'success');
+        showClientSection('reports-section');
+    } catch (error) {
+        showToast('Report not submitted', error.message, 'danger');
+    } finally {
+        button.disabled = false;
     }
-
-    const newReport = {
-        id: 'rep-' + Date.now(),
-        weekNumber: parseInt(weekNum, 10),
-        weekRange: weekRange || 'Current Week',
-        submittedDate: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-        hoursLogged: parseFloat(totalHours.toFixed(1)),
-        status: 'Pending',
-        supervisor: 'Sarah Smith (Senior IT Systems Analyst)',
-        feedback: 'Awaiting supervisor review.',
-        tasks: [
-            { day: 'Monday', hours: mHours, task: mTask },
-            { day: 'Tuesday', hours: tHours, task: tTask },
-            { day: 'Wednesday', hours: wHours, task: wTask },
-            { day: 'Thursday', hours: thHours, task: thTask },
-            { day: 'Friday', hours: fHours, task: fTask }
-        ]
-    };
-
-    clientReports.unshift(newReport);
-    localStorage.setItem('ears_client_reports', JSON.stringify(clientReports));
-
-    // Also push a notification
-    const notif = {
-        id: 'notif-' + Date.now(),
-        title: `Report Week #${weekNum} Submitted`,
-        message: 'Your weekly report has been forwarded to Supervisor Sarah Smith for review.',
-        time: 'Just now',
-        unread: true,
-        type: 'primary'
-    };
-    clientNotifications.unshift(notif);
-    localStorage.setItem('ears_client_notifications', JSON.stringify(clientNotifications));
-
-    // Reset form
-    document.getElementById('weekly-report-form').reset();
-    updateFormTotalHours();
-    renderReportsTable();
-    renderNotifications();
-    updateSummaryStats();
-    renderClientCharts();
-
-    showToast('Report Submitted Successfully', `Week #${weekNum} report sent to your supervisor for review.`, 'success');
-
-    // Switch tab to Reports
-    showClientSection('reports-section');
 }
 
 function updateFormTotalHours() {
-    const mHours = parseFloat(document.getElementById('hours-mon')?.value) || 0;
-    const tHours = parseFloat(document.getElementById('hours-tue')?.value) || 0;
-    const wHours = parseFloat(document.getElementById('hours-wed')?.value) || 0;
-    const thHours = parseFloat(document.getElementById('hours-thu')?.value) || 0;
-    const fHours = parseFloat(document.getElementById('hours-fri')?.value) || 0;
-
-    const total = (mHours + tHours + wHours + thHours + fHours).toFixed(1);
     const badge = document.getElementById('report-form-total-badge');
-    if (badge) {
-        badge.textContent = `${total} hrs / 40.0 hrs`;
-        if (total >= 40) {
-            badge.className = 'badge bg-success fs-6';
-        } else if (total >= 35) {
-            badge.className = 'badge bg-primary fs-6';
-        } else {
-            badge.className = 'badge bg-warning text-dark fs-6';
-        }
-    }
+    if (badge) badge.textContent = 'Attendance hours are calculated from saved clock-in and clock-out times.';
+}
+
+function setupReportDatePicker() {
+    const input = document.getElementById('report-week-start');
+    if (!input) return;
+    const today = new Date();
+    const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'Africa/Kampala' }).format(today);
+    const index = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(weekday);
+    const kampalaToday = new Date(new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Kampala' }).format(today) + 'T12:00:00');
+    kampalaToday.setDate(kampalaToday.getDate() - ((index + 6) % 7));
+    if (!input.value) input.value = kampalaToday.toISOString().slice(0, 10);
+    const updateRange = () => {
+        const date = new Date(`${input.value}T12:00:00`);
+        const end = new Date(date);
+        end.setDate(end.getDate() + 4);
+        const range = document.getElementById('report-range-input');
+        if (range && input.value) range.value = `${date.toLocaleDateString('en-GB')} - ${end.toLocaleDateString('en-GB')}`;
+    };
+    input.onchange = updateRange;
+    updateRange();
 }
 
 // Notifications Renderer
@@ -750,7 +558,6 @@ function renderNotifications() {
 
 function markAllNotificationsRead() {
     clientNotifications.forEach(n => n.unread = false);
-    localStorage.setItem('ears_client_notifications', JSON.stringify(clientNotifications));
     renderNotifications();
 }
 
@@ -769,7 +576,7 @@ function updateSummaryStats() {
     clientReports.forEach(r => totalHrs += (r.hoursLogged || 0));
     if (totalHoursEl) totalHoursEl.textContent = `${totalHrs.toFixed(1)} hrs`;
 
-    if (punctualityEl) punctualityEl.textContent = '98.5%';
+    if (punctualityEl) punctualityEl.textContent = 'Not available';
 }
 
 // Navigation between views
@@ -790,9 +597,6 @@ function showClientSection(sectionId) {
         }
     });
 
-    if (sectionId === 'analytics-section' || sectionId === 'dashboard-section') {
-        setTimeout(renderClientCharts, 100);
-    }
 }
 
 // Toast helper
@@ -823,75 +627,7 @@ function showToast(title, message, type = 'info') {
     }
 }
 
-// Recharts Visualization
-let clientHoursChartRoot = null;
-let clientPunctualityChartRoot = null;
-
-function renderClientCharts() {
-    if (!window.React || !window.ReactDOM || !window.Recharts) {
-        setTimeout(renderClientCharts, 200);
-        return;
-    }
-
-    const e = window.React.createElement;
-    const { ResponsiveContainer, BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } = window.Recharts;
-    const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-    const gridColor = isDark ? '#334155' : '#e2e8f0';
-    const textColor = isDark ? '#94a3b8' : '#64748b';
-
-    // 1. Weekly Hours Chart
-    const hoursContainer = document.getElementById('client-weekly-hours-chart');
-    if (hoursContainer) {
-        const weeklyData = [
-            { day: 'Mon', logged: 8.0, target: 8.0 },
-            { day: 'Tue', logged: 8.2, target: 8.0 },
-            { day: 'Wed', logged: 8.5, target: 8.0 },
-            { day: 'Thu', logged: 7.8, target: 8.0 },
-            { day: 'Fri', logged: 8.0, target: 8.0 }
-        ];
-
-        const chart = e(ResponsiveContainer, { width: '100%', height: 260 },
-            e(BarChart, { data: weeklyData, margin: { top: 10, right: 20, left: -10, bottom: 0 } },
-                e(CartesianGrid, { key: 'g', strokeDasharray: '3 3', stroke: gridColor }),
-                e(XAxis, { key: 'x', dataKey: 'day', stroke: textColor, tick: { fill: textColor, fontSize: 12 } }),
-                e(YAxis, { key: 'y', stroke: textColor, tick: { fill: textColor, fontSize: 12 }, domain: [0, 10] }),
-                e(Tooltip, { key: 't' }),
-                e(Legend, { key: 'l' }),
-                e(Bar, { key: 'b-logged', dataKey: 'logged', name: 'Logged Hours', fill: '#008540', radius: [4, 4, 0, 0] }),
-                e(Bar, { key: 'b-target', dataKey: 'target', name: 'Standard Target (8h)', fill: '#FFD100', radius: [4, 4, 0, 0] })
-            )
-        );
-
-        if (!clientHoursChartRoot) clientHoursChartRoot = window.ReactDOM.createRoot(hoursContainer);
-        clientHoursChartRoot.render(chart);
-    }
-
-    // 2. Attendance Trend Chart
-    const trendContainer = document.getElementById('client-attendance-trend-chart');
-    if (trendContainer) {
-        const trendData = [
-            { week: 'Week 1', rate: 96, hours: 38 },
-            { week: 'Week 2', rate: 98, hours: 40 },
-            { week: 'Week 3', rate: 100, hours: 39.5 },
-            { week: 'Week 4', rate: 99, hours: 40.2 }
-        ];
-
-        const trendChart = e(ResponsiveContainer, { width: '100%', height: 260 },
-            e(LineChart, { data: trendData, margin: { top: 10, right: 20, left: -10, bottom: 0 } },
-                e(CartesianGrid, { key: 'cg', strokeDasharray: '3 3', stroke: gridColor }),
-                e(XAxis, { key: 'cx', dataKey: 'week', stroke: textColor, tick: { fill: textColor, fontSize: 12 } }),
-                e(YAxis, { key: 'cy', stroke: textColor, tick: { fill: textColor, fontSize: 12 } }),
-                e(Tooltip, { key: 'ct' }),
-                e(Legend, { key: 'cl' }),
-                e(Line, { key: 'l-rate', type: 'monotone', dataKey: 'rate', name: 'Punctuality (%)', stroke: '#008540', strokeWidth: 3, dot: { r: 4, fill: '#008540' } }),
-                e(Line, { key: 'l-hrs', type: 'monotone', dataKey: 'hours', name: 'Total Hours', stroke: '#E30613', strokeWidth: 2, strokeDasharray: '4 4', dot: { r: 3.5, fill: '#E30613' } })
-            )
-        );
-
-        if (!clientPunctualityChartRoot) clientPunctualityChartRoot = window.ReactDOM.createRoot(trendContainer);
-        clientPunctualityChartRoot.render(trendChart);
-    }
-}
+// Metrics such as punctuality and target compliance require approved rules and are not fabricated.
 
 // Event Listeners
 function setupEventListeners() {
@@ -906,13 +642,6 @@ function setupEventListeners() {
     }
 
     // Bind hour input changes to total calculation
-    ['hours-mon', 'hours-tue', 'hours-wed', 'hours-thu', 'hours-fri'].forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.addEventListener('input', updateFormTotalHours);
-        }
-    });
-
     const markReadBtn = document.getElementById('btn-mark-all-read');
     if (markReadBtn) {
         markReadBtn.addEventListener('click', markAllNotificationsRead);

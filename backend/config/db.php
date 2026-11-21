@@ -17,7 +17,7 @@ final class Database
         $username = getenv('DB_USER') ?: '';
         $password = getenv('DB_PASSWORD');
 
-        if ($name === '' || $username === '' || $password === false) {
+        if ($name === '' || $username === '' || !is_string($password) || $password === '') {
             throw new RuntimeException('Database configuration is incomplete.');
         }
 

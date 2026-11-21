@@ -6,7 +6,6 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const output = path.join(root, 'dist');
 const sources = [
   ['ears-system/frontend', 'ears-system/frontend'],
-  ['frontend', 'frontend'],
   ['ears-system/frontend/assets', 'assets'],
 ];
 
